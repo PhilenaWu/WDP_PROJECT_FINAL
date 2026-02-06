@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Loading...{% endblock %}
+
+{% block content %}
+<div class="container-fluid vh-100 d-flex align-items-center justify-content-center">
+    <div class="text-center">
+        <!-- Loading Spinner -->
+        <div class="spinner-border text-primary mb-4" role="status" style="width: 4rem; height: 4rem; color: #ff6b35 !important;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        
+        <h3>Setting up your account...</h3>
+        <p class="text-muted">Please wait while we prepare your profile</p>
+    </div>
+</div>
+
+<script>
+    // Auto-redirect after 2 seconds
+    setTimeout(function() {
+        window.location.href = "{{ url_for('profile.setup') }}";
+    }, 2000);
+</script>
+{% endblock %}

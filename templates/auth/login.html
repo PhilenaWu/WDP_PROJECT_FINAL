@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="container-fluid vh-100">
+    <div class="row h-100">
+        <!-- Left side - Logo/Branding -->
+        <div class="col-md-4 d-none d-md-flex align-items-center justify-content-center bg-light">
+            <div class="text-center">
+                <i class="bi bi-people-fill" style="font-size: 80px; color: #ff6b35;"></i>
+                <h2 class="mt-3">StoryConnect</h2>
+                <p class="text-muted">Welcome Back!</p>
+            </div>
+        </div>
+        
+        <!-- Right side - Login Form -->
+        <div class="col-md-8 d-flex align-items-center justify-content-center">
+            <div class="w-100" style="max-width: 400px; padding: 40px;">
+                <div class="text-center mb-4">
+                    <h2>Login</h2>
+                    <p class="text-muted">Sign in to your account</p>
+                </div>
+                
+                <form method="POST">
+                    <!-- Username -->
+                    <div class="mb-3">
+                        <label for="username" class="form-label">
+                            <i class="bi bi-person"></i> Username
+                        </label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    
+                    <!-- Password -->
+                    <div class="mb-3">
+                        <label for="password" class="form-label">
+                            <i class="bi bi-lock"></i> Password
+                        </label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    
+                    <!-- Login Button -->
+                    <button type="submit" class="btn btn-primary w-100 py-2 mb-3" 
+                            style="background-color: #ff6b35; border: none;">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </button>
+                    
+                    <!-- Signup Link -->
+                    <div class="text-center">
+                        <p class="mb-0">Don't have an account? 
+                            <a href="{{ url_for('auth.signup') }}" style="color: #ff6b35;">Sign up</a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
