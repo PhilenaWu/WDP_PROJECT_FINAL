@@ -7,7 +7,7 @@ class Config:
     # MySQL Database
     MYSQL_HOST = os.environ.get('MYSQL_HOST') or 'mainline.proxy.rlwy.net'
     MYSQL_USER = os.environ.get('MYSQL_USER') or 'root'
-    MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD') or ''
+    MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD') or ''  # Remember to delete PASSWORD!!
     MYSQL_DATABASE = os.environ.get('MYSQL_DATABASE') or 'railway'
     MYSQL_PORT = int(os.environ.get('MYSQL_PORT', 27748))
     
