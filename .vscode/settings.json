@@ -1,0 +1,19 @@
+{
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "mainline.proxy.rlwy.net",
+            "port": 27748,
+            "driver": "MySQL",
+            "name": "WDP_project",
+            "database": "railway",
+            "username": "root",
+            "askForPassword": true
+        }
+    ]
+}

@@ -1,1 +1,6 @@
 venv/
+
+folder_name/__pycache__/
+*.pyc
+/config.py
+*.env
