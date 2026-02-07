@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand d-flex align-items-center" href="#">
+            <i class="bi bi-people-fill me-2" style="font-size: 24px; color: #ff6b35;"></i>
+            <span style="color: #ff6b35; font-weight: bold;">StoryConnect</span>
+        </a>
+        
+        <!-- Search -->
+        <form class="d-flex mx-auto" style="max-width: 400px;">
+            <input class="form-control" type="search" placeholder="Search" aria-label="Search">
+        </form>
+        
+        <!-- Nav items -->
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link active" href="{{ url_for('main.home') }}">
+                    <i class="bi bi-house-door"></i> Home
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="bi bi-book"></i> Storyboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="bi bi-controller"></i> Activities
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="bi bi-calendar-event"></i> Events
+                </a>
+            </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-person-circle"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#">Profile</a></li>
+                    <li><a class="dropdown-item" href="#">Settings</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<div class="container py-4">
+    <!-- Voice Story Upload Banner -->
+    <div class="card mb-4" style="background: linear-gradient(135deg, #ff6b35 0%, #ff8c61 100%); color: white;">
+        <div class="card-body p-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h3><i class="bi bi-mic-fill"></i> Voice Story Upload</h3>
+                    <p class="mb-0">Share your stories with the community through voice recordings</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button class="btn btn-light">
+                        <i class="bi bi-upload"></i> Upload Story
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Upcoming Events Section -->
+    <h3 class="mb-3">Upcoming Events</h3>
+    <div class="row g-3">
+        <!-- Event Card 1 -->
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex mb-2">
+                        <span class="badge bg-info">Intergenerational Storytelling (Planned)</span>
+                    </div>
+                    <h5 class="card-title">Community Storytelling Session</h5>
+                    <p class="card-text text-muted">
+                        Join us for an engaging storytelling session where different generations share their experiences.
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted"><i class="bi bi-calendar"></i> Coming Soon</small>
+                        <button class="btn btn-sm btn-outline-primary">View Details</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Event Card 2 -->
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex mb-2">
+                        <span class="badge bg-success">Digital Skills Workshop</span>
+                    </div>
+                    <h5 class="card-title">Technology Learning Session</h5>
+                    <p class="card-text text-muted">
+                        Learn new digital skills in a friendly, supportive environment with peers.
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted"><i class="bi bi-calendar"></i> Coming Soon</small>
+                        <button class="btn btn-sm btn-outline-primary">View Details</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Welcome Message -->
+    <div class="alert alert-success mt-4" role="alert">
+        <h4 class="alert-heading">Welcome, {{ user.display_name or user.username }}! 🎉</h4>
+        <p>Your profile is complete. Start exploring events and connecting with others!</p>
+        <hr>
+        <p class="mb-0">
+            <strong>Age Group:</strong> {{ user.age_group.capitalize() if user.age_group else 'N/A' }} | 
+            <strong>Interests:</strong> 
+            {% for interest in interests %}
+                <span class="badge bg-secondary">{{ interest.icon }} {{ interest.name }}</span>
+            {% endfor %}
+        </p>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="bg-dark text-white py-4 mt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <h5><i class="bi bi-people-fill"></i> StoryConnect</h5>
+                <p class="text-muted">Bringing Generations Storytelling Hub</p>
+            </div>
+            <div class="col-md-4">
+                <h6>Platform</h6>
+                <ul class="list-unstyled">
+                    <li><a href="#" class="text-muted">Home</a></li>
+                    <li><a href="#" class="text-muted">Events</a></li>
+                    <li><a href="#" class="text-muted">Activities</a></li>
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <h6>Support</h6>
+                <ul class="list-unstyled">
+                    <li><a href="#" class="text-muted">Help</a></li>
+                    <li><a href="#" class="text-muted">Privacy Policy</a></li>
+                    <li><a href="#" class="text-muted">Terms of Service</a></li>
+                </ul>
+            </div>
+        </div>
+        <hr class="bg-secondary">
+        <p class="text-center text-muted mb-0">© 2025 StoryConnect. All Rights Reserved.</p>
+    </div>
+</footer>
+{% endblock %}

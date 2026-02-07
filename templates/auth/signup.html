@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Sign Up{% endblock %}
+
+{% block content %}
+<div class="container-fluid vh-100">
+    <div class="row h-100">
+        <!-- Left side - Logo/Branding -->
+        <div class="col-md-4 d-none d-md-flex align-items-center justify-content-center bg-light">
+            <div class="text-center">
+                <i class="bi bi-people-fill" style="font-size: 80px; color: #ff6b35;"></i>
+                <h2 class="mt-3">StoryConnect</h2>
+                <p class="text-muted">Bringing Generations Storytelling Hub</p>
+            </div>
+        </div>
+        
+        <!-- Right side - Signup Form -->
+        <div class="col-md-8 d-flex align-items-center justify-content-center">
+            <div class="w-100" style="max-width: 500px; padding: 40px;">
+                <div class="text-center mb-4">
+                    <i class="bi bi-person-circle" style="font-size: 60px; color: #ff6b35;"></i>
+                    <h2 class="mt-3">Create Account</h2>
+                    <p class="text-muted">Join our community today</p>
+                </div>
+                
+                <form method="POST" action="{{ url_for('auth.signup') }}">
+                    <!-- Username -->
+                    <div class="mb-3">
+                        <label for="username" class="form-label">
+                            <i class="bi bi-person"></i> Username
+                        </label>
+                        <input type="text" class="form-control" id="username" name="username" 
+                               placeholder="Choose a username" required>
+                    </div>
+                    
+                    <!-- Email -->
+                    <div class="mb-3">
+                        <label for="email" class="form-label">
+                            <i class="bi bi-envelope"></i> Email
+                        </label>
+                        <input type="email" class="form-control" id="email" name="email" 
+                               placeholder="Enter your email" required>
+                    </div>
+                    
+                    <!-- Password -->
+                    <div class="mb-3">
+                        <label for="password" class="form-label">
+                            <i class="bi bi-lock"></i> Password
+                        </label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="password" name="password" 
+                                   placeholder="Create a password" minlength="8" required>
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                <i class="bi bi-eye" id="toggleIcon"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted">Minimum 8 characters</small>
+                    </div>
+                    
+                    <!-- Confirm Password -->
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label">
+                            <i class="bi bi-lock-fill"></i> Confirm Password
+                        </label>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" 
+                               placeholder="Confirm your password" required>
+                    </div>
+                    
+                    <!-- Register Button -->
+                    <button type="submit" class="btn btn-primary w-100 py-2 mb-3" style="background-color: #ff6b35; border: none;">
+                        <i class="bi bi-check-circle"></i> Register Account
+                    </button>
+                    
+                    <!-- Login Link -->
+                    <div class="text-center">
+                        <p class="mb-0">Already have an account? 
+                            <a href="{{ url_for('auth.login') }}" style="color: #ff6b35;">Log in</a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Toggle password visibility
+    document.getElementById('togglePassword').addEventListener('click', function() {
+        const password = document.getElementById('password');
+        const icon = document.getElementById('toggleIcon');
+        
+        if (password.type === 'password') {
+            password.type = 'text';
+            icon.classList.remove('bi-eye');
+            icon.classList.add('bi-eye-slash');
+        } else {
+            password.type = 'password';
+            icon.classList.remove('bi-eye-slash');
+            icon.classList.add('bi-eye');
+        }
+    });
+    
+    // Password confirmation validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+        
+        if (password !== confirmPassword) {
+            e.preventDefault();
+            alert('Passwords do not match!');
+        }
+    });
+</script>
+{% endblock %}
