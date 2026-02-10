@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}Profile{% endblock %}
+{% block body_class %}class="editprofile-page"{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+	<div class="profile-card">
+		<h1 class="main-title">Profile</h1>
+
+		<section class="profile-area">
+			<div class="profile-top">
+				<div class="profile-avatar">
+					<img
+						id="profileImage"
+						src="{{ url_for('static', filename='uploads/profile_pics/' + (user.profile_picture or 'defaultProfile.webp')) }}"
+						alt="Profile photo">
+				</div>
+				<div class="upload-section">
+					<input type="file" id="photoUpload" name="profile_picture" accept="image/*" form="profileForm" class="d-none">
+					<button class="btn btn-orange profile-btn" type="button" id="uploadTrigger">Upload Photo</button>
+					<p class="upload-hint">JPG or PNG (max 5MB)</p>
+				</div>
+			</div>
+
+			<form class="profile-form" id="profileForm" method="post" enctype="multipart/form-data">
+				<div class="form-row">
+					<label for="displayName">Display Name:</label>
+					<input
+						id="displayName"
+						name="display_name"
+						type="text"
+						class="text-input"
+						value="{{ user.display_name or '' }}">
+				</div>
+
+				<div class="form-row">
+					<label for="username">Username*:</label>
+					<input
+						id="username"
+						name="username"
+						type="text"
+						class="text-input"
+						required
+						minlength="3"
+						maxlength="20"
+						pattern="[A-Za-z][A-Za-z0-9_]{2,19}"
+						title="3-20 characters. Start with a letter; only letters, numbers, and underscore are allowed."
+						value="{{ user.username or '' }}">
+				</div>
+
+				<div class="form-row">
+					<label for="firstName">First Name:</label>
+					<input
+						id="firstName"
+						name="first_name"
+						type="text"
+						class="text-input"
+						pattern="[A-Za-z\s]+"
+						title="Only letters are allowed."
+						value="{{ user.first_name or '' }}">
+				</div>
+
+				<div class="form-row">
+					<label for="lastName">Last Name:</label>
+					<input
+						id="lastName"
+						name="last_name"
+						type="text"
+						class="text-input"
+						pattern="[A-Za-z\s]+"
+						title="Only letters are allowed."
+						value="{{ user.last_name or '' }}">
+				</div>
+
+				<div class="form-row">
+					<label for="password">Password:</label>
+					<div class="password-wrapper">
+						<input
+							id="password"
+							name="password"
+							type="password"
+							class="text-input"
+							minlength="8"
+							pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}"
+							  title="At least 8 characters with 1 lowercase, 1 uppercase, 1 number, and 1 special character.">
+						<button
+							type="button"
+							class="eye-icon"
+							id="passwordEye"
+							aria-label="Show password"></button>
+					</div>
+				</div>
+
+				<div class="form-row">
+					<label for="phone">Phone Number*:</label>
+					<input
+						id="phone"
+						name="phone_number"
+						type="tel"
+						class="text-input"
+						required
+						inputmode="numeric"
+						minlength="8"
+						maxlength="8"
+						pattern="[0-9]{8}"
+						title="Enter an 8-digit number, digits only."
+						value="{{ user.phone_number or '' }}">
+				</div>
+
+				<div class="form-row">
+					<label for="birthday">Birthday:</label>
+					<input
+						id="birthday"
+						name="date_of_birth"
+						type="date"
+						class="text-input"
+						value="{{ dob_value }}">
+				</div>
+
+				<div class="form-row">
+					<label>Age Category:</label>
+					<div class="age-category-display">
+						{% if user.age_group %}
+							<span class="category-badge badge-{{ user.age_group }}">{{ user.age_group|capitalize }}</span>
+						{% else %}
+							<span class="category-badge">Not Set</span>
+						{% endif %}
+						<span class="category-note">Based on your birthday</span>
+					</div>
+				</div>
+
+				<div class="form-actions">
+					<a class="btn btn-light profile-btn" href="{{ url_for('main.home') }}">Cancel</a>
+					<button type="submit" class="btn btn-orange profile-btn">Save Changes</button>
+				</div>
+			</form>
+		</section>
+		<a class="profile-back" href="{{ url_for('main.home') }}" aria-label="Back to home">
+			<i class="bi bi-arrow-left"></i>
+		</a>
+	</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+	const passwordInput = document.getElementById('password');
+	const passwordEye = document.getElementById('passwordEye');
+	const firstNameInput = document.getElementById('firstName');
+	const lastNameInput = document.getElementById('lastName');
+	const photoUpload = document.getElementById('photoUpload');
+	const profileImage = document.getElementById('profileImage');
+	const uploadTrigger = document.getElementById('uploadTrigger');
+
+	function validateName(input) {
+		const value = input.value;
+		const hasInvalidChars = /[^A-Za-z\s]/.test(value);
+
+		if (hasInvalidChars) {
+			input.setCustomValidity('Only letters are allowed');
+			input.reportValidity();
+			input.value = value.replace(/[^A-Za-z\s]/g, '');
+		} else {
+			input.setCustomValidity('');
+		}
+	}
+
+	if (firstNameInput) {
+		firstNameInput.addEventListener('input', () => validateName(firstNameInput));
+	}
+
+	if (lastNameInput) {
+		lastNameInput.addEventListener('input', () => validateName(lastNameInput));
+	}
+
+	if (passwordEye && passwordInput) {
+		passwordEye.addEventListener('click', () => {
+			const hidden = passwordInput.type === 'password';
+			passwordInput.type = hidden ? 'text' : 'password';
+			passwordEye.classList.toggle('open', hidden);
+			passwordEye.setAttribute('aria-label', hidden ? 'Hide password' : 'Show password');
+		});
+	}
+
+	if (uploadTrigger && photoUpload) {
+		uploadTrigger.addEventListener('click', () => {
+			photoUpload.click();
+		});
+	}
+
+	if (photoUpload && profileImage) {
+		photoUpload.addEventListener('change', (event) => {
+			const file = event.target.files[0];
+
+			if (!file) {
+				return;
+			}
+
+			if (!file.type.match('image.*')) {
+				alert('Please select an image file (JPG, PNG, or GIF)');
+				return;
+			}
+
+			if (file.size > 5 * 1024 * 1024) {
+				alert('File size must be less than 5MB');
+				return;
+			}
+
+			const reader = new FileReader();
+			reader.onload = (e) => {
+				profileImage.src = e.target.result;
+			};
+			reader.readAsDataURL(file);
+		});
+	}
+</script>
+{% endblock %}

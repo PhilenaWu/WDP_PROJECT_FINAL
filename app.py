@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for
+from flask import Flask, app, redirect, url_for
 from flask_login import LoginManager
 from flask_session import Session
 from config import Config
@@ -11,6 +11,8 @@ def create_app():
     app.config.from_object(Config)
     
     # Initialize extensions
+    app.config['SESSION_TYPE'] = 'filesystem'
+    app.config['SESSION_FILE_DIR'] = os.path.join(os.path.dirname(__file__), 'sessions')  # Or any path like './sessions'
     Session(app)
     
     # Initialize database
@@ -40,6 +42,20 @@ def create_app():
     
     # Ensure upload folder exists
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+    # Quick DNS check for DB host to provide early feedback in logs
+    try:
+        import socket
+        host = app.config.get('MYSQL_HOST')
+        if host:
+            try:
+                resolved = socket.gethostbyname(host)
+                print(f"MySQL host '{host}' resolves to {resolved}")
+            except Exception as e:
+                print(f"Warning: cannot resolve MySQL host '{host}': {e}")
+                print("If you see DB connection errors, verify Config.MYSQL_HOST and network access.")
+    except Exception:
+        pass
     
     return app
 

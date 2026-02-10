@@ -2,17 +2,21 @@
 
 {% block title %}Home{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% endblock %}
+
 {% block content %}
 <!-- Navigation -->
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
     <div class="container-fluid px-4">
         <a class="navbar-brand d-flex align-items-center" href="#">
-            <i class="bi bi-people-fill me-2" style="font-size: 24px; color: #ff6b35;"></i>
-            <span style="color: #ff6b35; font-weight: bold;">StoryConnect</span>
+            <i class="bi bi-people-fill me-2 navbar-brand-icon"></i>
+            <span class="navbar-brand-text">StoryConnect</span>
         </a>
         
         <!-- Search -->
-        <form class="d-flex mx-auto" style="max-width: 400px;">
+        <form class="d-flex mx-auto auth-search">
             <input class="form-control" type="search" placeholder="Search" aria-label="Search">
         </form>
         
@@ -43,7 +47,7 @@
                     <i class="bi bi-person-circle"></i>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="#">Profile</a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('profile.profile') }}">Profile</a></li>
                     <li><a class="dropdown-item" href="#">Settings</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
@@ -56,7 +60,7 @@
 <!-- Main Content -->
 <div class="container py-4">
     <!-- Voice Story Upload Banner -->
-    <div class="card mb-4" style="background: linear-gradient(135deg, #ff6b35 0%, #ff8c61 100%); color: white;">
+    <div class="card mb-4 banner-gradient">
         <div class="card-body p-4">
             <div class="row align-items-center">
                 <div class="col-md-8">
@@ -116,15 +120,11 @@
     
     <!-- Welcome Message -->
     <div class="alert alert-success mt-4" role="alert">
-        <h4 class="alert-heading">Welcome, {{ user.display_name or user.username }}! 🎉</h4>
+        <h4 class="alert-heading">Welcome, {{ user.username }}! 🎉</h4>
         <p>Your profile is complete. Start exploring events and connecting with others!</p>
         <hr>
         <p class="mb-0">
-            <strong>Age Group:</strong> {{ user.age_group.capitalize() if user.age_group else 'N/A' }} | 
-            <strong>Interests:</strong> 
-            {% for interest in interests %}
-                <span class="badge bg-secondary">{{ interest.icon }} {{ interest.name }}</span>
-            {% endfor %}
+            <strong>Age Group:</strong> {{ user.age_group.capitalize() if user.age_group else 'N/A' }}
         </p>
     </div>
 </div>

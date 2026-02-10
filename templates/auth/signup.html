@@ -1,114 +1,211 @@
 {% extends "base.html" %}
 
 {% block title %}Sign Up{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid vh-100">
-    <div class="row h-100">
-        <!-- Left side - Logo/Branding -->
-        <div class="col-md-4 d-none d-md-flex align-items-center justify-content-center bg-light">
-            <div class="text-center">
-                <i class="bi bi-people-fill" style="font-size: 80px; color: #ff6b35;"></i>
-                <h2 class="mt-3">StoryConnect</h2>
-                <p class="text-muted">Bringing Generations Storytelling Hub</p>
-            </div>
-        </div>
-        
-        <!-- Right side - Signup Form -->
-        <div class="col-md-8 d-flex align-items-center justify-content-center">
-            <div class="w-100" style="max-width: 500px; padding: 40px;">
-                <div class="text-center mb-4">
-                    <i class="bi bi-person-circle" style="font-size: 60px; color: #ff6b35;"></i>
-                    <h2 class="mt-3">Create Account</h2>
-                    <p class="text-muted">Join our community today</p>
-                </div>
-                
-                <form method="POST" action="{{ url_for('auth.signup') }}">
-                    <!-- Username -->
-                    <div class="mb-3">
-                        <label for="username" class="form-label">
-                            <i class="bi bi-person"></i> Username
-                        </label>
-                        <input type="text" class="form-control" id="username" name="username" 
-                               placeholder="Choose a username" required>
-                    </div>
-                    
-                    <!-- Email -->
-                    <div class="mb-3">
-                        <label for="email" class="form-label">
-                            <i class="bi bi-envelope"></i> Email
-                        </label>
-                        <input type="email" class="form-control" id="email" name="email" 
-                               placeholder="Enter your email" required>
-                    </div>
-                    
-                    <!-- Password -->
-                    <div class="mb-3">
-                        <label for="password" class="form-label">
-                            <i class="bi bi-lock"></i> Password
-                        </label>
-                        <div class="input-group">
-                            <input type="password" class="form-control" id="password" name="password" 
-                                   placeholder="Create a password" minlength="8" required>
-                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
-                                <i class="bi bi-eye" id="toggleIcon"></i>
-                            </button>
-                        </div>
-                        <small class="text-muted">Minimum 8 characters</small>
-                    </div>
-                    
-                    <!-- Confirm Password -->
-                    <div class="mb-3">
-                        <label for="confirm_password" class="form-label">
-                            <i class="bi bi-lock-fill"></i> Confirm Password
-                        </label>
-                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" 
-                               placeholder="Confirm your password" required>
-                    </div>
-                    
-                    <!-- Register Button -->
-                    <button type="submit" class="btn btn-primary w-100 py-2 mb-3" style="background-color: #ff6b35; border: none;">
-                        <i class="bi bi-check-circle"></i> Register Account
-                    </button>
-                    
-                    <!-- Login Link -->
-                    <div class="text-center">
-                        <p class="mb-0">Already have an account? 
-                            <a href="{{ url_for('auth.login') }}" style="color: #ff6b35;">Log in</a>
-                        </p>
-                    </div>
-                </form>
-            </div>
-        </div>
+  <div class="row h-100">
+    <!-- Left side - Logo/Branding -->
+    <div class="col-md-4 d-none d-md-flex align-items-center justify-content-center bg-light">
+      <div class="text-center">
+        <img src="{{ url_for('static', filename='uploads/profile_pics/logo.png') }}" alt="Genlink Logo" class="auth-logo-large">
+      </div>
     </div>
-</div>
 
-<script>
-    // Toggle password visibility
-    document.getElementById('togglePassword').addEventListener('click', function() {
-        const password = document.getElementById('password');
-        const icon = document.getElementById('toggleIcon');
-        
-        if (password.type === 'password') {
-            password.type = 'text';
-            icon.classList.remove('bi-eye');
-            icon.classList.add('bi-eye-slash');
-        } else {
-            password.type = 'password';
-            icon.classList.remove('bi-eye-slash');
-            icon.classList.add('bi-eye');
-        }
+    <!-- Right side - Signup Form -->
+    <div class="col-md-8 d-flex align-items-center justify-content-center">
+      <div class="w-100 auth-form-container-large">
+        <div class="text-center mb-4">
+          <h2>Sign Up</h2>
+          <p class="text-muted">Create your account</p>
+        </div>
+
+        {% if error %}
+          <p class="auth-error-message" id="errorMessage">{{ error }}</p>
+        {% endif %}
+
+        <form id="aboutYouForm" method="post" action="{{ url_for('auth.signup') }}" novalidate>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="firstName" class="form-label">First Name <span class="text-danger">*</span></label>
+              <input
+                id="firstName"
+                name="first_name"
+                type="text"
+                class="form-control"
+                required
+                pattern="[A-Za-z\s]+"
+                title="Only letters allowed."
+                value="{{ user.first_name or '' }}">
+            </div>
+            <div class="col-md-6">
+              <label for="lastName" class="form-label">Last Name <span class="text-danger">*</span></label>
+              <input
+                id="lastName"
+                name="last_name"
+                type="text"
+                class="form-control"
+                required
+                pattern="[A-Za-z\s]+"
+                title="Only letters allowed."
+                value="{{ user.last_name or '' }}">
+            </div>
+            <div class="col-12">
+              <label for="displayName" class="form-label">Display Name</label>
+              <input
+                id="displayName"
+                name="display_name"
+                type="text"
+                class="form-control"
+                value="{{ user.display_name or '' }}">
+            </div>
+            <div class="col-12">
+              <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                class="form-control"
+                required
+                pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
+                title="Please enter a valid email address with @ symbol."
+                value="{{ user.email or '' }}">
+            </div>
+            <div class="col-12">
+              <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+              <input
+                id="username"
+                name="username"
+                type="text"
+                class="form-control"
+                required
+                minlength="3"
+                maxlength="20"
+                pattern="[A-Za-z][A-Za-z0-9_]{2,19}"
+                title="3-20 characters. Start with a letter; only letters, numbers, and underscore are allowed."
+                value="{{ user.username or '' }}">
+            </div>
+            <div class="col-12">
+              <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+              <div class="password-input-wrapper">
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  class="form-control"
+                  required
+                  minlength="8"
+                  pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}"
+                  title="At least 8 characters with 1 lowercase, 1 uppercase, 1 number, and 1 special character."
+                  value="{{ user.password or '' }}">
+                <button
+                  type="button"
+                  class="eye-icon"
+                  id="signup-eye"
+                  aria-label="Show password"></button>
+              </div>
+            </div>
+            <div class="col-12">
+              <label for="phone" class="form-label">Phone Number <span class="text-danger">*</span></label>
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                class="form-control"
+                required
+                inputmode="numeric"
+                minlength="8"
+                maxlength="8"
+                pattern="[0-9]{8}"
+                title="Enter an 8-digit number, digits only."
+                value="{{ user.phone or '' }}">
+            </div>
+            <div class="col-12">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="location_enabled" id="locationToggle">
+                <label class="form-check-label" for="locationToggle">Turn on location</label>
+              </div>
+              <div class="form-text">To find activities and people near you</div>
+            </div>
+            <div class="col-12">
+              <label for="birthday" class="form-label">Birthday <span class="text-danger">*</span></label>
+              <input
+                id="birthday"
+                name="birthday"
+                type="date"
+                class="form-control"
+                required
+                value="{{ user.birthday or '' }}">
+              <div class="form-text">Your age category will be determined automatically</div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 py-2 mt-4">Create Account</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    const form = document.getElementById('aboutYouForm');
+    const passwordInput = document.getElementById('password');
+    const passwordEye = document.getElementById('signup-eye');
+    const firstNameInput = document.getElementById('firstName');
+    const lastNameInput = document.getElementById('lastName');
+    const emailInput = document.getElementById('email');
+
+    // validate names on input - use custom validity message (like password)
+    function validateName(input) {
+      const value = input.value;
+      const hasInvalidChars = /[^A-Za-z\s]/.test(value);
+      
+      if (hasInvalidChars) {
+        input.setCustomValidity('Only letters are allowed');
+        input.reportValidity();
+        input.value = value.replace(/[^A-Za-z\s]/g, ''); 
+      } else {
+        input.setCustomValidity(''); 
+      }
+    }
+
+    // validate email format
+    function validateEmail(input) {
+      const value = input.value;
+      const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+      
+      if (value && !emailRegex.test(value)) {
+        input.setCustomValidity('Please enter a valid email address with @ symbol');
+      } else {
+        input.setCustomValidity('');
+      }
+    }
+
+    firstNameInput.addEventListener('input', () => validateName(firstNameInput));
+    lastNameInput.addEventListener('input', () => validateName(lastNameInput));
+    emailInput.addEventListener('blur', () => validateEmail(emailInput));
+    emailInput.addEventListener('input', () => validateEmail(emailInput));
+
+    form.addEventListener('submit', e => {
+      if (!form.checkValidity()) {
+        e.preventDefault();
+        form.reportValidity();
+      }
     });
-    
-    // Password confirmation validation
-    document.querySelector('form').addEventListener('submit', function(e) {
-        const password = document.getElementById('password').value;
-        const confirmPassword = document.getElementById('confirm_password').value;
-        
-        if (password !== confirmPassword) {
-            e.preventDefault();
-            alert('Passwords do not match!');
-        }
-    });
-</script>
+
+    // toggle password visibility
+    if (passwordEye) {
+      passwordEye.addEventListener('click', () => {
+        const hidden = passwordInput.type === 'password';
+        passwordInput.type = hidden ? 'text' : 'password';
+        passwordEye.classList.toggle('open', hidden);
+        passwordEye.setAttribute('aria-label', hidden ? 'Hide password' : 'Show password');
+      });
+    }
+  </script>
 {% endblock %}

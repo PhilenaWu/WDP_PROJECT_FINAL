@@ -7,7 +7,4 @@ main_bp = Blueprint('main', __name__)
 @login_required
 def home():
     """Main home page with events"""
-    # Get user's interests
-    interests = current_user.get_interests()
-    
-    return render_template('main/home.html', user=current_user, interests=interests)
+    return render_template('main/home.html', user=current_user)

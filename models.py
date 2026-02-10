@@ -1,4 +1,3 @@
-from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from database import execute_query
 from datetime import datetime
@@ -51,17 +50,16 @@ class User(UserMixin):
     @staticmethod
     def create_user(email, username, password):
         """Create new user"""
-        password_hash = generate_password_hash(password)
         query = """
             INSERT INTO users (email, username, password_hash)
             VALUES (%s, %s, %s)
         """
-        user_id = execute_query(query, (email, username, password_hash), commit=True)
+        user_id = execute_query(query, (email, username, password), commit=True)
         return user_id
     
     def check_password(self, password):
         """Check if password matches"""
-        return check_password_hash(self.password_hash, password)
+        return self.password_hash == password
     
     def update_profile(self, data):
         """Update user profile"""
