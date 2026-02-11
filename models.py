@@ -24,6 +24,7 @@ class User(UserMixin):
         self.longitude = user_data.get('longitude')
         
         self.profile_completed = user_data.get('profile_completed', False)
+        self.language = user_data.get('language', 'en')
         self.created_at = user_data.get('created_at')
     
     @staticmethod

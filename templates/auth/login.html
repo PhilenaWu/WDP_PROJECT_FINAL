@@ -67,7 +67,7 @@
                     
                     <!-- Signup Link -->
                     <div class="text-center">
-                        <p class="mb-0">Don't have an account? 
+                        <p class="mb-0">Don't have an account?
                             <a href="{{ url_for('auth.signup') }}" class="text-primary-color">Sign up</a>
                         </p>
                     </div>
@@ -112,11 +112,14 @@
         loginButton.style.opacity = '0.5';
         loginButton.style.cursor = 'not-allowed';
 
+        const tryAgainText = 'You can now try logging in again.';
+        const tryAgainInText = 'Please try again in';
+
         function updateCountdown() {
             if (remainingSeconds <= 0) {
                 countdownElement.textContent = '';
                 document.getElementById('errorMessage').textContent =
-                    'You can now try logging in again.';
+                    tryAgainText;
                 usernameInput.disabled = false;
                 passwordInput.disabled = false;
                 eyeBtn.disabled = false;
@@ -129,7 +132,7 @@
             const minutes = Math.floor(remainingSeconds / 60);
             const seconds = remainingSeconds % 60;
             countdownElement.textContent =
-                ` Please try again in ${minutes}m ${seconds}s.`;
+                ` ${tryAgainInText} ${minutes}m ${seconds}s.`;
 
             remainingSeconds--;
             setTimeout(updateCountdown, 1000);

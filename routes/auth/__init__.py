@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
-from flask_login import login_user, logout_user, current_user
+from flask_login import login_user, logout_user, current_user, login_required
 from models import User
 from datetime import datetime, timedelta
 import re
@@ -248,8 +248,72 @@ def login():
     return render_template('auth/login.html')
 
 
-@auth_bp.route('/logout')
+@auth_bp.route('/settings')
+@login_required
+def settings():
+    return redirect(url_for('auth.appearance_settings'))
+
+
+@auth_bp.route('/language', methods=['GET'])
+@login_required
+def language_settings():
+    return render_template('auth/language.html')
+
+
+@auth_bp.route('/language/update', methods=['POST'])
+@login_required
+def update_language():
+    from database import execute_query
+
+    data = request.get_json(silent=True) or request.form
+    language = (data.get('language') or 'en').strip()
+    if language not in {'en', 'zh-CN', 'ta', 'ms'}:
+        language = 'en'
+
+    execute_query(
+        "UPDATE users SET language = %s WHERE id = %s",
+        (language, current_user.id),
+        commit=True,
+    )
+
+    return ('', 204)
+
+
+
+
+@auth_bp.route('/appearance')
+@login_required
+def appearance_settings():
+    return render_template('auth/appearance.html')
+
+
+@auth_bp.route('/logout', methods=['GET', 'POST'])
+@login_required
 def logout():
+    logout_user()
+    session.clear()
+    return redirect(url_for('auth.login'))
+
+
+@auth_bp.route('/delete-account', methods=['POST'])
+@login_required
+def delete_account():
+    from database import get_db
+
+    user_id = current_user.id
+    conn = get_db()
+    cur = conn.cursor()
+
+    try:
+        cur.execute("DELETE FROM user_interests WHERE user_id = %s", (user_id,))
+        cur.execute("DELETE FROM users WHERE id = %s", (user_id,))
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        cur.close()
+
     logout_user()
     session.clear()
     return redirect(url_for('auth.login'))

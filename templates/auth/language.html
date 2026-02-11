@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Language | StoryConnect{% endblock %}
+{% block body_class %}class="language-page"{% endblock %}
+
+{% block content %}
+<div class="settings-layout">
+	<aside class="settings-sidebar">
+		<h2 class="sidebar-heading">Settings</h2>
+
+		<nav class="sidebar-menu">
+			<a href="{{ url_for('auth.appearance_settings') }}" class="menu-item">Appearance</a>
+			<button class="menu-item menu-item--active" type="button" aria-current="page">Language</button>
+			<a href="{{ url_for('auth.settings') }}" class="menu-item">Log Out</a>
+		</nav>
+		<div class="sidebar-footer">
+			<a href="{{ url_for('main.home') }}" class="btn btn-light sidebar-home-btn">
+				<span class="sidebar-home-icon" aria-hidden="true">
+					<i class="bi bi-arrow-left"></i>
+				</span>
+				<span class="sidebar-home-text">Back to Home</span>
+			</a>
+		</div>
+	</aside>
+
+	<div class="settings-divider"></div>
+
+	<main class="settings-main">
+		<div class="settings-header">
+			<h1 class="main-title">Language</h1>
+		</div>
+
+		<section class="language-content">
+			<h2 class="section-subtitle">App Language</h2>
+
+			<div class="language-grid">
+				<label class="language-card language-card--active">
+					<input type="radio" name="language" value="en" checked>
+					<div class="card-inner">
+						<img src="{{ url_for('static', filename='uploads/language/united-kingdom.png') }}" alt="UK Flag" class="flag-icon">
+						<span class="language-name">English</span>
+					</div>
+					<span class="check-indicator" aria-hidden="true">✓</span>
+				</label>
+
+				<label class="language-card">
+					<input type="radio" name="language" value="zh-CN">
+					<div class="card-inner">
+						<img src="{{ url_for('static', filename='uploads/language/chinese-flag.png') }}" alt="China Flag" class="flag-icon flag-icon--china">
+						<span class="language-name">Chinese (中国人)</span>
+					</div>
+					<span class="check-indicator" aria-hidden="true">✓</span>
+				</label>
+
+				<label class="language-card">
+					<input type="radio" name="language" value="ta">
+					<div class="card-inner">
+						<img src="{{ url_for('static', filename='uploads/language/india.png') }}" alt="India Flag" class="flag-icon">
+						<span class="language-name">Tamil (தமிழ்)</span>
+					</div>
+					<span class="check-indicator" aria-hidden="true">✓</span>
+				</label>
+
+				<label class="language-card">
+					<input type="radio" name="language" value="ms">
+					<div class="card-inner">
+						<img src="{{ url_for('static', filename='uploads/language/malaysia.png') }}" alt="Malaysia Flag" class="flag-icon">
+						<span class="language-name">Malay (Melayu)</span>
+					</div>
+					<span class="check-indicator" aria-hidden="true">✓</span>
+				</label>
+			</div>
+		</section>
+	</main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+	const languageCards = document.querySelectorAll('.language-card');
+	const radioButtons = document.querySelectorAll('input[name="language"]');
+	const langMap = {
+		'zh': 'zh-CN',
+		'zh-cn': 'zh-CN'
+	};
+
+	function updateLanguagePreference(language) {
+		fetch("{{ url_for('auth.update_language') }}", {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ language })
+		}).catch(() => {
+			// Optional: ignore background errors.
+		});
+	}
+
+	function activateCard(radio) {
+		languageCards.forEach(card => card.classList.remove('language-card--active'));
+		radio.closest('.language-card').classList.add('language-card--active');
+	}
+
+	radioButtons.forEach(radio => {
+		radio.addEventListener('change', function() {
+			languageCards.forEach(card => {
+				card.classList.remove('language-card--active');
+			});
+
+			if (this.checked) {
+				activateCard(this);
+				if (typeof setSiteLanguage === 'function') {
+					setSiteLanguage(this.value);
+				}
+					localStorage.setItem('siteLanguage', this.value);
+					updateLanguagePreference(this.value);
+			}
+		});
+	});
+
+	const storedLangRaw = (localStorage.getItem('siteLanguage') || 'en').toLowerCase();
+	const storedLang = langMap[storedLangRaw] || storedLangRaw;
+	const initialRadio = document.querySelector(`input[name="language"][value="${storedLang}"]`);
+	if (initialRadio) {
+		initialRadio.checked = true;
+		activateCard(initialRadio);
+	}
+</script>
+{% endblock %}

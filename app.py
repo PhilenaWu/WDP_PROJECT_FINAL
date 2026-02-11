@@ -39,6 +39,7 @@ def create_app():
     @app.route('/')
     def index():
         return redirect(url_for('main.home'))
+
     
     # Ensure upload folder exists
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)

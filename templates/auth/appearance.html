@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Appearance | StoryConnect{% endblock %}
+{% block body_class %}class="appearance-page"{% endblock %}
+
+{% block content %}
+<div class="settings-layout">
+	<aside class="settings-sidebar">
+		<h2 class="sidebar-heading">Settings</h2>
+
+		<nav class="sidebar-menu">
+			<button class="menu-item menu-item--active" type="button" aria-current="page">Appearance</button>
+			<a href="{{ url_for('auth.language_settings') }}" class="menu-item">Language</a>
+			<a href="{{ url_for('auth.settings') }}" class="menu-item">Log Out</a>
+		</nav>
+		<div class="sidebar-footer">
+			<a href="{{ url_for('main.home') }}" class="btn btn-light sidebar-home-btn">
+				<span class="sidebar-home-icon" aria-hidden="true">
+					<i class="bi bi-arrow-left"></i>
+				</span>
+				<span class="sidebar-home-text">Back to Home</span>
+			</a>
+		</div>
+	</aside>
+
+	<div class="settings-divider"></div>
+
+	<main class="settings-main">
+		<div class="settings-header">
+			<h1 class="main-title">Appearance</h1>
+		</div>
+
+		<section class="appearance-content">
+			<div class="theme-section">
+				<div class="theme-cards">
+					<label class="theme-card theme-card--active">
+						<input type="radio" name="theme" value="light" checked>
+						<div class="theme-preview theme-preview--light">
+							<div class="preview-header"></div>
+							<div class="preview-content">
+								<div class="preview-line"></div>
+								<div class="preview-line"></div>
+								<div class="preview-line short"></div>
+							</div>
+						</div>
+						<span class="theme-label">Light Mode</span>
+						<span class="theme-check" aria-hidden="true">✓</span>
+					</label>
+
+					<label class="theme-card">
+						<input type="radio" name="theme" value="dark">
+						<div class="theme-preview theme-preview--dark">
+							<div class="preview-header"></div>
+							<div class="preview-content">
+								<div class="preview-line"></div>
+								<div class="preview-line"></div>
+								<div class="preview-line short"></div>
+							</div>
+						</div>
+						<span class="theme-label">Dark Mode</span>
+						<span class="theme-check" aria-hidden="true">✓</span>
+					</label>
+				</div>
+			</div>
+
+			<div class="setting-group">
+				<label class="setting-label" for="textSize">Text Size</label>
+				<div class="slider-container">
+					<input type="range" id="textSize" class="text-slider" min="12" max="48" value="32" step="1">
+					<span class="slider-value" id="textSizeValue">32</span>
+				</div>
+			</div>
+
+			<div class="setting-group">
+				<label class="setting-label">Bold</label>
+				<div class="bold-options">
+					<button type="button" class="bold-btn">Light</button>
+					<button type="button" class="bold-btn bold-btn--active">Medium</button>
+					<button type="button" class="bold-btn">Dark</button>
+				</div>
+			</div>
+
+			<div class="setting-group">
+				<label class="setting-label" for="fontStyle">Font Style</label>
+				<select class="font-select" id="fontStyle">
+					<option value="open-sans" selected>Open Sans</option>
+					<option value="roboto">Roboto</option>
+					<option value="lato">Lato</option>
+					<option value="montserrat">Montserrat</option>
+					<option value="poppins">Poppins</option>
+					<option value="arial">Arial</option>
+				</select>
+			</div>
+
+			<div class="setting-group">
+				<label class="setting-label">Reduced Motion</label>
+				<div class="motion-control">
+					<label class="motion-toggle">
+						<input type="checkbox" id="reducedMotion" name="reduced_motion">
+						<div class="toggle-switch-box">
+							<span class="toggle-slider"></span>
+						</div>
+						<span class="toggle-text">Reduce animations and transitions</span>
+					</label>
+					<p class="motion-description">
+						<span class="recommended-badge">Recommended for elderly</span>
+						Minimizes movement effects for a calmer browsing experience that's easier on the eyes.
+					</p>
+				</div>
+			</div>
+
+			<div class="appearance-actions">
+				<button type="button" class="btn btn-light">Cancel</button>
+				<button type="button" class="btn btn-orange">Save Changes</button>
+			</div>
+		</section>
+	</main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+	const themeCards = document.querySelectorAll('.theme-card');
+	const themeRadios = document.querySelectorAll('input[name="theme"]');
+
+	themeRadios.forEach(radio => {
+		radio.addEventListener('change', function() {
+			themeCards.forEach(card => {
+				card.classList.remove('theme-card--active');
+			});
+
+			if (this.checked) {
+				this.closest('.theme-card').classList.add('theme-card--active');
+			}
+		});
+	});
+
+	const textSizeSlider = document.getElementById('textSize');
+	const textSizeValue = document.getElementById('textSizeValue');
+
+	textSizeSlider.addEventListener('input', function() {
+		textSizeValue.textContent = this.value;
+	});
+
+	const boldButtons = document.querySelectorAll('.bold-btn');
+
+	boldButtons.forEach(btn => {
+		btn.addEventListener('click', function() {
+			boldButtons.forEach(b => b.classList.remove('bold-btn--active'));
+			this.classList.add('bold-btn--active');
+		});
+	});
+
+	const reducedMotionCheckbox = document.getElementById('reducedMotion');
+
+	reducedMotionCheckbox.addEventListener('change', function() {
+		console.log('Reduced motion:', this.checked);
+	});
+</script>
+{% endblock %}

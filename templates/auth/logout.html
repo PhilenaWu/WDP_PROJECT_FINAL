@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Settings | StoryConnect{% endblock %}
+{% block body_class %}class="logout-page"{% endblock %}
+
+{% block content %}
+<div class="settings-layout">
+	<aside class="settings-sidebar">
+		<h2 class="sidebar-heading">Settings</h2>
+
+		<nav class="sidebar-menu">
+			<a href="{{ url_for('auth.appearance_settings') }}" class="menu-item">Appearance</a>
+			<a href="{{ url_for('auth.language_settings') }}" class="menu-item">Language</a>
+			<button type="button" class="menu-item menu-item--active" aria-current="page">Log Out</button>
+		</nav>
+		<div class="sidebar-footer">
+			<a href="{{ url_for('main.home') }}" class="btn btn-light sidebar-home-btn">
+				<span class="sidebar-home-icon" aria-hidden="true">
+					<i class="bi bi-arrow-left"></i>
+				</span>
+				<span class="sidebar-home-text">Back to Home</span>
+			</a>
+		</div>
+	</aside>
+
+	<div class="settings-divider"></div>
+
+	<main class="settings-main">
+		<div class="settings-header">
+			<h1 class="main-title">Sign Out</h1>
+		</div>
+
+		<section class="signout-content">
+			<p class="signout-text">
+				Are you sure you want to log out of your account?
+			</p>
+
+			<div class="signout-buttons">
+				<a href="{{ url_for('main.home') }}" class="btn btn-light">Cancel</a>
+
+				<form method="post" action="{{ url_for('auth.logout') }}" class="d-inline">
+					<button type="submit" class="btn btn-orange">Log out</button>
+				</form>
+			</div>
+
+			<div class="delete-block">
+				<div class="delete-header">
+					<i class="bi bi-exclamation-triangle-fill delete-icon"></i>
+					<h2>Delete account</h2>
+				</div>
+				<p class="delete-text">
+					This action cannot be undone. All your account data, including profile
+					information and saved content, will be permanently deleted.
+				</p>
+
+				<button type="button" class="btn btn-danger" onclick="showDeleteModal()">
+					Delete my account
+				</button>
+			</div>
+		</section>
+	</main>
+</div>
+
+<div id="deleteModal" class="modal" aria-hidden="true">
+	<div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+		<div class="modal-header">
+			<i class="bi bi-exclamation-octagon-fill modal-warning-icon"></i>
+			<h2 id="deleteModalTitle">Delete Account?</h2>
+		</div>
+		<p class="modal-text">
+			This action is permanent and cannot be undone. All your data will be lost forever.
+		</p>
+		<p class="modal-confirm-text">
+			Are you sure you want to delete your account?
+		</p>
+		<div class="modal-buttons">
+			<button type="button" class="btn btn-light" onclick="closeDeleteModal()">Cancel</button>
+			<form method="post" action="{{ url_for('auth.delete_account') }}" class="d-inline">
+				<button type="submit" class="btn btn-danger">Yes, delete my account</button>
+			</form>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+	function showDeleteModal() {
+		const modal = document.getElementById('deleteModal');
+		modal.style.display = 'flex';
+		modal.setAttribute('aria-hidden', 'false');
+	}
+
+	function closeDeleteModal() {
+		const modal = document.getElementById('deleteModal');
+		modal.style.display = 'none';
+		modal.setAttribute('aria-hidden', 'true');
+	}
+
+	window.addEventListener('click', function(event) {
+		const modal = document.getElementById('deleteModal');
+		if (event.target === modal) {
+			closeDeleteModal();
+		}
+	});
+
+	document.addEventListener('keydown', function(event) {
+		if (event.key === 'Escape') {
+			closeDeleteModal();
+		}
+	});
+</script>
+{% endblock %}
