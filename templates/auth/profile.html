@@ -9,118 +9,133 @@
 		<h1 class="main-title">Profile</h1>
 
 		<section class="profile-area">
-			<div class="profile-top">
-				<div class="profile-avatar">
+			<div class="d-flex align-items-center gap-4 flex-wrap mb-4">
+				<div class="profile-avatar rounded-circle overflow-hidden">
 					<img
 						id="profileImage"
 						src="{{ url_for('static', filename='uploads/profile_pics/' + (user.profile_picture or 'defaultProfile.webp')) }}"
-						alt="Profile photo">
+						alt="Profile photo"
+						class="w-100 h-100 object-fit-cover rounded-circle">
 				</div>
-				<div class="upload-section">
+				<div class="d-flex flex-column gap-2">
 					<input type="file" id="photoUpload" name="profile_picture" accept="image/*" form="profileForm" class="d-none">
 					<button class="btn btn-orange profile-btn" type="button" id="uploadTrigger">Upload Photo</button>
 					<p class="upload-hint">JPG or PNG (max 5MB)</p>
 				</div>
 			</div>
 
-			<form class="profile-form" id="profileForm" method="post" enctype="multipart/form-data">
-				<div class="form-row">
-					<label for="displayName">Display Name:</label>
-					<input
-						id="displayName"
-						name="display_name"
-						type="text"
-						class="text-input"
-						value="{{ user.display_name or '' }}">
-				</div>
-
-				<div class="form-row">
-					<label for="username">Username*:</label>
-					<input
-						id="username"
-						name="username"
-						type="text"
-						class="text-input"
-						required
-						minlength="3"
-						maxlength="20"
-						pattern="[A-Za-z][A-Za-z0-9_]{2,19}"
-						title="3-20 characters. Start with a letter; only letters, numbers, and underscore are allowed."
-						value="{{ user.username or '' }}">
-				</div>
-
-				<div class="form-row">
-					<label for="firstName">First Name:</label>
-					<input
-						id="firstName"
-						name="first_name"
-						type="text"
-						class="text-input"
-						pattern="[A-Za-z\s]+"
-						title="Only letters are allowed."
-						value="{{ user.first_name or '' }}">
-				</div>
-
-				<div class="form-row">
-					<label for="lastName">Last Name:</label>
-					<input
-						id="lastName"
-						name="last_name"
-						type="text"
-						class="text-input"
-						pattern="[A-Za-z\s]+"
-						title="Only letters are allowed."
-						value="{{ user.last_name or '' }}">
-				</div>
-
-				<div class="form-row">
-					<label for="password">Password:</label>
-					<div class="password-wrapper">
+			<form class="profile-form mt-2" id="profileForm" method="post" enctype="multipart/form-data">
+				<div class="row align-items-center profile-row">
+					<label for="displayName" class="col-md-3 col-form-label text-md-end">Display Name:</label>
+					<div class="col-md-9">
 						<input
-							id="password"
-							name="password"
-							type="password"
-							class="text-input"
-							minlength="8"
-							pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}"
-							  title="At least 8 characters with 1 lowercase, 1 uppercase, 1 number, and 1 special character.">
-						<button
-							type="button"
-							class="eye-icon"
-							id="passwordEye"
-							aria-label="Show password"></button>
+							id="displayName"
+							name="display_name"
+							type="text"
+							class="form-control"
+							value="{{ user.display_name or '' }}">
 					</div>
 				</div>
 
-				<div class="form-row">
-					<label for="phone">Phone Number*:</label>
-					<input
-						id="phone"
-						name="phone_number"
-						type="tel"
-						class="text-input"
-						required
-						inputmode="numeric"
-						minlength="8"
-						maxlength="8"
-						pattern="[0-9]{8}"
-						title="Enter an 8-digit number, digits only."
-						value="{{ user.phone_number or '' }}">
+				<div class="row align-items-center profile-row">
+					<label for="username" class="col-md-3 col-form-label text-md-end">Username*:</label>
+					<div class="col-md-9">
+						<input
+							id="username"
+							name="username"
+							type="text"
+							class="form-control"
+							required
+							minlength="3"
+							maxlength="20"
+							pattern="[A-Za-z][A-Za-z0-9_]{2,19}"
+							title="3-20 characters. Start with a letter; only letters, numbers, and underscore are allowed."
+							value="{{ user.username or '' }}">
+					</div>
 				</div>
 
-				<div class="form-row">
-					<label for="birthday">Birthday:</label>
-					<input
-						id="birthday"
-						name="date_of_birth"
-						type="date"
-						class="text-input"
-						value="{{ dob_value }}">
+				<div class="row align-items-center profile-row">
+					<label for="firstName" class="col-md-3 col-form-label text-md-end">First Name:</label>
+					<div class="col-md-9">
+						<input
+							id="firstName"
+							name="first_name"
+							type="text"
+							class="form-control"
+							pattern="[A-Za-z\s]+"
+							title="Only letters are allowed."
+							value="{{ user.first_name or '' }}">
+					</div>
 				</div>
 
-				<div class="form-row">
-					<label>Age Category:</label>
-					<div class="age-category-display">
+				<div class="row align-items-center profile-row">
+					<label for="lastName" class="col-md-3 col-form-label text-md-end">Last Name:</label>
+					<div class="col-md-9">
+						<input
+							id="lastName"
+							name="last_name"
+							type="text"
+							class="form-control"
+							pattern="[A-Za-z\s]+"
+							title="Only letters are allowed."
+							value="{{ user.last_name or '' }}">
+					</div>
+				</div>
+
+				<div class="row align-items-center profile-row">
+					<label for="password" class="col-md-3 col-form-label text-md-end">Password:</label>
+					<div class="col-md-9">
+						<div class="password-input-wrapper position-relative">
+							<input
+								id="password"
+								name="password"
+								type="password"
+								class="form-control"
+								minlength="8"
+								pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}"
+								  title="At least 8 characters with 1 lowercase, 1 uppercase, 1 number, and 1 special character.">
+							<button
+								type="button"
+								class="eye-icon"
+								id="passwordEye"
+								aria-label="Show password"></button>
+						</div>
+					</div>
+				</div>
+
+				<div class="row align-items-center profile-row">
+					<label for="phone" class="col-md-3 col-form-label text-md-end">Phone Number*:</label>
+					<div class="col-md-9">
+						<input
+							id="phone"
+							name="phone_number"
+							type="tel"
+							class="form-control"
+							required
+							inputmode="numeric"
+							minlength="8"
+							maxlength="8"
+							pattern="[0-9]{8}"
+							title="Enter an 8-digit number, digits only."
+							value="{{ user.phone_number or '' }}">
+					</div>
+				</div>
+
+				<div class="row align-items-center profile-row">
+					<label for="birthday" class="col-md-3 col-form-label text-md-end">Birthday:</label>
+					<div class="col-md-9">
+						<input
+							id="birthday"
+							name="date_of_birth"
+							type="date"
+							class="form-control"
+							value="{{ dob_value }}">
+					</div>
+				</div>
+
+				<div class="row align-items-center profile-row">
+					<label class="col-md-3 col-form-label text-md-end">Age Category:</label>
+					<div class="col-md-9 d-flex flex-column gap-2">
 						{% if user.age_group %}
 							<span class="category-badge badge-{{ user.age_group }}">{{ user.age_group|capitalize }}</span>
 						{% else %}
@@ -130,7 +145,7 @@
 					</div>
 				</div>
 
-				<div class="form-actions">
+				<div class="d-flex justify-content-end gap-2 mt-4">
 					<a class="btn btn-light profile-btn" href="{{ url_for('main.home') }}">Cancel</a>
 					<button type="submit" class="btn btn-orange profile-btn">Save Changes</button>
 				</div>

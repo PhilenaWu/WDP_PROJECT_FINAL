@@ -1,95 +1,40 @@
-/* ===== Color Scheme ===== */
+/* ===== Bootstrap Import ===== */
+@import url('https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css');
+
+/* ===== Bootstrap Color Overrides ===== */
 :root {
-    --primary-color: #f39a1f;
-    --secondary-color: #ff8c61;
+    --bs-primary: #f39a1f;
+    --bs-primary-rgb: 243, 154, 31;
+    --bs-secondary: #ff8c61;
+    --bs-secondary-rgb: 255, 140, 97;
 }
 
-/* ===== Body ===== */
-body {
-    background-color: #fbf8f5;
-}
+/* ===== Global Styles ===== */
+body { background-color: #fbf8f5 !important; }
 
-
-/* ===== Buttons ===== */
-.btn-primary,
-.btn-primary:hover {
-    background-color: var(--primary-color);
-    border: none;
-}
-
-.btn-primary:disabled {
-    background-color: var(--primary-color);
-    border: none;
-}
-
-#nextBtn {
-    background-color: var(--primary-color);
-    border: none;
-}
+/* ===== Buttons - All use Bootstrap btn-primary ===== */
+.btn-primary, .btn-primary:hover, .btn-primary:focus, .btn-primary:active, 
+#nextBtn, .btn-orange { background-color: #f39a1f !important; border: none !important; }
+.btn-primary:disabled { opacity: 0.65; }
+.btn-orange:hover { background: #e58a0d !important; }
 
 /* ===== Auth Pages ===== */
-.auth-form-container {
-    max-width: 470px;
-    padding: 60px;
-}
+.auth-form-container { max-width: 470px; }
+.auth-form-container-large { max-width: 550px; }
+.auth-search { max-width: 400px; }
 
-#errorMessage {
-    text-align: center;
-}
-
-.auth-error-message {
-  color: red;
-  font-size: 14px;
-  margin-bottom: 10px;
-}
-
-.auth-form-container-large {
-    max-width: 550px;
-    padding: 60px;
-}
-
-.auth-form-container h2 {
-    font-size: 2.2rem;
-    font-weight: 600;
-}
-
-.auth-form-container p {
-    font-size: 1.1rem;
-}
-
-.auth-form-container .form-label {
-    font-size: 1.05rem;
-    font-weight: 500;
-}
-
-.auth-form-container .form-control {
-    font-size: 1rem;
-    padding: 12px 15px;
-}
-
-.auth-icon-large {
-    font-size: 80px;
-    color: var(--primary-color);
-}
-
-.auth-icon-medium {
-    font-size: 60px;
-    color: var(--primary-color);
-}
-
-.auth-search {
-    max-width: 400px;
-}
+/* ===== Icons ===== */
+.auth-icon-large, .banner-icon { font-size: 80px; color: #f39a1f; }
+.auth-icon-medium { font-size: 60px; color: #f39a1f; }
+.icon-small, .navbar-brand-icon { font-size: 24px; color: #f39a1f; }
 
 /* ===== Edit Profile Page ===== */
-body.editprofile-page {
-  background: #fbf8f5;
-}
+body.editprofile-page { background: #fbf8f5 !important; }
 
 body.editprofile-page .profile-card {
   max-width: 900px;
   margin: 0 auto;
-  background: #ffffff;
+  background: var(--bs-body-bg);
   border-radius: 16px;
   padding: 32px 40px 40px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
@@ -107,31 +52,9 @@ body.editprofile-page .profile-area {
   max-width: 760px;
 }
 
-body.editprofile-page .profile-top {
-  display: flex;
-  align-items: center;
-  gap: 32px;
-  margin-bottom: 28px;
-  flex-wrap: wrap;
-}
-
 body.editprofile-page .profile-avatar {
   width: 140px;
   height: 140px;
-  border-radius: 50%;
-}
-
-body.editprofile-page .profile-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-}
-
-body.editprofile-page .upload-section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 }
 
 body.editprofile-page .upload-hint {
@@ -143,77 +66,16 @@ body.editprofile-page .upload-hint {
 
 body.editprofile-page .profile-form {
   max-width: 620px;
-  margin-top: 8px;
 }
 
-body.editprofile-page .form-row {
-  display: grid;
-  grid-template-columns: 160px 1fr;
-  align-items: center;
-  column-gap: 16px;
+body.editprofile-page .profile-row {
+  --bs-gutter-x: 16px;
   margin-bottom: 14px;
   font-size: 15px;
 }
 
-body.editprofile-page .form-row label {
-  text-align: right;
+body.editprofile-page .profile-form .col-form-label {
   font-weight: 500;
-}
-
-body.editprofile-page .text-input {
-  width: 100%;
-  padding: 10px 12px;
-  font-size: 15px;
-  border-radius: 6px;
-  border: 1px solid #d7d7d7;
-  background: #ffffff;
-}
-
-body.editprofile-page .text-input:focus {
-  outline: none;
-  border-color: #f39a1f;
-  box-shadow: 0 0 0 1px #f39a1f;
-}
-
-body.editprofile-page .password-wrapper {
-  position: relative;
-}
-
-body.editprofile-page .password-wrapper .text-input {
-  padding-right: 40px;
-}
-
-body.editprofile-page .eye-icon {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 22px;
-  height: 22px;
-  padding: 0;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-}
-
-body.editprofile-page .eye-icon::before {
-  content: "";
-  display: block;
-  width: 100%;
-  height: 100%;
-  background-image: url("/static/uploads/password_visability_icons/close_eye.png");
-  background-size: contain;
-  background-repeat: no-repeat;
-}
-
-body.editprofile-page .eye-icon.open::before {
-  background-image: url("/static/uploads/password_visability_icons/open_eye.png");
-}
-
-body.editprofile-page .age-category-display {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 }
 
 body.editprofile-page .category-badge {
@@ -249,13 +111,6 @@ body.editprofile-page .category-note {
   font-style: italic;
 }
 
-body.editprofile-page .form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 24px;
-}
-
 body.editprofile-page .profile-back {
   position: absolute;
   left: 24px;
@@ -288,217 +143,40 @@ body.editprofile-page .profile-btn {
 }
 
 body.editprofile-page .btn-orange {
-  background: #f39a1f;
-  color: #ffffff;
-  border: none;
-}
-
-body.editprofile-page .btn-orange:hover {
-  background: #e58a0d;
+  color: #ffffff !important;
 }
 
 body.editprofile-page .btn-light {
-  background: #ffffff;
-  border: 1px solid #d5c7b1;
-  color: #222222;
+  background: #ffffff !important;
+  border: 1px solid #d5c7b1 !important;
+  color: #222222 !important;
 }
-
-@media (max-width: 768px) {
-  body.editprofile-page .profile-card {
-    padding: 28px 24px 32px;
-  }
-
-  body.editprofile-page .form-row {
-    grid-template-columns: 1fr;
-  }
-
-  body.editprofile-page .form-row label {
-    text-align: left;
-    margin-bottom: 6px;
-  }
-}
-
 
 /* ===== Home Page ===== */
-.navbar-brand-icon {
-    font-size: 24px;
-    color: var(--primary-color);
+.navbar-brand-text { color: #f39a1f; font-weight: bold; }
+.banner-gradient { 
+  background: linear-gradient(135deg, #f39a1f 0%, #ff8c61 100%); 
+  color: #fbf8f5; 
 }
 
-.navbar-brand-text {
-    color: var(--primary-color);
-    font-weight: bold;
-}
-
-.banner-gradient {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-    color: #fbf8f5;
-}
-
-.banner-icon {
-    font-size: 80px;
-    color: var(--primary-color);
-}
-
-/* ===== Loading Spinner ===== */
-.loading-spinner {
-    width: 4rem;
-    height: 4rem;
-    color: var(--primary-color) !important;
-}
-
-/* ===== Utility Classes ===== */
-.text-primary-color {
-    color: var(--primary-color);
-}
-
-.icon-small {
-    font-size: 24px;
-    color: var(--primary-color);
-}
-
-/* ===== Password Visibility Toggle ===== */
+/* ===== Password Visibility Toggle (Universal) ===== */
 .password-input-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .password-input-wrapper .form-control {
-    padding-right: 45px;
+  padding-right: 45px;
 }
 
-.eye-icon {
-    position: absolute;
-    right: 12px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    width: 26px;
-    height: 26px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.eye-icon::before {
-    content: "";
-    display: block;
-    width: 100%;
-    height: 100%;
-    background: url("/static/uploads/password_visability_icons/close_eye.png") center/contain no-repeat;
-}
-
-.eye-icon.open::before {
-    background-image: url("/static/uploads/password_visability_icons/open_eye.png");
-}
-
-.auth-logo-large {
-    width: 300px;
-    height: 300px;
-    object-fit: contain;
-}
-
-/* ===== ABOUT YOU PAGE (SIGNUP STEP 1) ===== */
-body.aboutyou-page {
-  background: #fbf8f5;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-body.aboutyou-page .wrapper {
-  flex: 1;
-  padding: 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: calc(100vh - 80px);
-}
-
-body.aboutyou-page .card {
-  max-width: 580px;
-  margin: 0 auto;
-  background: #fff;
-  border-radius: 16px;
-  padding: 40px 48px 48px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  border: 2px solid #f39a1f;
-}
-
-body.aboutyou-page .form-box {
-  max-width: 100%;
-}
-
-body.aboutyou-page .heading {
-  margin: 0 0 28px;
-  font-size: 28px;
-  text-align: center;
-  font-weight: 600;
-  color: #222;
-}
-
-body.aboutyou-page .error-message {
-  padding: 12px 16px;
-  margin: 0 0 20px;
-  background: #fee;
-  border: 1px solid #fcc;
-  border-radius: 8px;
-  color: #c33;
-  font-size: 14px;
-  text-align: center;
-}
-
-body.aboutyou-page .main-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-body.aboutyou-page .two-col {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-body.aboutyou-page .input-box {
-  position: relative;
-}
-
-body.aboutyou-page .input-field {
-  width: 100%;
-  padding: 14px 16px;
-  font-size: 15px;
-  border-radius: 8px;
-  border: 2px solid #f39a1f;
-  background: #fff;
-  box-sizing: border-box;
-}
-
-body.aboutyou-page .input-field::placeholder {
-  color: #888;
-}
-
-body.aboutyou-page .input-field:focus {
-  outline: none;
-  border-color: #e58a0d;
-  box-shadow: 0 0 0 1px #e58a0d;
-}
-
-body.aboutyou-page .star {
-  position: absolute;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #ff4b4b;
-  font-size: 18px;
-  pointer-events: none;
-}
-
+/* Universal Eye Icon Styles - Works for all pages */
+.eye-icon,
+.eye-btn,
+body.editprofile-page .eye-icon,
 body.aboutyou-page .eye-btn {
   position: absolute;
-  right: 44px;
+  right: 12px;
   top: 50%;
   transform: translateY(-50%);
   width: 22px;
@@ -507,116 +185,101 @@ body.aboutyou-page .eye-btn {
   border: none;
   background: transparent;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+/* About You page exception - different position */
+body.aboutyou-page .eye-btn {
+  right: 44px;
+}
+
+/* Base eye icon images */
+.eye-icon::before,
+.eye-btn::before,
+body.editprofile-page .eye-icon::before,
 body.aboutyou-page .eye-btn::before {
   content: "";
   display: block;
   width: 100%;
   height: 100%;
-  background-image: url("/static/images/close_eye.png");
   background-size: contain;
   background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* Default closed eye for general pages and edit profile */
+.eye-icon::before,
+body.editprofile-page .eye-icon::before {
+  background-image: url("/static/uploads/password_visability_icons/close_eye.png");
+}
+
+/* Opened eye state for general pages and edit profile */
+.eye-icon.open::before,
+body.editprofile-page .eye-icon.open::before {
+  background-image: url("/static/uploads/password_visability_icons/open_eye.png");
+}
+
+/* About You page uses different image path */
+body.aboutyou-page .eye-btn::before {
+  background-image: url("/static/images/close_eye.png");
 }
 
 body.aboutyou-page .eye-btn.open::before {
   background-image: url("/static/images/open_eye.png");
 }
 
+/* ===== About You Page ===== */
+body.aboutyou-page .card {
+  max-width: 580px; border: 2px solid #f39a1f !important; border-radius: 16px !important;
+}
+body.aboutyou-page .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+body.aboutyou-page .input-field {
+  padding: 14px 16px; border-radius: 8px; border: 2px solid #f39a1f;
+}
+body.aboutyou-page .input-field:focus {
+  border-color: #e58a0d; box-shadow: 0 0 0 1px #e58a0d;
+}
+body.aboutyou-page .star {
+  position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+  color: #ff4b4b; font-size: 18px; pointer-events: none;
+}
 body.aboutyou-page .lock {
-  position: absolute;
-  right: 44px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 18px;
-  height: 18px;
-  pointer-events: none;
+  position: absolute; right: 44px; top: 50%; transform: translateY(-50%);
+  width: 18px; height: 18px; pointer-events: none;
 }
-
 body.aboutyou-page .lock::before {
-  content: "";
-  display: block;
-  width: 18px;
-  height: 18px;
+  content: ""; display: block; width: 18px; height: 18px;
   background-image: url("/static/images/lock\ \(1\).png");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
+  background-size: contain; background-repeat: no-repeat; background-position: center;
 }
-
-body.aboutyou-page .location-box {
-  margin-top: 4px;
-}
-
-body.aboutyou-page .location-check {
-  display: flex;
-  align-items: center;
-  border: none;
-  padding: 0;
-  background: transparent;
-  cursor: pointer;
-  user-select: none;
-}
-
 body.aboutyou-page .location-check input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
-  margin: 0 12px 0 0;
-  cursor: pointer;
-  accent-color: #f39a1f;
+  width: 20px; height: 20px; margin-right: 12px; accent-color: #f39a1f;
 }
 
-body.aboutyou-page .check-label {
-  font-size: 15px;
-  color: #222;
+/* ===== Bootstrap Overrides ===== */
+.form-control:focus, .form-check-input:focus { 
+  border-color: #f39a1f; box-shadow: 0 0 0 0.25rem rgba(243, 154, 31, 0.25); 
 }
+.form-check-input:checked { background-color: #f39a1f; border-color: #f39a1f; }
+.spinner-border, .loading-spinner { color: #f39a1f !important; }
 
-body.aboutyou-page .location-note {
-  margin: 6px 0 0 32px;
-  font-size: 13px;
-  color: #f39a1f;
-}
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  body.editprofile-page .profile-card {
+    padding: 28px 24px 32px;
+  }
+  
+  body.editprofile-page .profile-row {
+    --bs-gutter-x: 0;
+  }
 
-body.aboutyou-page .birthday-box {
-  margin-top: 8px;
-}
-
-body.aboutyou-page .birthday-title {
-  display: block;
-  margin-bottom: 12px;
-  font-size: 15px;
-  color: #222;
-  font-weight: 500;
-}
-
-body.aboutyou-page .birthday-note {
-  margin: 8px 0 0 0;
-  font-size: 12px;
-  color: #888;
-  font-style: italic;
-}
-
-body.aboutyou-page .btn-row {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 24px;
-}
-
-body.aboutyou-page .btn-orange {
-  padding: 12px 40px;
-  border-radius: 8px;
-  border: none;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  background: #f39a1f;
-  color: #fff;
-}
-
-body.aboutyou-page .btn-orange:hover {
-  background: #e58a0d;
-}
-
-body.aboutyou-page .btn-orange:active {
-  transform: translateY(1px);
+  body.editprofile-page .profile-row .col-form-label {
+    margin-bottom: 6px;
+  }
+  
+  body.aboutyou-page .two-col { 
+    grid-template-columns: 1fr; 
+  }
 }
