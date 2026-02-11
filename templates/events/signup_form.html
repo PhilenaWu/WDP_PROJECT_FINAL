@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}Sign Up for {{ event.title }} - StoryConnect{% endblock %}
+
+{% block extra_css %}
+<style>
+    .signup-container {
+        max-width: 700px;
+        margin: 50px auto;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    
+    .signup-header {
+        background: linear-gradient(135deg, #f0ad4e 0%, #ec971f 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+    }
+    
+    .signup-body {
+        padding: 40px;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+    }
+    
+    .form-control {
+        border-radius: 8px;
+        border: 2px solid #e0e0e0;
+        padding: 12px;
+        transition: border-color 0.3s;
+    }
+    
+    .form-control:focus {
+        border-color: #f0ad4e;
+        box-shadow: 0 0 0 0.2rem rgba(240, 173, 78, 0.25);
+    }
+    
+    .confirmation-box {
+        background: #fff9e6;
+        border: 2px solid #f0ad4e;
+        border-radius: 10px;
+        padding: 20px;
+        margin: 20px 0;
+    }
+    
+    .form-check-input:checked {
+        background-color: #f0ad4e;
+        border-color: #f0ad4e;
+    }
+    
+    .submit-btn {
+        background: #f0ad4e;
+        color: white;
+        border: none;
+        padding: 15px 40px;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        width: 100%;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    
+    .submit-btn:hover {
+        background: #ec971f;
+    }
+    
+    .event-info {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .event-info p {
+        margin-bottom: 8px;
+        color: #666;
+    }
+    
+    .event-info strong {
+        color: #333;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand" href="#">
+            <i class="bi bi-people-fill me-2"></i>
+            <span>StoryConnect</span>
+        </a>
+        <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('events.events_home') }}">
+                    <i class="bi bi-arrow-left"></i> Back to Events
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="signup-container">
+        <div class="signup-header">
+            <h2 class="mb-0">Sign Up for {{ event.title }}</h2>
+            <p class="mb-0 mt-2">Join our event today by filling in your details below!</p>
+        </div>
+        
+        <div class="signup-body">
+            <!-- Event Information -->
+            <div class="event-info">
+                <h5 class="mb-3">Event Details</h5>
+                <p><strong>Date:</strong> {{ event.event_date.strftime('%d %B %Y') if event.event_date else 'TBA' }}</p>
+                <p><strong>Time:</strong> {{ event.start_time.strftime('%I:%M%p') if event.start_time else '' }} - {{ event.end_time.strftime('%I:%M%p') if event.end_time else '' }}</p>
+                <p><strong>Location:</strong> {{ event.location }}</p>
+                {% if event.location_address %}
+                <p><strong>Address:</strong> {{ event.location_address }}</p>
+                {% endif %}
+                <p><strong>Description:</strong> {{ event.description }}</p>
+            </div>
+            
+            <!-- Signup Form -->
+            <form method="POST" action="{{ url_for('events.signup_event', event_id=event.id) }}" novalidate>
+                <div class="mb-3">
+                    <label for="full_name" class="form-label">Full Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="full_name" name="full_name" 
+                           placeholder="Enter your full name" required>
+                    <div class="invalid-feedback">
+                        Please enter your full name.
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
+                    <input type="email" class="form-control" id="email" name="email" 
+                           placeholder="your.email@example.com" required>
+                    <div class="invalid-feedback">
+                        Please enter a valid email address.
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="phone" class="form-label">Phone Number <span class="text-danger">*</span></label>
+                    <input type="tel" class="form-control" id="phone" name="phone" 
+                           placeholder="81234567" pattern="[0-9]{8,}" required>
+                    <div class="invalid-feedback">
+                        Please enter a valid phone number.
+                    </div>
+                </div>
+                
+                <div class="confirmation-box">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="confirmed" name="confirmed" required>
+                        <label class="form-check-label" for="confirmed">
+                            <strong>Yes, I want to join! <span class="text-danger">*</span></strong>
+                            <p class="mb-0 mt-2 small">I confirm that I am available to participate in the event I am signing up for.</p>
+                        </label>
+                        <div class="invalid-feedback">
+                            You must confirm your availability.
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="submit-btn">Sign Up Now</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Bootstrap form validation
+    (function() {
+        'use strict';
+        
+        const form = document.querySelector('form');
+        
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            form.classList.add('was-validated');
+        }, false);
+    })();
+</script>
+{% endblock %}

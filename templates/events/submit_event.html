@@ -1,0 +1,420 @@
+{% extends "base.html" %}
+
+{% block title %}Organise an Event Together - StoryConnect{% endblock %}
+
+{% block extra_css %}
+<style>
+    .submission-container {
+        max-width: 900px;
+        margin: 50px auto;
+        padding-bottom: 50px;
+    }
+    
+    .submission-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    
+    .submission-header h2 {
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 15px;
+    }
+    
+    .submission-header p {
+        color: #666;
+        font-size: 1.1rem;
+    }
+    
+    .heart-icon {
+        background: #fff3e6;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+    }
+    
+    .heart-icon i {
+        font-size: 1.8rem;
+        color: #f0ad4e;
+    }
+    
+    .form-section {
+        background: white;
+        border-radius: 15px;
+        padding: 40px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+        border-left: 5px solid #f0ad4e;
+    }
+    
+    .section-number {
+        background: #f0ad4e;
+        color: white;
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.3rem;
+        margin-bottom: 15px;
+    }
+    
+    .section-title {
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 25px;
+        font-size: 1.4rem;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #555;
+        margin-bottom: 8px;
+    }
+    
+    .form-label .text-danger {
+        margin-left: 3px;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 2px solid #e0e0e0;
+        padding: 12px;
+        transition: border-color 0.3s;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #f0ad4e;
+        box-shadow: 0 0 0 0.2rem rgba(240, 173, 78, 0.25);
+    }
+    
+    textarea.form-control {
+        min-height: 120px;
+        resize: vertical;
+    }
+    
+    .char-counter {
+        font-size: 0.875rem;
+        color: #666;
+        text-align: right;
+        margin-top: 5px;
+    }
+    
+    .submit-section {
+        background: #fff9e6;
+        border-radius: 15px;
+        padding: 40px;
+        text-align: center;
+        margin-top: 40px;
+    }
+    
+    .submit-btn {
+        background: #f0ad4e;
+        color: white;
+        border: none;
+        padding: 18px 60px;
+        border-radius: 35px;
+        font-weight: 600;
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(240, 173, 78, 0.3);
+    }
+    
+    .submit-btn:hover {
+        background: #ec971f;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(240, 173, 78, 0.4);
+    }
+    
+    .submit-info {
+        color: #666;
+        margin-top: 20px;
+        font-size: 1rem;
+    }
+    
+    .footer-text {
+        text-align: center;
+        color: #666;
+        margin-top: 40px;
+        padding: 30px;
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+    
+    .view-submissions-btn {
+        background: white;
+        color: #f0ad4e;
+        border: 2px solid #f0ad4e;
+        padding: 10px 25px;
+        border-radius: 25px;
+        text-decoration: none;
+        display: inline-block;
+        margin-bottom: 30px;
+        transition: all 0.3s;
+    }
+    
+    .view-submissions-btn:hover {
+        background: #f0ad4e;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand" href="#">
+            <i class="bi bi-people-fill me-2"></i>
+            <span>StoryConnect</span>
+        </a>
+        <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('events.events_home') }}">
+                    <i class="bi bi-calendar-event"></i> Events
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('events.my_submissions') }}">
+                    <i class="bi bi-file-earmark-text"></i> My Submissions
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container submission-container">
+    <!-- Header -->
+    <div class="submission-header">
+        <div class="heart-icon">
+            <i class="bi bi-heart-fill"></i>
+        </div>
+        <h2>Organise an Event Together</h2>
+        <p>Bringing generations together through meaningful events. Share your vision<br>and let's create something special.</p>
+    </div>
+    
+    <div class="text-end">
+        <a href="{{ url_for('events.my_submissions') }}" class="view-submissions-btn">
+            <i class="bi bi-folder"></i> View Submissions
+        </a>
+    </div>
+    
+    <form method="POST" action="{{ url_for('events.submit_event') }}" novalidate>
+        <!-- Section 1: Who You Are -->
+        <div class="form-section">
+            <div class="section-number">1</div>
+            <h3 class="section-title">Who You Are</h3>
+            
+            <div class="row">
+                <div class="col-md-12 mb-3">
+                    <label for="organizer_name" class="form-label">
+                        Full Name<span class="text-danger">*</span>
+                    </label>
+                    <input type="text" class="form-control" id="organizer_name" name="organizer_name" 
+                           placeholder="Enter your full name" value="{{ form_data.organizer_name or '' }}" required>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="organizer_dob" class="form-label">
+                        Date of Birth<span class="text-danger">*</span>
+                    </label>
+                    <input type="date" class="form-control" id="organizer_dob" name="organizer_dob" 
+                           value="{{ form_data.organizer_dob or '' }}">
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="organizer_age_group" class="form-label">
+                        Age Group<span class="text-danger">*</span>
+                    </label>
+                    <select class="form-select" id="organizer_age_group" name="organizer_age_group">
+                        <option value="">Select age group</option>
+                        <option value="13-17" {% if form_data.organizer_age_group == '13-17' %}selected{% endif %}>13-17</option>
+                        <option value="18-25" {% if form_data.organizer_age_group == '18-25' %}selected{% endif %}>18-25</option>
+                        <option value="26-40" {% if form_data.organizer_age_group == '26-40' %}selected{% endif %}>26-40</option>
+                        <option value="41-59" {% if form_data.organizer_age_group == '41-59' %}selected{% endif %}>41-59</option>
+                        <option value="60+" {% if form_data.organizer_age_group == '60+' %}selected{% endif %}>60+</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="organizer_email" class="form-label">
+                        Email<span class="text-danger">*</span>
+                    </label>
+                    <input type="email" class="form-control" id="organizer_email" name="organizer_email" 
+                           placeholder="johndoe@gmail.com" value="{{ form_data.organizer_email or '' }}" required>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="organizer_phone" class="form-label">
+                        Phone Number<span class="text-danger">*</span>
+                    </label>
+                    <input type="tel" class="form-control" id="organizer_phone" name="organizer_phone" 
+                           placeholder="81234567" pattern="[0-9]{8,}" value="{{ form_data.organizer_phone or '' }}" required>
+                </div>
+                
+                <div class="col-md-12 mb-3">
+                    <label for="organizer_location" class="form-label">
+                        Location<span class="text-danger">*</span>
+                    </label>
+                    <input type="text" class="form-control" id="organizer_location" name="organizer_location" 
+                           placeholder="E.g. Wild Wild Wet - 519599" value="{{ form_data.organizer_location or '' }}">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section 2: Your Event Idea -->
+        <div class="form-section">
+            <div class="section-number">2</div>
+            <h3 class="section-title">Your Event Idea</h3>
+            
+            <div class="mb-3">
+                <label for="event_title" class="form-label">
+                    Event Title<span class="text-danger">*</span>
+                </label>
+                <input type="text" class="form-control" id="event_title" name="event_title" 
+                       placeholder="Give your event a memorable name" value="{{ form_data.event_title or '' }}" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="event_summary" class="form-label">
+                    Event Summary<span class="text-danger">*</span>
+                </label>
+                <textarea class="form-control" id="event_summary" name="event_summary" 
+                          placeholder="Limit: 150 characters. E.g. Learn family recipes and cook side by side with elders in a friendly kitchen." 
+                          maxlength="150" required>{{ form_data.event_summary or '' }}</textarea>
+                <div class="char-counter">
+                    <span id="charCount">0</span> / 150
+                </div>
+                <small class="text-muted">Brief summary of your event (max 150 characters)</small>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="event_type" class="form-label">
+                        Event Type<span class="text-danger">*</span>
+                    </label>
+                    <select class="form-select" id="event_type" name="event_type" required>
+                        <option value="">Select event type</option>
+                        <option value="Social" {% if form_data.event_type == 'Social' %}selected{% endif %}>Social</option>
+                        <option value="Educational" {% if form_data.event_type == 'Educational' %}selected{% endif %}>Educational</option>
+                        <option value="Cultural" {% if form_data.event_type == 'Cultural' %}selected{% endif %}>Cultural</option>
+                        <option value="Sports" {% if form_data.event_type == 'Sports' %}selected{% endif %}>Sports</option>
+                        <option value="Community" {% if form_data.event_type == 'Community' %}selected{% endif %}>Community</option>
+                        <option value="Arts & Crafts" {% if form_data.event_type == 'Arts & Crafts' %}selected{% endif %}>Arts & Crafts</option>
+                        <option value="Technology" {% if form_data.event_type == 'Technology' %}selected{% endif %}>Technology</option>
+                        <option value="Other" {% if form_data.event_type == 'Other' %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-4 mb-3">
+                    <label for="preferred_date" class="form-label">
+                        Preferred Date<span class="text-danger">*</span>
+                    </label>
+                    <input type="date" class="form-control" id="preferred_date" name="preferred_date" 
+                           value="{{ form_data.preferred_date or '' }}" required>
+                </div>
+                
+                <div class="col-md-4 mb-3">
+                    <label for="expected_participants" class="form-label">
+                        Expected Number of Participants<span class="text-danger">*</span>
+                    </label>
+                    <select class="form-select" id="expected_participants" name="expected_participants" required>
+                        <option value="">Select range</option>
+                        <option value="1-20" {% if form_data.expected_participants == '1-20' %}selected{% endif %}>1-20</option>
+                        <option value="21-50" {% if form_data.expected_participants == '21-50' %}selected{% endif %}>21-50</option>
+                        <option value="51-100" {% if form_data.expected_participants == '51-100' %}selected{% endif %}>51-100</option>
+                        <option value="100+" {% if form_data.expected_participants == '100+' %}selected{% endif %}>100+</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section 3: Tell Us More -->
+        <div class="form-section">
+            <div class="section-number">3</div>
+            <h3 class="section-title">Tell Us More</h3>
+            
+            <div class="mb-3">
+                <label for="why_meaningful" class="form-label">
+                    Why is this event meaningful to you?<span class="text-danger">*</span>
+                </label>
+                <textarea class="form-control" id="why_meaningful" name="why_meaningful" 
+                          placeholder="Share your story and what inspires you to organize this event..." 
+                          required>{{ form_data.why_meaningful or '' }}</textarea>
+            </div>
+            
+            <div class="mb-3">
+                <label for="previous_experience" class="form-label">
+                    Previous Experience (Optional)
+                </label>
+                <textarea class="form-control" id="previous_experience" name="previous_experience" 
+                          placeholder="Have you organized similar events before? Tell us about it...">{{ form_data.previous_experience or '' }}</textarea>
+            </div>
+            
+            <div class="mb-3">
+                <label for="accessibility" class="form-label">
+                    Accessibility Considerations<span class="text-danger">*</span>
+                </label>
+                <textarea class="form-control" id="accessibility" name="accessibility" 
+                          placeholder="How will you ensure the event is accessible for both youth and elderly? (e.g. wheelchair access, clear signage, activity pacing)" 
+                          required>{{ form_data.accessibility or '' }}</textarea>
+            </div>
+        </div>
+        
+        <!-- Submit Section -->
+        <div class="submit-section">
+            <button type="submit" class="submit-btn">
+                Submit Your Event Idea
+            </button>
+            <p class="submit-info">
+                We'll review your submission and contact you within 3-5 business days.
+            </p>
+        </div>
+    </form>
+    
+    <!-- Footer Text -->
+    <div class="footer-text">
+        By bringing youth and elderly together, we create meaningful connections that enrich our community. 
+        Thank you for taking the initiative to organize an intergenerational event.
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Character counter for event summary
+    const eventSummary = document.getElementById('event_summary');
+    const charCount = document.getElementById('charCount');
+    
+    function updateCharCount() {
+        charCount.textContent = eventSummary.value.length;
+    }
+    
+    eventSummary.addEventListener('input', updateCharCount);
+    updateCharCount(); // Initialize
+    
+    // Bootstrap form validation
+    (function() {
+        'use strict';
+        
+        const form = document.querySelector('form');
+        
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            form.classList.add('was-validated');
+        }, false);
+    })();
+</script>
+{% endblock %}

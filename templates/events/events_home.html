@@ -1,0 +1,708 @@
+{% extends "base.html" %}
+
+{% block title %}Events - StoryConnect{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/events.css') }}">
+<style>
+    .event-carousel-wrapper {
+        position: relative;
+        overflow: hidden;
+        padding: 40px 0;
+    }
+    
+    .event-carousel-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        transition: transform 0.5s ease;
+    }
+    
+    .event-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        overflow: hidden;
+        transition: all 0.5s ease;
+        flex-shrink: 0;
+        cursor: pointer;
+    }
+    
+    .event-card.side {
+        width: 280px;
+        opacity: 0.6;
+        transform: scale(0.85);
+    }
+    
+    .event-card.center {
+        width: 380px;
+        opacity: 1;
+        transform: scale(1);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    }
+    
+    .event-card-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+    
+    .event-card.center .event-card-image {
+        height: 250px;
+    }
+    
+    .event-card-body {
+        padding: 20px;
+    }
+    
+    .event-card-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #333;
+    }
+    
+    .event-card-date, .event-card-time {
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 5px;
+    }
+    
+    .event-card-description {
+        font-size: 0.9rem;
+        color: #666;
+        margin-top: 10px;
+        line-height: 1.5;
+    }
+    
+    .carousel-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: #f0ad4e;
+        border: none;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+        z-index: 10;
+        transition: background 0.3s;
+    }
+    
+    .carousel-btn:hover {
+        background: #ec971f;
+    }
+    
+    .carousel-btn-prev {
+        left: 20px;
+    }
+    
+    .carousel-btn-next {
+        right: 20px;
+    }
+    
+    .signup-btn {
+        background: #f0ad4e;
+        color: white;
+        border: none;
+        padding: 10px 25px;
+        border-radius: 25px;
+        font-weight: 500;
+        cursor: pointer;
+        margin-top: 15px;
+        width: 100%;
+        transition: background 0.3s;
+    }
+    
+    .signup-btn:hover {
+        background: #ec971f;
+    }
+    
+    .navigation-section {
+        background: #f8f9fa;
+        padding: 40px 0;
+        margin: 40px 0;
+    }
+    
+    .map-container {
+        height: 400px;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .my-events-section {
+        padding: 40px 0;
+    }
+    
+    .calendar-container {
+        background: #1a1d2e;
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+    }
+    
+    .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .calendar-day {
+        padding: 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    
+    .calendar-day:hover {
+        background: rgba(255,255,255,0.1);
+    }
+    
+    .calendar-day.has-event {
+        background: #f0ad4e;
+        color: white;
+        font-weight: 600;
+    }
+    
+    .calendar-day.today {
+        border: 2px solid #f0ad4e;
+    }
+    
+    .event-list-item {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .event-list-image {
+        width: 80px;
+        height: 80px;
+        border-radius: 10px;
+        object-fit: cover;
+        margin-right: 20px;
+    }
+    
+    .event-list-content {
+        flex: 1;
+    }
+    
+    .event-list-title {
+        font-weight: 600;
+        margin-bottom: 5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 300px;
+    }
+    
+    .event-list-date {
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    .view-more-btn {
+        background: #f0ad4e;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    
+    .view-more-btn:hover {
+        background: #ec971f;
+    }
+    
+    .event-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        overflow-y: auto;
+    }
+    
+    .event-modal-content {
+        background: white;
+        margin: 50px auto;
+        padding: 0;
+        border-radius: 15px;
+        max-width: 600px;
+        position: relative;
+    }
+    
+    .event-modal-close {
+        position: absolute;
+        right: 20px;
+        top: 20px;
+        font-size: 2rem;
+        color: #333;
+        cursor: pointer;
+        z-index: 10;
+        background: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .event-modal-image {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+        border-radius: 15px 15px 0 0;
+    }
+    
+    .event-modal-body {
+        padding: 30px;
+    }
+    
+    .optout-btn {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 10px 30px;
+        border-radius: 25px;
+        cursor: pointer;
+        margin-top: 20px;
+        transition: background 0.3s;
+    }
+    
+    .optout-btn:hover {
+        background: #c82333;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand d-flex align-items-center" href="#">
+            <i class="bi bi-people-fill me-2"></i>
+            <span>StoryConnect</span>
+        </a>
+        
+        <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('main.home') }}">
+                    <i class="bi bi-house-door"></i> Home
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="{{ url_for('events.events_home') }}">
+                    <i class="bi bi-calendar-event"></i> Events
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('events.submit_event') }}">
+                    <i class="bi bi-plus-circle"></i> Organize Event
+                </a>
+            </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-person-circle"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="{{ url_for('profile.profile') }}">Profile</a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('events.my_submissions') }}">My Submissions</a></li>
+                    {% if current_user.user_type == 'admin' %}
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{{ url_for('events.admin_submissions') }}">Admin Panel</a></li>
+                    {% endif %}
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <!-- Upcoming Events Carousel Section -->
+    <section class="py-5">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold">Upcoming Events</h2>
+        </div>
+        
+        {% if upcoming_events and upcoming_events|length > 0 %}
+        <div class="event-carousel-wrapper">
+            <button class="carousel-btn carousel-btn-prev" onclick="moveCarousel(-1)">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+            
+            <div class="event-carousel-container" id="eventCarousel">
+                {% for event in upcoming_events %}
+                <div class="event-card" data-event-id="{{ event.id }}">
+                    <img src="{{ event.image_url or url_for('static', filename='uploads/events/default-event.jpg') }}" 
+                         alt="{{ event.title }}" class="event-card-image">
+                    <div class="event-card-body">
+                        <h3 class="event-card-title">{{ event.title }}</h3>
+                        <p class="event-card-date">
+                            <i class="bi bi-calendar3"></i> 
+                            <strong>Date:</strong> {{ event.event_date.strftime('%d %B %Y') if event.event_date else 'TBA' }}
+                        </p>
+                        <p class="event-card-time">
+                            <i class="bi bi-clock"></i> 
+                            <strong>Time:</strong> {{ event.start_time.strftime('%I:%M%p') if event.start_time else '' }} - 
+                            {{ event.end_time.strftime('%I:%M%p') if event.end_time else '' }}
+                        </p>
+                        <p class="event-card-description">
+                            {{ event.description[:100] }}{% if event.description|length > 100 %}...{% endif %}
+                        </p>
+                        <button class="signup-btn" onclick="window.location.href='{{ url_for('events.signup_event', event_id=event.id) }}'">
+                            Sign Up
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <button class="carousel-btn carousel-btn-next" onclick="moveCarousel(1)">
+                <i class="bi bi-chevron-right"></i>
+            </button>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <p class="text-muted">No upcoming events at the moment. Check back later!</p>
+        </div>
+        {% endif %}
+    </section>
+    
+    <!-- Navigation Section with Google Maps -->
+    <section class="navigation-section">
+        <div class="container">
+            <h3 class="text-center mb-4 fw-bold">Get Directions to Your Events</h3>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="bg-white p-4 rounded-3 shadow-sm mb-4">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Your Location</label>
+                                <input type="text" class="form-control" id="userLocation" placeholder="Enter your current location">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Select Event</label>
+                                <select class="form-select" id="eventDestination">
+                                    <option value="">Choose an event...</option>
+                                    {% for event in my_events %}
+                                    <option value="{{ event.latitude }},{{ event.longitude }}" 
+                                            data-address="{{ event.location_address or event.location }}">
+                                        {{ event.title }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Travel Mode</label>
+                                <select class="form-select" id="travelMode">
+                                    <option value="DRIVING">Driving</option>
+                                    <option value="WALKING">Walking</option>
+                                    <option value="BICYCLING">Bicycling</option>
+                                    <option value="TRANSIT">Transit</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="btn btn-warning mt-3" onclick="getDirections()">
+                            <i class="bi bi-geo-alt"></i> Get Directions
+                        </button>
+                    </div>
+                    <div id="map" class="map-container"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- My Events Section -->
+    <section class="my-events-section">
+        <div class="container">
+            <h3 class="text-center mb-4 fw-bold">My Events</h3>
+            <div class="row">
+                <!-- Event List -->
+                <div class="col-lg-7">
+                    <div class="mb-3">
+                        <h5>Your Registered Events</h5>
+                    </div>
+                    {% if my_events and my_events|length > 0 %}
+                        {% for event in my_events %}
+                        <div class="event-list-item">
+                            <img src="{{ event.image_url or url_for('static', filename='uploads/events/default-event.jpg') }}" 
+                                 alt="{{ event.title }}" class="event-list-image">
+                            <div class="event-list-content">
+                                <div class="event-list-title" title="{{ event.title }}">{{ event.title }}</div>
+                                <div class="event-list-date">
+                                    DATE: {{ event.event_date.strftime('%d %B %Y') if event.event_date else 'TBA' }}
+                                </div>
+                            </div>
+                            <button class="view-more-btn" onclick="showEventModal({{ event.id }})">View More</button>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="text-center py-5">
+                        <p class="text-muted">You haven't registered for any events yet.</p>
+                        <a href="#" onclick="document.querySelector('.event-carousel-wrapper').scrollIntoView({behavior: 'smooth'}); return false;" 
+                           class="btn btn-warning">Browse Events</a>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Calendar -->
+                <div class="col-lg-5">
+                    <div class="calendar-container">
+                        <div class="calendar-header">
+                            <button class="btn btn-sm btn-outline-light" onclick="changeMonth(-1)">
+                                <i class="bi bi-chevron-left"></i>
+                            </button>
+                            <h5 id="calendarMonth">December 2025</h5>
+                            <button class="btn btn-sm btn-outline-light" onclick="changeMonth(1)">
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
+                        <div class="calendar-grid">
+                            <div class="fw-bold">Mo</div>
+                            <div class="fw-bold">Tu</div>
+                            <div class="fw-bold">We</div>
+                            <div class="fw-bold">Th</div>
+                            <div class="fw-bold">Fr</div>
+                            <div class="fw-bold">Sa</div>
+                            <div class="fw-bold">Su</div>
+                        </div>
+                        <div class="calendar-grid mt-2" id="calendarDays">
+                            <!-- Days will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Event Detail Modal -->
+<div id="eventModal" class="event-modal">
+    <div class="event-modal-content">
+        <span class="event-modal-close" onclick="closeEventModal()">&times;</span>
+        <div id="modalContent">
+            <!-- Content loaded dynamically -->
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://maps.googleapis.com/maps/api/js?key={{ maps_api_key }}&libraries=places"></script>
+<script>
+    // Carousel functionality
+    let currentIndex = 0;
+    const cards = document.querySelectorAll('.event-card');
+    const totalCards = cards.length;
+    
+    function updateCarousel() {
+        cards.forEach((card, index) => {
+            card.classList.remove('side', 'center');
+            
+            if (index === currentIndex) {
+                card.classList.add('center');
+            } else {
+                card.classList.add('side');
+            }
+            
+            // Position cards
+            const offset = (index - currentIndex) * 320;
+            card.style.transform = `translateX(${offset}px)`;
+        });
+    }
+    
+    function moveCarousel(direction) {
+        currentIndex += direction;
+        
+        if (currentIndex < 0) currentIndex = 0;
+        if (currentIndex >= totalCards) currentIndex = totalCards - 1;
+        
+        updateCarousel();
+    }
+    
+    // Initialize carousel
+    if (totalCards > 0) {
+        updateCarousel();
+    }
+    
+    // Google Maps
+    let map, directionsService, directionsRenderer;
+    
+    function initMap() {
+        const singapore = { lat: 1.3521, lng: 103.8198 };
+        
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 12,
+            center: singapore
+        });
+        
+        directionsService = new google.maps.DirectionsService();
+        directionsRenderer = new google.maps.DirectionsRenderer();
+        directionsRenderer.setMap(map);
+        
+        // Add autocomplete to user location
+        const input = document.getElementById('userLocation');
+        const autocomplete = new google.maps.places.Autocomplete(input);
+    }
+    
+    function getDirections() {
+        const origin = document.getElementById('userLocation').value;
+        const eventSelect = document.getElementById('eventDestination');
+        const destination = eventSelect.options[eventSelect.selectedIndex].getAttribute('data-address');
+        const travelMode = document.getElementById('travelMode').value;
+        
+        if (!origin || !destination) {
+            alert('Please enter both your location and select an event');
+            return;
+        }
+        
+        const request = {
+            origin: origin,
+            destination: destination,
+            travelMode: google.maps.TravelMode[travelMode]
+        };
+        
+        directionsService.route(request, function(result, status) {
+            if (status === 'OK') {
+                directionsRenderer.setDirections(result);
+            } else {
+                alert('Could not calculate directions: ' + status);
+            }
+        });
+    }
+    
+    // Initialize map on load
+    window.onload = initMap;
+    
+    // Calendar functionality
+    const myEvents = {{ my_events|tojson if my_events else '[]'|safe }};
+    let currentDate = new Date();
+    
+    function renderCalendar() {
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        
+        // Update header
+        const monthNames = ["January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"];
+        document.getElementById('calendarMonth').textContent = monthNames[month] + ' ' + year;
+        
+        // Get event dates
+        const eventDates = myEvents.map(e => {
+            const date = new Date(e.event_date);
+            return date.getDate();
+        });
+        
+        // Calculate days
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1; // Adjust for Monday start
+        
+        const calendarDays = document.getElementById('calendarDays');
+        calendarDays.innerHTML = '';
+        
+        // Empty cells before first day
+        for (let i = 0; i < adjustedFirstDay; i++) {
+            const emptyDiv = document.createElement('div');
+            calendarDays.appendChild(emptyDiv);
+        }
+        
+        // Days
+        const today = new Date();
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dayDiv = document.createElement('div');
+            dayDiv.className = 'calendar-day';
+            dayDiv.textContent = day;
+            
+            if (eventDates.includes(day) && month === currentDate.getMonth()) {
+                dayDiv.classList.add('has-event');
+                const event = myEvents.find(e => new Date(e.event_date).getDate() === day);
+                dayDiv.title = event ? event.title : '';
+            }
+            
+            if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                dayDiv.classList.add('today');
+            }
+            
+            calendarDays.appendChild(dayDiv);
+        }
+    }
+    
+    function changeMonth(delta) {
+        currentDate.setMonth(currentDate.getMonth() + delta);
+        renderCalendar();
+    }
+    
+    renderCalendar();
+    
+    // Event modal
+    function showEventModal(eventId) {
+        fetch(`/events/event/${eventId}`)
+            .then(response => response.json())
+            .then(data => {
+                const event = data.event;
+                const isRegistered = data.is_registered;
+                
+                const modalContent = `
+                    <img src="${event.image_url || '/static/uploads/events/default-event.jpg'}" 
+                         class="event-modal-image" alt="${event.title}">
+                    <div class="event-modal-body">
+                        <h3 class="fw-bold mb-3">${event.title}</h3>
+                        <p><strong>Date:</strong> ${new Date(event.event_date).toLocaleDateString('en-US', {day: 'numeric', month: 'long', year: 'numeric'})}</p>
+                        <p><strong>Time:</strong> ${event.start_time} - ${event.end_time}</p>
+                        <p><strong>Location:</strong> ${event.location_address || event.location}</p>
+                        <p class="mt-3">${event.description}</p>
+                        ${isRegistered ? `
+                            <form method="POST" action="/events/optout/${event.id}">
+                                <button type="submit" class="optout-btn">Opt Out</button>
+                            </form>
+                        ` : ''}
+                    </div>
+                `;
+                
+                document.getElementById('modalContent').innerHTML = modalContent;
+                document.getElementById('eventModal').style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error loading event:', error);
+                alert('Error loading event details');
+            });
+    }
+    
+    function closeEventModal() {
+        document.getElementById('eventModal').style.display = 'none';
+    }
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('eventModal');
+        if (event.target === modal) {
+            closeEventModal();
+        }
+    }
+</script>
+{% endblock %}
