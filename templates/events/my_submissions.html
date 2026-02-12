@@ -6,12 +6,21 @@
 <style>
     .submissions-container {
         max-width: 1200px;
-        margin: 50px auto;
+        margin: 30px auto;
         padding: 0 20px;
     }
     
-    .page-header {
+    .page-header-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         margin-bottom: 40px;
+        gap: 20px;
+    }
+    
+    .page-header {
+        flex: 1;
+        margin-bottom: 0;
     }
     
     .page-header h2 {
@@ -51,7 +60,7 @@
         border-radius: 25px;
         display: inline-block;
         font-weight: 600;
-        float: right;
+        white-space: nowrap;
     }
     
     .submission-card {
@@ -279,7 +288,7 @@
 </style>
 {% endblock %}
 
-{% block content %}
+{% block navbar %}
 <!-- Navigation Bar -->
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
     <div class="container-fluid px-4">
@@ -308,18 +317,23 @@
         </ul>
     </div>
 </nav>
+{% endblock %}
+
+{% block content %}
 
 <div class="container submissions-container">
     <a href="{{ url_for('events.submit_event') }}" class="back-btn">
         <i class="bi bi-arrow-left"></i> Back to Form
     </a>
     
-    <div class="page-header">
-        <h2>Your Submissions</h2>
-        <p>View, edit, and manage your event submissions</p>
+    <div class="page-header-wrapper">
+        <div class="page-header">
+            <h2>Your Submissions</h2>
+            <p>View, edit, and manage your event submissions</p>
+        </div>
         {% if submissions %}
         <div class="submissions-count">
-            {{ submissions|length }} SUBMISSION{{ 's' if submissions|length != 1 else '' }}
+            {{ submissions|length }} SUBMISSION{{ 'S' if submissions|length != 1 else '' }}
         </div>
         {% endif %}
     </div>

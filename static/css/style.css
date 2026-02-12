@@ -308,3 +308,18 @@ body.appearance-page .appearance-actions{margin-top:48px;padding-right:40px;}
   body.appearance-page .setting-group{grid-template-columns:1fr;padding-left:0;}
   body.appearance-page .appearance-actions{padding-right:0;}
 }
+
+/* ===== Flash Messages ===== */
+.flash-messages-container {
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 16px 0;
+  margin-bottom: 0;
+}
+
+.flash-messages-container .alert {
+  margin: 0 auto;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
