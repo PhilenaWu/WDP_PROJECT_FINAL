@@ -7,7 +7,7 @@
 <style>
     .event-carousel-wrapper {
         position: relative;
-        overflow: hidden;
+        overflow: visible;
         padding: 40px 0;
     }
     
@@ -15,35 +15,61 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 20px;
-        transition: transform 0.5s ease;
+        gap: 30px;
+        perspective: 1000px;
+        padding: 20px;
     }
     
-        .view-more-btn {
-            background: #f0ad4e;
-            color: white;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 20px;
-            cursor: pointer;
-            margin-left: auto;
-            transition: background 0.3s;
-        }
+    .view-more-btn {
+        background: #f0ad4e;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 20px;
+        cursor: pointer;
+        margin-left: auto;
+        transition: background 0.3s;
+    }
     
-        .view-more-btn:hover {
-            background: #ec971f;
-        }
-    .event-card.side {
-        width: 280px;
+    .view-more-btn:hover {
+        background: #ec971f;
+    }
+    
+    .event-card {
+        transition: all 0.1s cubic-bezier(0.4, 0.0, 0.2, 1.0);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        will-change: transform, opacity, width, box-shadow;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+    
+    .event-card.carousel-left {
+        width: 250px;
         opacity: 0.6;
         transform: scale(0.85);
+        order: 1;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
     }
     
-    .event-card.center {
+    .event-card.carousel-center {
         width: 380px;
         opacity: 1;
         transform: scale(1);
         box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        order: 2;
+        z-index: 5;
+    }
+    
+    .event-card.carousel-right {
+        width: 250px;
+        opacity: 0.6;
+        transform: scale(0.85);
+        order: 3;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
     }
     
     .event-card-media {
@@ -53,9 +79,10 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        transition: height 0.5s cubic-bezier(0.4, 0.0, 0.2, 1.0);
     }
 
-    .event-card.center .event-card-media {
+    .event-card.carousel-center .event-card-media {
         height: 250px;
     }
 
@@ -75,6 +102,11 @@
     
     .event-card-body {
         padding: 20px;
+        transition: padding 0.5s cubic-bezier(0.4, 0.0, 0.2, 1.0);
+    }
+    
+    .event-card.carousel-center .event-card-body {
+        padding: 25px;
     }
     
     .event-card-title {
@@ -82,12 +114,23 @@
         font-weight: 600;
         margin-bottom: 10px;
         color: #333;
+        transition: font-size 0.5s cubic-bezier(0.4, 0.0, 0.2, 1.0);
+    }
+    
+    .event-card.carousel-center .event-card-title {
+        font-size: 1.4rem;
     }
     
     .event-card-date, .event-card-time {
         font-size: 0.9rem;
         color: #666;
         margin-bottom: 5px;
+        transition: font-size 0.5s cubic-bezier(0.4, 0.0, 0.2, 1.0);
+    }
+    
+    .event-card.carousel-center .event-card-date,
+    .event-card.carousel-center .event-card-time {
+        font-size: 0.95rem;
     }
     
     .event-card-description {
@@ -95,6 +138,33 @@
         color: #666;
         margin-top: 10px;
         line-height: 1.5;
+        display: none;
+    }
+    
+    .event-card.carousel-center .event-card-description {
+        display: block;
+    }
+    
+    .signup-btn {
+        background: #f0ad4e;
+        color: white;
+        border: none;
+        padding: 10px 25px;
+        border-radius: 25px;
+        font-weight: 500;
+        cursor: pointer;
+        margin-top: 15px;
+        width: 100%;
+        transition: background 0.3s;
+        display: none;
+    }
+    
+    .event-card.carousel-center .signup-btn {
+        display: block;
+    }
+    
+    .signup-btn:hover {
+        background: #ec971f;
     }
     
     .carousel-btn {
@@ -533,34 +603,49 @@
 {% block extra_js %}
 <script src="https://maps.googleapis.com/maps/api/js?key={{ maps_api_key }}&libraries=places"></script>
 <script>
-    // Carousel functionality
+    // Carousel functionality with infinite loop and smooth animation
     let currentIndex = 0;
     const cards = document.querySelectorAll('.event-card');
     const totalCards = cards.length;
+    let isAnimating = false;
+    const ANIMATION_DURATION = 500; // Match CSS transition duration
     
     function updateCarousel() {
         cards.forEach((card, index) => {
-            card.classList.remove('side', 'center');
+            card.classList.remove('carousel-left', 'carousel-center', 'carousel-right');
             
-            if (index === currentIndex) {
-                card.classList.add('center');
+            // Calculate position relative to current index
+            const position = (index - currentIndex + totalCards) % totalCards;
+            
+            if (position === 0) {
+                card.classList.add('carousel-center');
+                card.style.display = 'flex';
+            } else if (position === totalCards - 1) {
+                // Previous item (left side)
+                card.classList.add('carousel-left');
+                card.style.display = 'flex';
+            } else if (position === 1) {
+                // Next item (right side)
+                card.classList.add('carousel-right');
+                card.style.display = 'flex';
             } else {
-                card.classList.add('side');
+                // Hide other cards
+                card.style.display = 'none';
             }
-            
-            // Position cards
-            const offset = (index - currentIndex) * 320;
-            card.style.transform = `translateX(${offset}px)`;
         });
     }
     
     function moveCarousel(direction) {
-        currentIndex += direction;
+        if (isAnimating) return;
         
-        if (currentIndex < 0) currentIndex = 0;
-        if (currentIndex >= totalCards) currentIndex = totalCards - 1;
-        
+        isAnimating = true;
+        currentIndex = (currentIndex + direction + totalCards) % totalCards;
         updateCarousel();
+        
+        // Allow next animation after duration completes
+        setTimeout(() => {
+            isAnimating = false;
+        }, ANIMATION_DURATION);
     }
     
     // Initialize carousel

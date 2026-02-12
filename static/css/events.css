@@ -38,11 +38,16 @@
         padding: 20px 0;
     }
     
-    .event-card.side {
+    .event-carousel-container {
+        gap: 20px;
+    }
+    
+    .event-card.carousel-left,
+    .event-card.carousel-right {
         width: 200px;
     }
     
-    .event-card.center {
+    .event-card.carousel-center {
         width: 280px;
     }
     
