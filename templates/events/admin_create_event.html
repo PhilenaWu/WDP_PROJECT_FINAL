@@ -56,10 +56,59 @@
         background: #ec971f;
         transform: translateY(-2px);
     }
+    
+    .image-upload-section {
+        background: #f8f9fa;
+        border: 2px dashed #dee2e6;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .ai-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 15px;
+    }
+    
+    .ai-btn {
+        background: white;
+        color: #667eea;
+        padding: 10px 25px;
+        border-radius: 20px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .ai-btn:hover {
+        background: #f0f0f0;
+        transform: scale(1.05);
+    }
+    
+    .ai-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    .image-preview {
+        max-width: 300px;
+        margin-top: 15px;
+        border-radius: 8px;
+        display: none;
+    }
+    
+    .generating-spinner {
+        display: none;
+    }
+
 </style>
 {% endblock %}
 
-{% block content %}
+{% block navbar %}
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
     <div class="container-fluid px-4">
         <a class="navbar-brand" href="#">
@@ -79,7 +128,9 @@
         </ul>
     </div>
 </nav>
+{% endblock %}
 
+{% block content %}
 <div class="container create-event-container">
     <div class="create-event-header">
         <h2><i class="bi bi-plus-circle"></i> Create New Event</h2>
@@ -93,7 +144,7 @@
         </div>
         {% endif %}
         
-        <form method="POST" action="{{ url_for('events.admin_create_event') }}" novalidate>
+        <form method="POST" action="{{ url_for('events.admin_create_event') }}" enctype="multipart/form-data" novalidate>
             <div class="mb-3">
                 <label for="title" class="form-label">Event Title <span class="text-danger">*</span></label>
                 <input type="text" class="form-control" id="title" name="title" 
@@ -150,6 +201,8 @@
                         <option value="Cultural" {% if (submission and submission.event_type == 'Cultural') or form_data.event_type == 'Cultural' %}selected{% endif %}>Cultural</option>
                         <option value="Community" {% if (submission and submission.event_type == 'Community') or form_data.event_type == 'Community' %}selected{% endif %}>Community</option>
                         <option value="Sports" {% if (submission and submission.event_type == 'Sports') or form_data.event_type == 'Sports' %}selected{% endif %}>Sports</option>
+                        <option value="Arts & Crafts" {% if (submission and submission.event_type == 'Arts & Crafts') or form_data.event_type == 'Arts & Crafts' %}selected{% endif %}>Arts & Crafts</option>
+                        <option value="Technology" {% if (submission and submission.event_type == 'Technology') or form_data.event_type == 'Technology' %}selected{% endif %}>Technology</option>
                     </select>
                 </div>
                 
@@ -159,6 +212,38 @@
                            value="{{ form_data.max_participants or '' }}" 
                            placeholder="Leave empty for unlimited">
                 </div>
+            </div>
+            
+            <!-- Image Upload and AI Generation Section -->
+            <div class="image-upload-section">
+                <h5><i class="bi bi-image"></i> Event Image</h5>
+                
+                <!-- Manual Upload -->
+                <div class="mb-3">
+                    <label for="image" class="form-label">Upload Image</label>
+                    <input type="file" class="form-control" id="image" name="image" 
+                           accept="image/png,image/jpeg,image/jpg,image/gif">
+                    <small class="text-muted">Max 5MB. Formats: PNG, JPG, JPEG, GIF</small>
+                </div>
+                
+                <!-- AI Generation -->
+                <div class="ai-section">
+                    <h6><i class="bi bi-stars"></i> AI Image Generation</h6>
+                    <p class="mb-3 small">Generate an image using AI based on the event title and type</p>
+                    <button type="button" class="ai-btn" id="generateAiImage">
+                        <i class="bi bi-magic"></i> Generate Image with AI
+                    </button>
+                    <div class="generating-spinner mt-2" id="aiSpinner">
+                        <div class="spinner-border spinner-border-sm text-white" role="status">
+                            <span class="visually-hidden">Generating...</span>
+                        </div>
+                        <span class="ms-2">Generating image...</span>
+                    </div>
+                    <input type="hidden" id="ai_image_url" name="ai_image_url" value="">
+                </div>
+                
+                <!-- Image Preview -->
+                <img id="imagePreview" class="image-preview" alt="Image preview">
             </div>
             
             <button type="submit" class="submit-btn">
@@ -182,6 +267,76 @@
             }
             form.classList.add('was-validated');
         }, false);
+        
+        // Manual Upload Preview
+        document.getElementById('image').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = event.target.result;
+                    preview.style.display = 'block';
+                    // Clear AI hidden field if manual upload is chosen
+                    document.getElementById('ai_image_url').value = '';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // AI Image Generation
+        document.getElementById('generateAiImage').addEventListener('click', async function() {
+            const title = document.getElementById('title').value;
+            const eventType = document.getElementById('event_type').value;
+            
+            if (!title) {
+                alert('Please enter an event title first');
+                return;
+            }
+            
+            const btn = this;
+            const spinner = document.getElementById('aiSpinner');
+            btn.disabled = true;
+            spinner.style.display = 'block';
+            
+            try {
+                const response = await fetch('{{ url_for("events.generate_ai_image") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        event_type: eventType
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Set the AI-generated image URL in hidden field
+                    document.getElementById('ai_image_url').value = data.image_url;
+                    
+                    // Show preview
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = data.image_url;
+                    preview.style.display = 'block';
+                    
+                    // Clear manual file input
+                    document.getElementById('image').value = '';
+                    
+                    alert('Image generated successfully!');
+                } else {
+                    alert('Error generating image: ' + data.error);
+                }
+            } catch (error) {
+                alert('Failed to generate image. Please try again.');
+                console.error('Error:', error);
+            } finally {
+                btn.disabled = false;
+                spinner.style.display = 'none';
+            }
+        });
     })();
 </script>
 {% endblock %}

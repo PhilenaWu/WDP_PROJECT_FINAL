@@ -19,16 +19,20 @@
         transition: transform 0.5s ease;
     }
     
-    .event-card {
-        background: white;
-        border-radius: 15px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        overflow: hidden;
-        transition: all 0.5s ease;
-        flex-shrink: 0;
-        cursor: pointer;
-    }
+        .view-more-btn {
+            background: #f0ad4e;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-left: auto;
+            transition: background 0.3s;
+        }
     
+        .view-more-btn:hover {
+            background: #ec971f;
+        }
     .event-card.side {
         width: 280px;
         opacity: 0.6;
@@ -42,14 +46,31 @@
         box-shadow: 0 8px 30px rgba(0,0,0,0.15);
     }
     
-    .event-card-image {
+    .event-card-media {
         width: 100%;
         height: 200px;
-        object-fit: cover;
+        background: #f1f3f5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
-    
-    .event-card.center .event-card-image {
+
+    .event-card.center .event-card-media {
         height: 250px;
+    }
+
+    .event-card-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .event-card-placeholder {
+        color: #8b8b8b;
+        font-size: 0.85rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
     }
     
     .event-card-body {
@@ -189,47 +210,36 @@
         align-items: center;
         box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
-    
-    .event-list-image {
+
+    .event-list-media {
         width: 80px;
         height: 80px;
         border-radius: 10px;
-        object-fit: cover;
+        background: #f1f3f5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         margin-right: 20px;
-    }
-    
-    .event-list-content {
-        flex: 1;
-    }
-    
-    .event-list-title {
-        font-weight: 600;
-        margin-bottom: 5px;
-        white-space: nowrap;
+        flex-shrink: 0;
         overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 300px;
     }
-    
-    .event-list-date {
-        color: #666;
-        font-size: 0.9rem;
+
+    .event-list-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
     }
-    
-    .view-more-btn {
-        background: #f0ad4e;
-        color: white;
-        border: none;
-        padding: 8px 20px;
-        border-radius: 20px;
-        cursor: pointer;
-        transition: background 0.3s;
+
+    .event-list-placeholder {
+        color: #8b8b8b;
+        font-size: 0.7rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-align: center;
+        padding: 0 6px;
     }
-    
-    .view-more-btn:hover {
-        background: #ec971f;
-    }
-    
+
     .event-modal {
         display: none;
         position: fixed;
@@ -296,7 +306,7 @@
 </style>
 {% endblock %}
 
-{% block content %}
+{% block navbar %}
 <!-- Navigation Bar -->
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
     <div class="container-fluid px-4">
@@ -339,7 +349,9 @@
         </ul>
     </div>
 </nav>
+{% endblock %}
 
+{% block content %}
 <div class="container-fluid">
     <!-- Upcoming Events Carousel Section -->
     <section class="py-5">
@@ -356,8 +368,13 @@
             <div class="event-carousel-container" id="eventCarousel">
                 {% for event in upcoming_events %}
                 <div class="event-card" data-event-id="{{ event.id }}">
-                    <img src="{{ event.image_url or url_for('static', filename='uploads/events/default-event.jpg') }}" 
-                         alt="{{ event.title }}" class="event-card-image">
+                    <div class="event-card-media">
+                        {% if event.image_url %}
+                        <img src="{{ event.image_url }}" alt="{{ event.title }}" class="event-card-image">
+                        {% else %}
+                        <div class="event-card-placeholder">No image</div>
+                        {% endif %}
+                    </div>
                     <div class="event-card-body">
                         <h3 class="event-card-title">{{ event.title }}</h3>
                         <p class="event-card-date">
@@ -445,8 +462,13 @@
                     {% if my_events and my_events|length > 0 %}
                         {% for event in my_events %}
                         <div class="event-list-item">
-                            <img src="{{ event.image_url or url_for('static', filename='uploads/events/default-event.jpg') }}" 
-                                 alt="{{ event.title }}" class="event-list-image">
+                            <div class="event-list-media">
+                                {% if event.image_url %}
+                                <img src="{{ event.image_url }}" alt="{{ event.title }}" class="event-list-image">
+                                {% else %}
+                                <div class="event-list-placeholder">No image</div>
+                                {% endif %}
+                            </div>
                             <div class="event-list-content">
                                 <div class="event-list-title" title="{{ event.title }}">{{ event.title }}</div>
                                 <div class="event-list-date">

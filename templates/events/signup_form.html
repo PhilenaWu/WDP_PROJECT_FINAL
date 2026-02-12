@@ -90,7 +90,7 @@
 </style>
 {% endblock %}
 
-{% block content %}
+{% block navbar %}
 <!-- Navigation Bar -->
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
     <div class="container-fluid px-4">
@@ -107,7 +107,9 @@
         </ul>
     </div>
 </nav>
+{% endblock %}
 
+{% block content %}
 <div class="container">
     <div class="signup-container">
         <div class="signup-header">
@@ -141,8 +143,9 @@
                 
                 <div class="mb-3">
                     <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
-                    <input type="email" class="form-control" id="email" name="email" 
-                           placeholder="your.email@example.com" required>
+                          <input type="email" class="form-control" id="email" name="email" 
+                              placeholder="your.email@example.com"
+                              pattern="[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}" required>
                     <div class="invalid-feedback">
                         Please enter a valid email address.
                     </div>
@@ -150,8 +153,8 @@
                 
                 <div class="mb-3">
                     <label for="phone" class="form-label">Phone Number <span class="text-danger">*</span></label>
-                    <input type="tel" class="form-control" id="phone" name="phone" 
-                           placeholder="81234567" pattern="[0-9]{8,}" required>
+                              <input type="tel" class="form-control" id="phone" name="phone" 
+                                  placeholder="81234567" pattern="[89][0-9]{7}" maxlength="8" inputmode="numeric" required>
                     <div class="invalid-feedback">
                         Please enter a valid phone number.
                     </div>
@@ -180,6 +183,24 @@
 
 {% block extra_js %}
 <script>
+    // Phone number restrictions (digits only, max 8)
+    const phoneInput = document.getElementById('phone');
+
+    function normalizePhoneInput(input) {
+        let value = input.value.replace(/\D/g, '').slice(0, 8);
+
+        while (value.length > 0 && !/^[89]/.test(value)) {
+            value = value.slice(1);
+        }
+
+        input.value = value;
+    }
+
+    phoneInput.addEventListener('input', function() {
+        normalizePhoneInput(phoneInput);
+    });
+    normalizePhoneInput(phoneInput);
+
     // Bootstrap form validation
     (function() {
         'use strict';

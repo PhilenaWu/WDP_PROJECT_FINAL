@@ -7,7 +7,7 @@ class Config:
     # MySQL Database
     MYSQL_HOST = os.environ.get('MYSQL_HOST') or 'mainline.proxy.rlwy.net'
     MYSQL_USER = os.environ.get('MYSQL_USER') or 'root'
-    MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD') or ''  # Remember to delete PASSWORD!!
+    MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD') or 'BDFVPdIbNziXqmbmQoSjsRriVCWwedRq'  # Remember to delete PASSWORD!!
     MYSQL_DATABASE = os.environ.get('MYSQL_DATABASE') or 'railway'
     MYSQL_PORT = int(os.environ.get('MYSQL_PORT', 27748))
     
@@ -22,4 +22,8 @@ class Config:
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
     
     # Google Maps API
-    GOOGLE_MAPS_API_KEY = os.environ.get('GOOGLE_MAPS_API_KEY') or 'YOUR_GOOGLE_MAPS_API_KEY_HERE'
+    GOOGLE_MAPS_API_KEY = os.environ.get('GOOGLE_MAPS_API_KEY') or ''
+    
+    # Banana.dev AI Image Generation
+    BANANA_API_KEY = os.environ.get('BANANA_API_KEY') or 'your-banana-api-key'
+    BANANA_MODEL_KEY = os.environ.get('BANANA_MODEL_KEY') or 'your-banana-model-key'

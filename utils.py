@@ -36,9 +36,9 @@ def get_age_group(age):
     """Determine age group from age"""
     if age < 13:
         return None
-    elif 13 <= age <= 21:
+    elif 13 <= age <= 20:
         return 'youth'
-    elif 22 <= age <= 59:
+    elif 21 <= age <= 59:
         return 'adult'
     else:
         return 'elderly'

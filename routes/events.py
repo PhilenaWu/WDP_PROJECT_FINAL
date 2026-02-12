@@ -1,10 +1,43 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from models import Event, EventRegistration, EventSubmission, User
-from datetime import datetime
+from datetime import datetime, timedelta
+import re
+import os
+import requests
+from werkzeug.utils import secure_filename
 from config import Config
 
 events_bp = Blueprint('events', __name__)
+
+
+def is_valid_phone(phone):
+    return bool(re.fullmatch(r'[89]\d{7}', phone))
+
+
+def is_valid_email(email):
+    return bool(re.fullmatch(r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}', email))
+
+
+def parse_date(date_str):
+    try:
+        return datetime.strptime(date_str, '%Y-%m-%d').date()
+    except (TypeError, ValueError):
+        return None
+
+
+def get_singapore_today():
+    return (datetime.utcnow() + timedelta(hours=8)).date()
+
+
+def is_at_least_13(dob_date, today_date):
+    age = today_date.year - dob_date.year - ((today_date.month, today_date.day) < (dob_date.month, dob_date.day))
+    return age >= 13
+
+
+def is_valid_preferred_date(preferred_date, today_date):
+    min_date = today_date + timedelta(days=7)
+    return preferred_date >= min_date
 
 
 @events_bp.route('/')
@@ -94,6 +127,14 @@ def signup_event(event_id):
         if not all([full_name, email, phone]):
             flash('All fields are required', 'error')
             return render_template('events/signup_form.html', event=event)
+
+        if not is_valid_email(email):
+            flash('Please provide a valid email address', 'error')
+            return render_template('events/signup_form.html', event=event)
+
+        if not is_valid_phone(phone):
+            flash('Phone number must be 8 digits and start with 8 or 9', 'error')
+            return render_template('events/signup_form.html', event=event)
         
         if not confirmed:
             flash('Please confirm your availability', 'error')
@@ -164,6 +205,7 @@ def submit_event():
             # Validate required fields
             required_fields = {
                 'organizer_name': organizer_name,
+                'organizer_dob': organizer_dob,
                 'organizer_email': organizer_email,
                 'organizer_phone': organizer_phone,
                 'event_title': event_title,
@@ -178,6 +220,33 @@ def submit_event():
             missing_fields = [k for k, v in required_fields.items() if not v]
             if missing_fields:
                 flash('Please fill in all required fields', 'error')
+                return render_template('events/submit_event.html', form_data=request.form)
+
+            if not is_valid_email(organizer_email):
+                flash('Please provide a valid email address', 'error')
+                return render_template('events/submit_event.html', form_data=request.form)
+
+            if not is_valid_phone(organizer_phone):
+                flash('Phone number must be 8 digits and start with 8 or 9', 'error')
+                return render_template('events/submit_event.html', form_data=request.form)
+
+            dob_date = parse_date(organizer_dob)
+            if not dob_date:
+                flash('Please provide a valid date of birth', 'error')
+                return render_template('events/submit_event.html', form_data=request.form)
+
+            today_date = get_singapore_today()
+            if not is_at_least_13(dob_date, today_date):
+                flash('You must be at least 13 years old to create an event', 'error')
+                return render_template('events/submit_event.html', form_data=request.form)
+
+            preferred_date_value = parse_date(preferred_date)
+            if not preferred_date_value:
+                flash('Please provide a valid preferred date', 'error')
+                return render_template('events/submit_event.html', form_data=request.form)
+
+            if not is_valid_preferred_date(preferred_date_value, today_date):
+                flash('Preferred date must be at least 1 week from today', 'error')
                 return render_template('events/submit_event.html', form_data=request.form)
             
             # Validate event summary length (max 150 characters)
@@ -268,6 +337,7 @@ def edit_submission(submission_id):
             # Validate required fields
             required_fields = {
                 'organizer_name': organizer_name,
+                'organizer_dob': organizer_dob,
                 'organizer_email': organizer_email,
                 'organizer_phone': organizer_phone,
                 'event_title': event_title,
@@ -282,6 +352,33 @@ def edit_submission(submission_id):
             missing_fields = [k for k, v in required_fields.items() if not v]
             if missing_fields:
                 flash('Please fill in all required fields', 'error')
+                return render_template('events/edit_submission.html', submission=submission)
+
+            if not is_valid_email(organizer_email):
+                flash('Please provide a valid email address', 'error')
+                return render_template('events/edit_submission.html', submission=submission)
+
+            if not is_valid_phone(organizer_phone):
+                flash('Phone number must be 8 digits and start with 8 or 9', 'error')
+                return render_template('events/edit_submission.html', submission=submission)
+
+            dob_date = parse_date(organizer_dob)
+            if not dob_date:
+                flash('Please provide a valid date of birth', 'error')
+                return render_template('events/edit_submission.html', submission=submission)
+
+            today_date = get_singapore_today()
+            if not is_at_least_13(dob_date, today_date):
+                flash('You must be at least 13 years old to create an event', 'error')
+                return render_template('events/edit_submission.html', submission=submission)
+
+            preferred_date_value = parse_date(preferred_date)
+            if not preferred_date_value:
+                flash('Please provide a valid preferred date', 'error')
+                return render_template('events/edit_submission.html', submission=submission)
+
+            if not is_valid_preferred_date(preferred_date_value, today_date):
+                flash('Preferred date must be at least 1 week from today', 'error')
                 return render_template('events/edit_submission.html', submission=submission)
             
             # Validate event summary length (max 150 characters)
@@ -409,6 +506,99 @@ def admin_review_submission(submission_id):
     return render_template('events/admin_review.html', submission=submission)
 
 
+@events_bp.route('/api/generate-ai-image', methods=['POST'])
+@login_required
+def generate_ai_image():
+    """Generate AI image using Banana.dev API"""
+    if current_user.user_type != 'admin':
+        return jsonify({'success': False, 'error': 'Admin access required'}), 403
+    
+    try:
+        data = request.get_json()
+        title = data.get('title', '').strip()
+        event_type = data.get('event_type', '').strip()
+        
+        if not title:
+            return jsonify({'success': False, 'error': 'Event title is required'}), 400
+        
+        # Build structured prompt: "A [EVENT_TYPE] event for [TITLE]"
+        if event_type:
+            prompt = f"A {event_type} event for {title}, professional event poster style, vibrant colors, inviting atmosphere"
+        else:
+            prompt = f"An event for {title}, professional event poster style, vibrant colors, inviting atmosphere"
+        
+        # Call Banana.dev API
+        api_url = "https://api.banana.dev/start/v4"
+        headers = {
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "apiKey": Config.BANANA_API_KEY,
+            "modelKey": Config.BANANA_MODEL_KEY,
+            "modelInputs": {
+                "prompt": prompt,
+                "num_inference_steps": 50,
+                "guidance_scale": 7.5,
+                "height": 512,
+                "width": 512
+            }
+        }
+        
+        response = requests.post(api_url, json=payload, headers=headers, timeout=60)
+        response.raise_for_status()
+        
+        result = response.json()
+        
+        # Extract image URL from Banana response
+        # Note: Banana.dev returns base64 encoded image or URL depending on model
+        if result.get('modelOutputs'):
+            # If base64, you'd need to save it and return local URL
+            # For now, assuming URL is returned
+            image_data = result['modelOutputs']
+            
+            # Handle base64 image
+            if isinstance(image_data, list) and len(image_data) > 0:
+                image_base64 = image_data[0]
+                
+                # Save base64 image to file
+                import base64
+                from pathlib import Path
+                
+                image_bytes = base64.b64decode(image_base64.split(',')[1] if ',' in image_base64 else image_base64)
+                
+                # Create uploads directory if it doesn't exist
+                upload_dir = Path('static/uploads/events')
+                upload_dir.mkdir(parents=True, exist_ok=True)
+                
+                # Generate unique filename
+                filename = f"ai_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{secure_filename(title[:30])}.png"
+                filepath = upload_dir / filename
+                
+                with open(filepath, 'wb') as f:
+                    f.write(image_bytes)
+                
+                image_url = f'/static/uploads/events/{filename}'
+                
+                return jsonify({
+                    'success': True,
+                    'image_url': image_url,
+                    'prompt': prompt
+                })
+            else:
+                return jsonify({'success': False, 'error': 'Invalid response from AI service'}), 500
+        else:
+            return jsonify({'success': False, 'error': 'No image generated'}), 500
+            
+    except requests.exceptions.Timeout:
+        return jsonify({'success': False, 'error': 'AI service timeout. Please try again.'}), 504
+    except requests.exceptions.RequestException as e:
+        print(f"Banana API error: {e}")
+        return jsonify({'success': False, 'error': f'AI service error: {str(e)}'}), 500
+    except Exception as e:
+        print(f"Image generation error: {e}")
+        return jsonify({'success': False, 'error': f'Error: {str(e)}'}), 500
+
+
 @events_bp.route('/admin/events/create', methods=['GET', 'POST'])
 @login_required
 def admin_create_event():
@@ -441,6 +631,40 @@ def admin_create_event():
                 flash('Please fill in all required fields', 'error')
                 return render_template('events/admin_create_event.html', submission=submission, form_data=request.form)
             
+            # Handle image upload or AI-generated image
+            image_url = None
+            
+            # Check if AI-generated image URL is provided
+            ai_image_url = request.form.get('ai_image_url', '').strip()
+            if ai_image_url:
+                image_url = ai_image_url
+            else:
+                # Check if manual file upload
+                if 'image' in request.files:
+                    file = request.files['image']
+                    if file and file.filename:
+                        # Validate file
+                        allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
+                        filename = secure_filename(file.filename)
+                        file_ext = filename.rsplit('.', 1)[1].lower() if '.' in filename else ''
+                        
+                        if file_ext in allowed_extensions:
+                            # Create unique filename
+                            unique_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
+                            
+                            # Ensure upload directory exists
+                            upload_dir = os.path.join('static', 'uploads', 'events')
+                            os.makedirs(upload_dir, exist_ok=True)
+                            
+                            # Save file
+                            filepath = os.path.join(upload_dir, unique_filename)
+                            file.save(filepath)
+                            
+                            image_url = f'/static/uploads/events/{unique_filename}'
+                        else:
+                            flash('Invalid file type. Please upload PNG, JPG, JPEG, or GIF.', 'error')
+                            return render_template('events/admin_create_event.html', submission=submission, form_data=request.form)
+            
             # Create event
             Event.create({
                 'title': title,
@@ -452,6 +676,7 @@ def admin_create_event():
                 'location_address': location_address,
                 'max_participants': int(max_participants) if max_participants else None,
                 'event_type': event_type,
+                'image_url': image_url,
                 'created_by': current_user.id
             })
             
