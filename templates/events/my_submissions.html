@@ -59,6 +59,7 @@
         border-radius: 15px;
         padding: 30px;
         margin-bottom: 25px;
+        margin-top: 20px;
         box-shadow: 0 3px 20px rgba(0,0,0,0.08);
         border-left: 6px solid #f0ad4e;
         transition: transform 0.3s, box-shadow 0.3s;
@@ -297,6 +298,13 @@
                     <i class="bi bi-plus-circle"></i> Organize Event
                 </a>
             </li>
+            {% if current_user.user_type == 'admin' %}
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('events.admin_submissions') }}">
+                    <i class="bi bi-shield-check"></i> Admin Panel
+                </a>
+            </li>
+            {% endif %}
         </ul>
     </div>
 </nav>

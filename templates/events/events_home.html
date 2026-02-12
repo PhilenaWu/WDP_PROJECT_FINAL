@@ -366,8 +366,8 @@
                         </p>
                         <p class="event-card-time">
                             <i class="bi bi-clock"></i> 
-                            <strong>Time:</strong> {{ event.start_time.strftime('%I:%M%p') if event.start_time else '' }} - 
-                            {{ event.end_time.strftime('%I:%M%p') if event.end_time else '' }}
+                            <strong>Time:</strong> {{ event.start_time if event.start_time else '' }} - 
+                            {{ event.end_time if event.end_time else '' }}
                         </p>
                         <p class="event-card-description">
                             {{ event.description[:100] }}{% if event.description|length > 100 %}...{% endif %}
@@ -442,9 +442,6 @@
             <div class="row">
                 <!-- Event List -->
                 <div class="col-lg-7">
-                    <div class="mb-3">
-                        <h5>Your Registered Events</h5>
-                    </div>
                     {% if my_events and my_events|length > 0 %}
                         {% for event in my_events %}
                         <div class="event-list-item">
@@ -611,10 +608,13 @@
             "July", "August", "September", "October", "November", "December"];
         document.getElementById('calendarMonth').textContent = monthNames[month] + ' ' + year;
         
-        // Get event dates
-        const eventDates = myEvents.map(e => {
+        // Get event dates for current viewing month/year
+        const eventDatesForMonth = myEvents.filter(e => {
             const date = new Date(e.event_date);
-            return date.getDate();
+            return date.getFullYear() === year && date.getMonth() === month;
+        }).map(e => {
+            const date = new Date(e.event_date);
+            return { day: date.getDate(), title: e.title };
         });
         
         // Calculate days
@@ -638,10 +638,10 @@
             dayDiv.className = 'calendar-day';
             dayDiv.textContent = day;
             
-            if (eventDates.includes(day) && month === currentDate.getMonth()) {
+            const eventForDay = eventDatesForMonth.find(e => e.day === day);
+            if (eventForDay) {
                 dayDiv.classList.add('has-event');
-                const event = myEvents.find(e => new Date(e.event_date).getDate() === day);
-                dayDiv.title = event ? event.title : '';
+                dayDiv.title = eventForDay.title;
             }
             
             if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {

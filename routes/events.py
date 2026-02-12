@@ -13,6 +13,29 @@ def events_home():
     """Main events page with carousel, navigation, and my events"""
     upcoming_events = Event.get_all_upcoming()
     my_events = Event.get_user_registered_events(current_user.id)
+    
+    # Get IDs of events user is already registered for
+    registered_event_ids = set([event['id'] for event in my_events]) if my_events else set()
+    
+    # Filter out events user is already registered for from upcoming events
+    if upcoming_events:
+        upcoming_events = [event for event in upcoming_events if event['id'] not in registered_event_ids]
+    
+    # Convert timedelta objects to strings for JSON serialization in template
+    if upcoming_events:
+        for event in upcoming_events:
+            if event.get('start_time'):
+                event['start_time'] = str(event['start_time'])
+            if event.get('end_time'):
+                event['end_time'] = str(event['end_time'])
+    
+    if my_events:
+        for event in my_events:
+            if event.get('start_time'):
+                event['start_time'] = str(event['start_time'])
+            if event.get('end_time'):
+                event['end_time'] = str(event['end_time'])
+    
     return render_template('events/events_home.html',
                          upcoming_events=upcoming_events,
                          my_events=my_events,
@@ -26,6 +49,14 @@ def event_details(event_id):
     event = Event.get_by_id(event_id)
     if not event:
         return jsonify({'error': 'Event not found'}), 404
+    
+    # Convert timedelta objects to strings for JSON serialization
+    if event.get('start_time'):
+        event['start_time'] = str(event['start_time'])
+    if event.get('end_time'):
+        event['end_time'] = str(event['end_time'])
+    if event.get('event_date'):
+        event['event_date'] = event['event_date'].isoformat() if hasattr(event['event_date'], 'isoformat') else str(event['event_date'])
     
     is_registered = Event.is_user_registered(event_id, current_user.id)
     return jsonify({
@@ -213,9 +244,76 @@ def edit_submission(submission_id):
         return redirect(url_for('events.my_submissions'))
     
     if request.method == 'POST':
-        # Update logic here (similar to submit_event)
-        flash('Submission updated successfully', 'success')
-        return redirect(url_for('events.my_submissions'))
+        try:
+            # Organizer info
+            organizer_name = request.form.get('organizer_name', '').strip()
+            organizer_dob = request.form.get('organizer_dob', '').strip()
+            organizer_age_group = request.form.get('organizer_age_group', '').strip()
+            organizer_email = request.form.get('organizer_email', '').strip()
+            organizer_phone = request.form.get('organizer_phone', '').strip()
+            organizer_location = request.form.get('organizer_location', '').strip()
+            
+            # Event details
+            event_title = request.form.get('event_title', '').strip()
+            event_summary = request.form.get('event_summary', '').strip()
+            event_type = request.form.get('event_type', '').strip()
+            preferred_date = request.form.get('preferred_date', '').strip()
+            expected_participants = request.form.get('expected_participants', '').strip()
+            
+            # Additional info
+            why_meaningful = request.form.get('why_meaningful', '').strip()
+            previous_experience = request.form.get('previous_experience', '').strip()
+            accessibility = request.form.get('accessibility', '').strip()
+            
+            # Validate required fields
+            required_fields = {
+                'organizer_name': organizer_name,
+                'organizer_email': organizer_email,
+                'organizer_phone': organizer_phone,
+                'event_title': event_title,
+                'event_summary': event_summary,
+                'event_type': event_type,
+                'preferred_date': preferred_date,
+                'expected_participants': expected_participants,
+                'why_meaningful': why_meaningful,
+                'accessibility': accessibility
+            }
+            
+            missing_fields = [k for k, v in required_fields.items() if not v]
+            if missing_fields:
+                flash('Please fill in all required fields', 'error')
+                return render_template('events/edit_submission.html', submission=submission)
+            
+            # Validate event summary length (max 150 characters)
+            if len(event_summary) > 150:
+                flash('Event summary must be 150 characters or less', 'error')
+                return render_template('events/edit_submission.html', submission=submission)
+            
+            # Update submission
+            EventSubmission.update(submission_id, {
+                'organizer_name': organizer_name,
+                'organizer_dob': organizer_dob if organizer_dob else None,
+                'organizer_age_group': organizer_age_group if organizer_age_group else None,
+                'organizer_email': organizer_email,
+                'organizer_phone': organizer_phone,
+                'organizer_location': organizer_location if organizer_location else None,
+                'event_title': event_title,
+                'event_summary': event_summary,
+                'event_type': event_type,
+                'preferred_date': preferred_date,
+                'expected_participants': expected_participants,
+                'why_meaningful': why_meaningful,
+                'previous_experience': previous_experience if previous_experience else None,
+                'accessibility_considerations': accessibility
+            })
+            
+            flash('Submission updated successfully!', 'success')
+            return redirect(url_for('events.my_submissions'))
+        
+        except Exception as e:
+            print(f"Update error: {e}")
+            flash(f'Error updating submission: {str(e)}', 'error')
+            return render_template('events/edit_submission.html', submission=submission)
     
     return render_template('events/edit_submission.html', submission=submission)
 
@@ -279,10 +377,28 @@ def admin_review_submission(submission_id):
             # Update status
             EventSubmission.update_status(submission_id, 'approved', current_user.id, admin_notes)
             
-            # Optionally create event from submission
-            # You can add event creation logic here
-            
-            flash('Submission approved', 'success')
+            # Create event from approved submission
+            try:
+                Event.create({
+                    'title': submission['event_title'],
+                    'description': submission['event_summary'],
+                    'event_date': submission['preferred_date'],
+                    'start_time': '09:00:00',  # Default time, can be customized
+                    'end_time': '17:00:00',    # Default time, can be customized
+                    'location': submission['organizer_location'] or 'TBA',
+                    'location_address': submission['organizer_location'],
+                    'latitude': None,
+                    'longitude': None,
+                    'image_url': None,
+                    'max_participants': 50,  # Default, parse from expected_participants if needed
+                    'event_type': submission['event_type'],
+                    'age_group': submission['organizer_age_group'],
+                    'created_by': current_user.id
+                })
+                flash('Submission approved and event created!', 'success')
+            except Exception as e:
+                print(f"Event creation error: {e}")
+                flash('Submission approved but event creation failed. Please create manually.', 'warning')
         
         elif action == 'reject':
             EventSubmission.update_status(submission_id, 'rejected', current_user.id, admin_notes)

@@ -309,6 +309,27 @@ class EventSubmission:
         return execute_query(query, (status, admin_id, admin_notes, submission_id), commit=True)
     
     @staticmethod
+    def update(submission_id, data):
+        """Update event submission"""
+        query = """
+            UPDATE event_submissions 
+            SET organizer_name = %s, organizer_dob = %s, organizer_age_group = %s,
+                organizer_email = %s, organizer_phone = %s, organizer_location = %s,
+                event_title = %s, event_summary = %s, event_type = %s,
+                preferred_date = %s, expected_participants = %s, why_meaningful = %s,
+                previous_experience = %s, accessibility_considerations = %s
+            WHERE id = %s
+        """
+        return execute_query(query, (
+            data['organizer_name'], data.get('organizer_dob'),
+            data.get('organizer_age_group'), data['organizer_email'], data['organizer_phone'],
+            data.get('organizer_location'), data['event_title'], data['event_summary'],
+            data['event_type'], data['preferred_date'], data['expected_participants'],
+            data['why_meaningful'], data.get('previous_experience'),
+            data['accessibility_considerations'], submission_id
+        ), commit=True)
+    
+    @staticmethod
     def delete(submission_id):
         """Delete submission"""
         query = "DELETE FROM event_submissions WHERE id = %s"

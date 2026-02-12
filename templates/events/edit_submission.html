@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Organise an Event Together - StoryConnect{% endblock %}
+{% block title %}Edit Submission - StoryConnect{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -48,11 +48,11 @@
         padding: 40px;
         margin-bottom: 30px;
         box-shadow: 0 2px 15px rgba(0,0,0,0.08);
-        border-left: 5px solid #f0ad4e;
+        border-left: 5px solid #17a2b8;
     }
     
     .section-number {
-        background: #f0ad4e;
+        background: #17a2b8;
         color: white;
         width: 45px;
         height: 45px;
@@ -90,8 +90,8 @@
     }
     
     .form-control:focus, .form-select:focus {
-        border-color: #f0ad4e;
-        box-shadow: 0 0 0 0.2rem rgba(240, 173, 78, 0.25);
+        border-color: #17a2b8;
+        box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
     }
     
     textarea.form-control {
@@ -107,7 +107,7 @@
     }
     
     .submit-section {
-        background: #fff9e6;
+        background: #e7f6f8;
         border-radius: 15px;
         padding: 40px;
         text-align: center;
@@ -115,7 +115,7 @@
     }
     
     .submit-btn {
-        background: #f0ad4e;
+        background: #17a2b8;
         color: white;
         border: none;
         padding: 18px 60px;
@@ -124,13 +124,13 @@
         font-size: 1.2rem;
         cursor: pointer;
         transition: all 0.3s;
-        box-shadow: 0 4px 15px rgba(240, 173, 78, 0.3);
+        box-shadow: 0 4px 15px rgba(23, 162, 184, 0.3);
     }
     
     .submit-btn:hover {
-        background: #ec971f;
+        background: #138496;
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(240, 173, 78, 0.4);
+        box-shadow: 0 6px 20px rgba(23, 162, 184, 0.4);
     }
     
     .submit-info {
@@ -139,19 +139,10 @@
         font-size: 1rem;
     }
     
-    .footer-text {
-        text-align: center;
-        color: #666;
-        margin-top: 40px;
-        padding: 30px;
-        font-size: 1rem;
-        line-height: 1.6;
-    }
-    
-    .view-submissions-btn {
+    .back-btn {
         background: white;
-        color: #f0ad4e;
-        border: 2px solid #f0ad4e;
+        color: #17a2b8;
+        border: 2px solid #17a2b8;
         padding: 10px 25px;
         border-radius: 25px;
         text-decoration: none;
@@ -160,8 +151,8 @@
         transition: all 0.3s;
     }
     
-    .view-submissions-btn:hover {
-        background: #f0ad4e;
+    .back-btn:hover {
+        background: #17a2b8;
         color: white;
     }
 </style>
@@ -186,13 +177,6 @@
                     <i class="bi bi-file-earmark-text"></i> My Submissions
                 </a>
             </li>
-            {% if current_user.user_type == 'admin' %}
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('events.admin_submissions') }}">
-                    <i class="bi bi-shield-check"></i> Admin Panel
-                </a>
-            </li>
-            {% endif %}
         </ul>
     </div>
 </nav>
@@ -201,19 +185,19 @@
     <!-- Header -->
     <div class="submission-header">
         <div class="heart-icon">
-            <i class="bi bi-heart-fill"></i>
+            <i class="bi bi-pencil-fill"></i>
         </div>
-        <h2>Organise an Event Together</h2>
-        <p>Bringing generations together through meaningful events. Share your vision<br>and let's create something special.</p>
+        <h2>Edit Your Event Submission</h2>
+        <p>Update your event details below</p>
     </div>
     
-    <div class="text-end">
-        <a href="{{ url_for('events.my_submissions') }}" class="view-submissions-btn">
-            <i class="bi bi-folder"></i> View Submissions
+    <div class="text-start">
+        <a href="{{ url_for('events.my_submissions') }}" class="back-btn">
+            <i class="bi bi-arrow-left"></i> Back to Submissions
         </a>
     </div>
     
-    <form method="POST" action="{{ url_for('events.submit_event') }}" novalidate>
+    <form method="POST" action="{{ url_for('events.edit_submission', submission_id=submission.id) }}" novalidate>
         <!-- Section 1: Who You Are -->
         <div class="form-section">
             <div class="section-number">1</div>
@@ -225,7 +209,7 @@
                         Full Name<span class="text-danger">*</span>
                     </label>
                     <input type="text" class="form-control" id="organizer_name" name="organizer_name" 
-                           placeholder="Enter your full name" value="{{ form_data.organizer_name or '' }}" required>
+                           placeholder="Enter your full name" value="{{ submission.organizer_name }}" required>
                 </div>
                 
                 <div class="col-md-6 mb-3">
@@ -233,7 +217,7 @@
                         Date of Birth<span class="text-danger">*</span>
                     </label>
                     <input type="date" class="form-control" id="organizer_dob" name="organizer_dob" 
-                           value="{{ form_data.organizer_dob or '' }}" required max="2013-12-31">
+                           value="{{ submission.organizer_dob.strftime('%Y-%m-%d') if submission.organizer_dob else '' }}" required max="2013-12-31">
                     <small class="text-muted">Must be at least 13 years old</small>
                 </div>
                 
@@ -242,9 +226,8 @@
                         Age Group<span class="text-danger">*</span>
                     </label>
                     <input type="text" class="form-control" id="organizer_age_group" name="organizer_age_group" 
-                           value="{{ form_data.organizer_age_group or '' }}" readonly 
+                           value="{{ submission.organizer_age_group or '' }}" readonly 
                            placeholder="Auto-calculated from DOB" style="background-color: #e9ecef;">
-                    <input type="hidden" id="organizer_age_group_hidden" name="organizer_age_group_value">
                 </div>
                 
                 <div class="col-md-6 mb-3">
@@ -252,7 +235,7 @@
                         Email<span class="text-danger">*</span>
                     </label>
                     <input type="email" class="form-control" id="organizer_email" name="organizer_email" 
-                           placeholder="johndoe@gmail.com" value="{{ form_data.organizer_email or '' }}" required>
+                           placeholder="johndoe@gmail.com" value="{{ submission.organizer_email }}" required>
                 </div>
                 
                 <div class="col-md-6 mb-3">
@@ -260,7 +243,7 @@
                         Phone Number<span class="text-danger">*</span>
                     </label>
                     <input type="tel" class="form-control" id="organizer_phone" name="organizer_phone" 
-                           placeholder="81234567" pattern="[0-9]{8,}" value="{{ form_data.organizer_phone or '' }}" required>
+                           placeholder="81234567" pattern="[0-9]{8,}" value="{{ submission.organizer_phone }}" required>
                 </div>
                 
                 <div class="col-md-12 mb-3">
@@ -268,7 +251,7 @@
                         Location<span class="text-danger">*</span>
                     </label>
                     <input type="text" class="form-control" id="organizer_location" name="organizer_location" 
-                           placeholder="E.g. Wild Wild Wet - 519599" value="{{ form_data.organizer_location or '' }}">
+                           placeholder="E.g. Wild Wild Wet - 519599" value="{{ submission.organizer_location or '' }}">
                 </div>
             </div>
         </div>
@@ -283,7 +266,7 @@
                     Event Title<span class="text-danger">*</span>
                 </label>
                 <input type="text" class="form-control" id="event_title" name="event_title" 
-                       placeholder="Give your event a memorable name" value="{{ form_data.event_title or '' }}" required>
+                       placeholder="Give your event a memorable name" value="{{ submission.event_title }}" required>
             </div>
             
             <div class="mb-3">
@@ -291,8 +274,8 @@
                     Event Summary<span class="text-danger">*</span>
                 </label>
                 <textarea class="form-control" id="event_summary" name="event_summary" 
-                          placeholder="Limit: 150 characters. E.g. Learn family recipes and cook side by side with elders in a friendly kitchen." 
-                          maxlength="150" required>{{ form_data.event_summary or '' }}</textarea>
+                          placeholder="Limit: 150 characters" 
+                          maxlength="150" required>{{ submission.event_summary }}</textarea>
                 <div class="char-counter">
                     <span id="charCount">0</span> / 150
                 </div>
@@ -306,14 +289,14 @@
                     </label>
                     <select class="form-select" id="event_type" name="event_type" required>
                         <option value="">Select event type</option>
-                        <option value="Social" {% if form_data.event_type == 'Social' %}selected{% endif %}>Social</option>
-                        <option value="Educational" {% if form_data.event_type == 'Educational' %}selected{% endif %}>Educational</option>
-                        <option value="Cultural" {% if form_data.event_type == 'Cultural' %}selected{% endif %}>Cultural</option>
-                        <option value="Sports" {% if form_data.event_type == 'Sports' %}selected{% endif %}>Sports</option>
-                        <option value="Community" {% if form_data.event_type == 'Community' %}selected{% endif %}>Community</option>
-                        <option value="Arts & Crafts" {% if form_data.event_type == 'Arts & Crafts' %}selected{% endif %}>Arts & Crafts</option>
-                        <option value="Technology" {% if form_data.event_type == 'Technology' %}selected{% endif %}>Technology</option>
-                        <option value="Other" {% if form_data.event_type == 'Other' %}selected{% endif %}>Other</option>
+                        <option value="Social" {% if submission.event_type == 'Social' %}selected{% endif %}>Social</option>
+                        <option value="Educational" {% if submission.event_type == 'Educational' %}selected{% endif %}>Educational</option>
+                        <option value="Cultural" {% if submission.event_type == 'Cultural' %}selected{% endif %}>Cultural</option>
+                        <option value="Sports" {% if submission.event_type == 'Sports' %}selected{% endif %}>Sports</option>
+                        <option value="Community" {% if submission.event_type == 'Community' %}selected{% endif %}>Community</option>
+                        <option value="Arts & Crafts" {% if submission.event_type == 'Arts & Crafts' %}selected{% endif %}>Arts & Crafts</option>
+                        <option value="Technology" {% if submission.event_type == 'Technology' %}selected{% endif %}>Technology</option>
+                        <option value="Other" {% if submission.event_type == 'Other' %}selected{% endif %}>Other</option>
                     </select>
                 </div>
                 
@@ -322,7 +305,7 @@
                         Preferred Date<span class="text-danger">*</span>
                     </label>
                     <input type="date" class="form-control" id="preferred_date" name="preferred_date" 
-                           value="{{ form_data.preferred_date or '' }}" required>
+                           value="{{ submission.preferred_date.strftime('%Y-%m-%d') if submission.preferred_date else '' }}" required>
                     <small class="text-muted">Must be more than 1 week from today</small>
                 </div>
                 
@@ -332,10 +315,10 @@
                     </label>
                     <select class="form-select" id="expected_participants" name="expected_participants" required>
                         <option value="">Select range</option>
-                        <option value="1-20" {% if form_data.expected_participants == '1-20' %}selected{% endif %}>1-20</option>
-                        <option value="21-50" {% if form_data.expected_participants == '21-50' %}selected{% endif %}>21-50</option>
-                        <option value="51-100" {% if form_data.expected_participants == '51-100' %}selected{% endif %}>51-100</option>
-                        <option value="100+" {% if form_data.expected_participants == '100+' %}selected{% endif %}>100+</option>
+                        <option value="1-20" {% if submission.expected_participants == '1-20' %}selected{% endif %}>1-20</option>
+                        <option value="21-50" {% if submission.expected_participants == '21-50' %}selected{% endif %}>21-50</option>
+                        <option value="51-100" {% if submission.expected_participants == '51-100' %}selected{% endif %}>51-100</option>
+                        <option value="100+" {% if submission.expected_participants == '100+' %}selected{% endif %}>100+</option>
                     </select>
                 </div>
             </div>
@@ -352,7 +335,7 @@
                 </label>
                 <textarea class="form-control" id="why_meaningful" name="why_meaningful" 
                           placeholder="Share your story and what inspires you to organize this event..." 
-                          required>{{ form_data.why_meaningful or '' }}</textarea>
+                          required>{{ submission.why_meaningful }}</textarea>
             </div>
             
             <div class="mb-3">
@@ -360,7 +343,7 @@
                     Previous Experience (Optional)
                 </label>
                 <textarea class="form-control" id="previous_experience" name="previous_experience" 
-                          placeholder="Have you organized similar events before? Tell us about it...">{{ form_data.previous_experience or '' }}</textarea>
+                          placeholder="Have you organized similar events before? Tell us about it...">{{ submission.previous_experience or '' }}</textarea>
             </div>
             
             <div class="mb-3">
@@ -368,27 +351,21 @@
                     Accessibility Considerations<span class="text-danger">*</span>
                 </label>
                 <textarea class="form-control" id="accessibility" name="accessibility" 
-                          placeholder="How will you ensure the event is accessible for both youth and elderly? (e.g. wheelchair access, clear signage, activity pacing)" 
-                          required>{{ form_data.accessibility or '' }}</textarea>
+                          placeholder="How will you ensure the event is accessible for both youth and elderly?" 
+                          required>{{ submission.accessibility_considerations }}</textarea>
             </div>
         </div>
         
         <!-- Submit Section -->
         <div class="submit-section">
             <button type="submit" class="submit-btn">
-                Submit Your Event Idea
+                <i class="bi bi-check-circle"></i> Update Submission
             </button>
             <p class="submit-info">
-                We'll review your submission and contact you within 3-5 business days.
+                Your updated submission will be reviewed again.
             </p>
         </div>
     </form>
-    
-    <!-- Footer Text -->
-    <div class="footer-text">
-        By bringing youth and elderly together, we create meaningful connections that enrich our community. 
-        Thank you for taking the initiative to organize an intergenerational event.
-    </div>
 </div>
 
 {% endblock %}
