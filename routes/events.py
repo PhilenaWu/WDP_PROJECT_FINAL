@@ -4,8 +4,10 @@ from models import Event, EventRegistration, EventSubmission, User
 from datetime import datetime, timedelta
 import re
 import os
-import requests
+import base64
+from google import genai
 from werkzeug.utils import secure_filename
+from pathlib import Path
 from config import Config
 
 events_bp = Blueprint('events', __name__)
@@ -509,7 +511,7 @@ def admin_review_submission(submission_id):
 @events_bp.route('/api/generate-ai-image', methods=['POST'])
 @login_required
 def generate_ai_image():
-    """Generate AI image using Banana.dev API"""
+    """Generate AI image using Google Gemini 2.5 Flash Image"""
     if current_user.user_type != 'admin':
         return jsonify({'success': False, 'error': 'Admin access required'}), 403
     
@@ -527,76 +529,110 @@ def generate_ai_image():
         else:
             prompt = f"An event for {title}, professional event poster style, vibrant colors, inviting atmosphere"
         
-        # Call Banana.dev API
-        api_url = "https://api.banana.dev/start/v4"
-        headers = {
-            "Content-Type": "application/json"
-        }
-        payload = {
-            "apiKey": Config.BANANA_API_KEY,
-            "modelKey": Config.BANANA_MODEL_KEY,
-            "modelInputs": {
-                "prompt": prompt,
-                "num_inference_steps": 50,
-                "guidance_scale": 7.5,
-                "height": 512,
-                "width": 512
-            }
-        }
+        # Initialize Google Genai client
+        client = genai.Client(api_key=Config.GOOGLE_GENAI_API_KEY)
         
-        response = requests.post(api_url, json=payload, headers=headers, timeout=60)
-        response.raise_for_status()
+        # Generate image using Gemini 2.5 Flash Image
+        response = client.models.generate_content(
+            model="gemini-2.5-flash-image",
+            contents=prompt
+        )
         
-        result = response.json()
+        print(f"DEBUG: Response type: {type(response)}")
+        print(f"DEBUG: Response: {response}")
         
-        # Extract image URL from Banana response
-        # Note: Banana.dev returns base64 encoded image or URL depending on model
-        if result.get('modelOutputs'):
-            # If base64, you'd need to save it and return local URL
-            # For now, assuming URL is returned
-            image_data = result['modelOutputs']
+        # Extract image from response
+        # Gemini returns the image in the response parts
+        if response and hasattr(response, 'candidates') and response.candidates:
+            print(f"DEBUG: Found {len(response.candidates)} candidates")
             
-            # Handle base64 image
-            if isinstance(image_data, list) and len(image_data) > 0:
-                image_base64 = image_data[0]
+            for candidate_idx, candidate in enumerate(response.candidates):
+                print(f"DEBUG: Candidate {candidate_idx}: {candidate}")
                 
-                # Save base64 image to file
-                import base64
-                from pathlib import Path
-                
-                image_bytes = base64.b64decode(image_base64.split(',')[1] if ',' in image_base64 else image_base64)
-                
-                # Create uploads directory if it doesn't exist
-                upload_dir = Path('static/uploads/events')
-                upload_dir.mkdir(parents=True, exist_ok=True)
-                
-                # Generate unique filename
-                filename = f"ai_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{secure_filename(title[:30])}.png"
-                filepath = upload_dir / filename
-                
-                with open(filepath, 'wb') as f:
-                    f.write(image_bytes)
-                
-                image_url = f'/static/uploads/events/{filename}'
-                
-                return jsonify({
-                    'success': True,
-                    'image_url': image_url,
-                    'prompt': prompt
-                })
-            else:
-                return jsonify({'success': False, 'error': 'Invalid response from AI service'}), 500
+                if hasattr(candidate, 'content') and candidate.content:
+                    if hasattr(candidate.content, 'parts') and candidate.content.parts:
+                        print(f"DEBUG: Found {len(candidate.content.parts)} parts")
+                        
+                        for part_idx, part in enumerate(candidate.content.parts):
+                            print(f"DEBUG: Part {part_idx} type: {type(part)}, has inline_data: {hasattr(part, 'inline_data')}")
+                            
+                            if hasattr(part, 'inline_data') and part.inline_data:
+                                print(f"DEBUG: inline_data type: {type(part.inline_data)}")
+                                
+                                # Get image bytes directly from Blob object
+                                # Google Genai Blob has 'data' attribute with raw bytes
+                                if hasattr(part.inline_data, 'data'):
+                                    image_data = part.inline_data.data
+                                    print(f"DEBUG: Image data type: {type(image_data)}, length: {len(image_data) if image_data else 0}")
+                                    
+                                    # Check if it's already bytes or if it's base64 string
+                                    if isinstance(image_data, bytes):
+                                        # Already in bytes format
+                                        image_bytes = image_data
+                                        print(f"DEBUG: Using direct bytes")
+                                    elif isinstance(image_data, str):
+                                        # It's a base64 string, decode it
+                                        try:
+                                            image_bytes = base64.b64decode(image_data)
+                                            print(f"DEBUG: Decoded from base64")
+                                        except Exception as decode_error:
+                                            print(f"DEBUG: Decode error: {decode_error}")
+                                            continue
+                                    else:
+                                        print(f"DEBUG: Unknown data type, skipping")
+                                        continue
+                                else:
+                                    print(f"DEBUG: No 'data' attribute found")
+                                    continue
+                                
+                                # Create uploads directory if it doesn't exist
+                                upload_dir = Path('static/uploads/events')
+                                upload_dir.mkdir(parents=True, exist_ok=True)
+                                
+                                # Generate unique filename
+                                filename = f"ai_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{secure_filename(title[:30])}.png"
+                                filepath = upload_dir / filename
+                                
+                                with open(filepath, 'wb') as f:
+                                    f.write(image_bytes)
+                                
+                                print(f"DEBUG: Saved image to {filepath}, size: {len(image_bytes)} bytes")
+                                
+                                image_url = f'/static/uploads/events/{filename}'
+                                
+                                return jsonify({
+                                    'success': True,
+                                    'image_url': image_url,
+                                    'prompt': prompt
+                                })
+            
+            return jsonify({'success': False, 'error': 'No image data found in response parts'}), 500
         else:
-            return jsonify({'success': False, 'error': 'No image generated'}), 500
+            print(f"DEBUG: No candidates in response")
+            return jsonify({'success': False, 'error': 'No candidates in API response'}), 500
             
-    except requests.exceptions.Timeout:
-        return jsonify({'success': False, 'error': 'AI service timeout. Please try again.'}), 504
-    except requests.exceptions.RequestException as e:
-        print(f"Banana API error: {e}")
-        return jsonify({'success': False, 'error': f'AI service error: {str(e)}'}), 500
     except Exception as e:
-        print(f"Image generation error: {e}")
-        return jsonify({'success': False, 'error': f'Error: {str(e)}'}), 500
+        error_str = str(e)
+        print(f"Gemini API error: {e}")
+        
+        # Handle specific error types with user-friendly messages
+        if '429' in error_str or 'RESOURCE_EXHAUSTED' in error_str or 'quota' in error_str.lower():
+            return jsonify({
+                'success': False, 
+                'error': 'API quota limit reached. Please try again later or check your Google AI billing plan.'
+            }), 429
+        elif '401' in error_str or 'UNAUTHENTICATED' in error_str:
+            return jsonify({
+                'success': False, 
+                'error': 'Invalid API key. Please check your GOOGLE_GENAI_API_KEY configuration.'
+            }), 401
+        elif '403' in error_str or 'PERMISSION_DENIED' in error_str:
+            return jsonify({
+                'success': False, 
+                'error': 'API access denied. Please ensure your API key has proper permissions.'
+            }), 403
+        else:
+            return jsonify({'success': False, 'error': f'AI service error: {error_str[:200]}'}), 500
 
 
 @events_bp.route('/admin/events/create', methods=['GET', 'POST'])

@@ -24,6 +24,5 @@ class Config:
     # Google Maps API
     GOOGLE_MAPS_API_KEY = os.environ.get('GOOGLE_MAPS_API_KEY') or ''
     
-    # Banana.dev AI Image Generation
-    BANANA_API_KEY = os.environ.get('BANANA_API_KEY') or 'your-banana-api-key'
-    BANANA_MODEL_KEY = os.environ.get('BANANA_MODEL_KEY') or 'your-banana-model-key'
+    # Google Gemini AI Image Generation
+    GOOGLE_GENAI_API_KEY = os.environ.get('GOOGLE_GENAI_API_KEY') or ''

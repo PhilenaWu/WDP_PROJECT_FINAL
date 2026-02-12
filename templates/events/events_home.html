@@ -8,16 +8,27 @@
     .event-carousel-wrapper {
         position: relative;
         overflow: visible;
-        padding: 40px 0;
+        padding: 20px 0;
+        height: 600px;
     }
     
     .event-carousel-container {
         display: flex;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
         gap: 30px;
         perspective: 1000px;
         padding: 20px;
+        overflow: hidden;
+        position: relative;
+        height: 100%;
+    }
+    
+    .carousel-track {
+        display: flex;
+        gap: 30px;
+        transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1.0);
+        align-items: center;
     }
     
     .view-more-btn {
@@ -36,23 +47,18 @@
     }
     
     .event-card {
-        transition: all 0.1s cubic-bezier(0.4, 0.0, 0.2, 1.0);
+        flex-shrink: 0;
         position: relative;
         display: flex;
         flex-direction: column;
         background: white;
         border-radius: 15px;
         overflow: hidden;
-        will-change: transform, opacity, width, box-shadow;
         box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    }
-    
-    .event-card.carousel-left {
+        transition: all 0.6s cubic-bezier(0.4, 0.0, 0.2, 1.0);
         width: 250px;
         opacity: 0.6;
         transform: scale(0.85);
-        order: 1;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
     }
     
     .event-card.carousel-center {
@@ -60,16 +66,7 @@
         opacity: 1;
         transform: scale(1);
         box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-        order: 2;
         z-index: 5;
-    }
-    
-    .event-card.carousel-right {
-        width: 250px;
-        opacity: 0.6;
-        transform: scale(0.85);
-        order: 3;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
     }
     
     .event-card-media {
@@ -169,8 +166,7 @@
     
     .carousel-btn {
         position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
+        top: 280px;
         background: #f0ad4e;
         border: none;
         width: 50px;
@@ -214,8 +210,8 @@
     
     .navigation-section {
         background: #f8f9fa;
-        padding: 40px 0;
-        margin: 40px 0;
+        padding: 15px 0;
+        margin: 5px 0 50px 0;
     }
     
     .map-container {
@@ -436,9 +432,10 @@
             </button>
             
             <div class="event-carousel-container" id="eventCarousel">
-                {% for event in upcoming_events %}
-                <div class="event-card" data-event-id="{{ event.id }}">
-                    <div class="event-card-media">
+                <div class="carousel-track" id="carouselTrack">
+                    {% for event in upcoming_events %}
+                    <div class="event-card" data-event-id="{{ event.id }}">
+                        <div class="event-card-media">
                         {% if event.image_url %}
                         <img src="{{ event.image_url }}" alt="{{ event.title }}" class="event-card-image">
                         {% else %}
@@ -463,8 +460,9 @@
                             Sign Up
                         </button>
                     </div>
+                    </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
             </div>
             
             <button class="carousel-btn carousel-btn-next" onclick="moveCarousel(1)">
@@ -603,54 +601,64 @@
 {% block extra_js %}
 <script src="https://maps.googleapis.com/maps/api/js?key={{ maps_api_key }}&libraries=places"></script>
 <script>
-    // Carousel functionality with infinite loop and smooth animation
-    let currentIndex = 0;
-    const cards = document.querySelectorAll('.event-card');
+    // Smooth Sliding Carousel - slides to beginning when reaching end
+    const track = document.getElementById('carouselTrack');
+    const cards = Array.from(document.querySelectorAll('.event-card'));
     const totalCards = cards.length;
+    let currentIndex = 0;
     let isAnimating = false;
-    const ANIMATION_DURATION = 500; // Match CSS transition duration
     
-    function updateCarousel() {
-        cards.forEach((card, index) => {
-            card.classList.remove('carousel-left', 'carousel-center', 'carousel-right');
-            
-            // Calculate position relative to current index
-            const position = (index - currentIndex + totalCards) % totalCards;
-            
-            if (position === 0) {
-                card.classList.add('carousel-center');
-                card.style.display = 'flex';
-            } else if (position === totalCards - 1) {
-                // Previous item (left side)
-                card.classList.add('carousel-left');
-                card.style.display = 'flex';
-            } else if (position === 1) {
-                // Next item (right side)
-                card.classList.add('carousel-right');
-                card.style.display = 'flex';
-            } else {
-                // Hide other cards
-                card.style.display = 'none';
-            }
-        });
-    }
-    
-    function moveCarousel(direction) {
-        if (isAnimating) return;
-        
-        isAnimating = true;
-        currentIndex = (currentIndex + direction + totalCards) % totalCards;
-        updateCarousel();
-        
-        // Allow next animation after duration completes
-        setTimeout(() => {
-            isAnimating = false;
-        }, ANIMATION_DURATION);
-    }
-    
-    // Initialize carousel
     if (totalCards > 0) {
-        updateCarousel();
+        const cardWidth = 250;
+        const centerCardWidth = 380;
+        const gap = 30;
+        
+        function updateCarouselPosition() {
+            const containerWidth = document.getElementById('eventCarousel').offsetWidth;
+            
+            // Center the current card - calculate offset with fixed card width
+            const baseOffset = (containerWidth / 2) - (centerCardWidth / 2);
+            const slideOffset = currentIndex * (cardWidth + gap);
+            
+            track.style.transform = `translateX(${baseOffset - slideOffset}px)`;
+            
+            // Update card classes for styling
+            cards.forEach((card, index) => {
+                card.classList.remove('carousel-center');
+                if (index === currentIndex) {
+                    card.classList.add('carousel-center');
+                }
+            });
+        }
+        
+        function moveCarousel(direction) {
+            if (isAnimating) return;
+            
+            isAnimating = true;
+            
+            const newIndex = currentIndex + direction;
+            
+            // Check boundaries - slide back to start/end when reaching limits
+            if (newIndex < 0) {
+                currentIndex = totalCards - 1; // Go to last card
+            } else if (newIndex >= totalCards) {
+                currentIndex = 0; // Go to first card
+            } else {
+                currentIndex = newIndex;
+            }
+            
+            updateCarouselPosition();
+            
+            setTimeout(() => {
+                isAnimating = false;
+            }, 600);
+        }
+        
+        // Initialize
+        updateCarouselPosition();
+        
+        // Recalculate on window resize
+        window.addEventListener('resize', updateCarouselPosition);
     }
     
     // Google Maps
