@@ -59,6 +59,51 @@ body.editprofile-page .btn-light{background:#ffffff !important;border:1px solid 
   background: linear-gradient(135deg, #f39a1f 0%, #ff8c61 100%); 
   color: #fbf8f5; 
 }
+.navbar-nav .nav-link { font-size: 20px; padding: 16px 30px; font-weight: 500; }
+.navbar-nav .nav-link i { font-size: 22px; margin-right: 8px; }
+.navbar-icon-large { font-size: 40px !important; }
+
+/* ===== Navbar Logo ===== */
+.navbar-logo { height: 90px; width: auto; max-width: 90px; }
+
+.carousel-arrows {
+  width: 100%;
+  justify-content: center;
+  margin-top: 2.5rem;
+  margin-bottom: 1.5rem;
+}
+.carousel-arrow-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f39a1f;
+  color: #fff;
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  font-size: 2.2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: background 0.2s;
+}
+.carousel-arrow-icon:hover {
+  background: #e58a0d;
+}
+
+/* ===== Carousel Styles ===== */
+.carousel-wrapper { position: relative; padding-bottom: 60px; }
+.carousel-wrapper .carousel-inner { width: 100%; }
+.carousel-indicators { position: absolute; bottom: -50px; left: 50%; transform: translateX(-50%); background: none; margin: 0; }
+.carousel-indicators [data-bs-slide-to] { background-color: #ccc; border-radius: 50%; width: 12px; height: 12px; margin: 0 6px; }
+.carousel-indicators [data-bs-slide-to].active { background-color: #f39a1f; }
+.carousel-wrapper .carousel-control-prev,
+.carousel-wrapper .carousel-control-next { position: absolute; top: 50%; transform: translateY(-50%); width: auto; height: auto; background: none; opacity: 1; }
+.carousel-wrapper .carousel-control-prev { left: -50px; }
+.carousel-wrapper .carousel-control-next { right: -50px; }
+.carousel-wrapper .carousel-control-prev-icon,
+.carousel-wrapper .carousel-control-next-icon { background-color: #f39a1f; border-radius: 50%; width: 40px; height: 40px; }
+
+/* ===== Footer Logo ===== */
+.footer-logo { height: 30px; width: auto; max-width: 30px; vertical-align: middle; }
 
 /* ===== Password Visibility Toggle (Universal) ===== */
 .password-input-wrapper {
