@@ -59,6 +59,18 @@ def create_app():
                 print("If you see DB connection errors, verify Config.MYSQL_HOST and network access.")
     except Exception:
         pass
+
+    @app.template_filter('format_time')
+    def format_time(value, offset_hours=8):
+        from datetime import datetime, timedelta
+        if value is None:
+            return ''
+        if isinstance(value, str):
+            try:
+                value = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+            except ValueError:
+                return value
+        return (value + timedelta(hours=offset_hours)).strftime('%I:%M %p')
     
     return app
 
