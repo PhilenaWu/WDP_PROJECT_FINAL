@@ -1,10 +1,151 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, current_app
 from flask_login import login_user, logout_user, current_user, login_required
 from models import User
 from datetime import datetime, timedelta
 import re
+import smtplib
+from email.message import EmailMessage
+from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 
 auth_bp = Blueprint('auth', __name__)
+
+
+def generate_reset_token(email):
+    serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    return serializer.dumps(email, salt='password-reset-salt')
+
+
+def verify_reset_token(token, max_age):
+    serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    try:
+        return serializer.loads(token, salt='password-reset-salt', max_age=max_age)
+    except (SignatureExpired, BadSignature):
+        return None
+
+
+def send_password_reset_email(recipient_email, reset_link):
+    mail_username = current_app.config.get('MAIL_USERNAME')
+    mail_password = (current_app.config.get('MAIL_APP_PASSWORD') or '').replace(' ', '')
+    mail_server = current_app.config.get('MAIL_SERVER')
+    mail_port = current_app.config.get('MAIL_PORT')
+    use_tls = current_app.config.get('MAIL_USE_TLS', True)
+
+    if not mail_username or not mail_password:
+        raise ValueError('MAIL_USERNAME and MAIL_APP_PASSWORD must be configured.')
+
+    msg = EmailMessage()
+    msg['Subject'] = 'Genlink Password Reset'
+    msg['From'] = mail_username
+    msg['To'] = recipient_email
+    msg.set_content(
+        f"""Hello,
+
+We received a request to reset your StoryConnect password.
+
+Click the link below to set a new password:
+{reset_link}
+
+This link expires in 30 minutes.
+
+If you did not request this, you can ignore this email.
+"""
+    )
+
+    with smtplib.SMTP(mail_server, mail_port, timeout=30) as server:
+        server.ehlo()
+        if use_tls:
+            server.starttls()
+            server.ehlo()
+        server.login(mail_username, mail_password)
+        server.send_message(msg)
+
+
+@auth_bp.route('/feedback')
+@login_required
+def feedback():
+    return render_template('auth/feedback.html')
+
+
+@auth_bp.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip().lower()
+
+        if not email:
+            return render_template('auth/forgotpassword.html', error='Please enter your email address.')
+
+        user = User.get_by_email(email)
+        if not user:
+            return render_template('auth/forgotpassword.html', error='No account found with that email address.')
+
+        token = generate_reset_token(user.email)
+        reset_link = url_for('auth.reset_password', token=token, _external=True)
+        try:
+            send_password_reset_email(user.email, reset_link)
+        except smtplib.SMTPAuthenticationError:
+            return render_template(
+                'auth/forgotpassword.html',
+                error='Gmail login failed. Check MAIL_USERNAME and Gmail app password in config.py.'
+            )
+        except Exception as e:
+            return render_template(
+                'auth/forgotpassword.html',
+                error=f'Could not send reset email: {str(e)[:180]}'
+            )
+
+        flash('A password reset link has been sent to your email.', 'success')
+        return redirect(url_for('auth.login'))
+
+    return render_template('auth/forgotpassword.html')
+
+
+@auth_bp.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    max_age = current_app.config.get('RESET_TOKEN_MAX_AGE_SECONDS', 1800)
+    email = verify_reset_token(token, max_age)
+
+    if not email:
+        flash('This password reset link is invalid or has expired.', 'error')
+        return redirect(url_for('auth.forgot_password'))
+
+    if request.method == 'POST':
+        password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+
+        if not password or not confirm_password:
+            return render_template('auth/resetpassword.html', token=token, error='Please fill in both password fields.')
+
+        if password != confirm_password:
+            return render_template('auth/resetpassword.html', token=token, error='Passwords do not match.')
+
+        if len(password) < 6:
+            return render_template('auth/resetpassword.html', token=token, error='Password must be at least 6 characters long.')
+
+        from database import execute_query
+
+        existing_user = execute_query(
+            'SELECT password_hash FROM users WHERE email = %s',
+            (email,),
+            fetch_one=True
+        )
+
+        if existing_user and existing_user.get('password_hash') == password:
+            return render_template(
+                'auth/resetpassword.html',
+                token=token,
+                error='Please enter a new password different from your current one.'
+            )
+
+        execute_query(
+            'UPDATE users SET password_hash = %s, password_reset_count = password_reset_count + 1 WHERE email = %s',
+            (password, email),
+            commit=True
+        )
+
+        flash('Your password has been reset successfully. Please log in.', 'success')
+        return redirect(url_for('auth.login'))
+
+    return render_template('auth/resetpassword.html', token=token)
 
 @auth_bp.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -157,15 +298,6 @@ def signup():
     # GET: render the About You / signup form
     return render_template('auth/signup.html', user={})
 
-
-def allowed_file(filename, allowed_extensions):
-    """Check if file extension is allowed"""
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
-
-
-
-
-
 @auth_bp.route('/signup2', methods=['GET', 'POST'])
 def signup_step2():
     """Handle the second signup step - can be interests, connections, etc."""
@@ -178,9 +310,6 @@ def signup_step2():
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
-    error = None
-    lockout_seconds = None
-    
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '')
@@ -287,9 +416,88 @@ def appearance_settings():
     return render_template('auth/appearance.html')
 
 
+@auth_bp.route('/appearance/update', methods=['POST'])
+@login_required
+def update_appearance():
+    from database import execute_query
+
+    try:
+        data = request.get_json(silent=True) or request.form
+
+        theme = (data.get('theme') or 'light').strip().lower()
+        db_theme = 'darkmode' if theme == 'dark' else 'lightmode'
+
+        try:
+            text_size = int(data.get('text_size', 16))
+        except (TypeError, ValueError):
+            text_size = 16
+        text_size = max(12, min(48, text_size))
+
+        font_style_raw = (data.get('font_style') or 'arial').strip().lower()
+        font_db_map = {
+            'arial': 'Arial',
+            'verdana': 'Verdana',
+            'tahoma': 'Tahoma',
+            'trebuchet': 'Trebuchet MS',
+            'georgia': 'Georgia',
+            'times': 'Times New Roman',
+            'courier': 'Courier New'
+        }
+        font_style = font_db_map.get(font_style_raw, 'Arial')
+
+        font_weight_raw = str(data.get('font_weight', '500')).strip()
+        boldness_map = {
+            '300': 'light',
+            '500': 'medium',
+            '700': 'dark'
+        }
+        boldness = boldness_map.get(font_weight_raw, 'medium')
+
+        existing = execute_query(
+            "SELECT id FROM appearance WHERE user_id = %s LIMIT 1",
+            (current_user.id,),
+            fetch_one=True
+        )
+
+        if existing:
+            execute_query(
+                """
+                UPDATE appearance
+                SET theme = %s, text_size = %s, font_style = %s, boldness = %s
+                WHERE user_id = %s
+                """,
+                (db_theme, text_size, font_style, boldness, current_user.id),
+                commit=True
+            )
+        else:
+            execute_query(
+                """
+                INSERT INTO appearance (user_id, theme, text_size, font_style, boldness)
+                VALUES (%s, %s, %s, %s, %s)
+                """,
+                (current_user.id, db_theme, text_size, font_style, boldness),
+                commit=True
+            )
+
+        return {'success': True}, 200
+    except Exception as e:
+        return {'success': False, 'error': str(e)[:200]}, 500
+
+
 @auth_bp.route('/logout', methods=['GET', 'POST'])
 @login_required
 def logout():
+    if request.method == 'POST':
+        logout_user()
+        session.clear()
+        return redirect(url_for('auth.login'))
+
+    return render_template('auth/logout.html')
+
+
+@auth_bp.route('/logout-now', methods=['GET'])
+@login_required
+def logout_now():
     logout_user()
     session.clear()
     return redirect(url_for('auth.login'))

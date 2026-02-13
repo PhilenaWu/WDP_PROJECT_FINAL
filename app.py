@@ -1,10 +1,11 @@
-from flask import Flask, app, redirect, url_for
-from flask_login import LoginManager
+from flask import Flask, redirect, url_for
+from flask_login import LoginManager, current_user
 from flask_session import Session
 from config import Config
-from database import init_db, close_db
+from database import execute_query, init_db
 from models import User
 import os
+
 
 def create_app():
     app = Flask(__name__)
@@ -40,7 +41,57 @@ def create_app():
     def index():
         return redirect(url_for('main.home'))
 
-    
+    @app.context_processor
+    def inject_appearance_pref():
+        default_pref = {
+            'theme': 'light',
+            'textSize': 16,
+            'fontStyle': 'arial',
+            'fontWeight': '500'
+        }
+
+        if not getattr(current_user, 'is_authenticated', False):
+            return {'appearance_pref': default_pref}
+
+        try:
+            appearance = execute_query(
+                "SELECT theme, text_size, font_style, boldness FROM appearance WHERE user_id = %s",
+                (current_user.id,),
+                fetch_one=True
+            )
+
+            if not appearance:
+                return {'appearance_pref': default_pref}
+
+            font_key_map = {
+                'arial': 'arial',
+                'verdana': 'verdana',
+                'tahoma': 'tahoma',
+                'trebuchet ms': 'trebuchet',
+                'georgia': 'georgia',
+                'times new roman': 'times',
+                'courier new': 'courier'
+            }
+
+            font_style = (appearance.get('font_style') or 'Arial').strip().lower()
+            boldness = (appearance.get('boldness') or 'medium').strip().lower()
+            boldness_map = {
+                'light': '300',
+                'medium': '500',
+                'dark': '700'
+            }
+
+            pref = {
+                'theme': 'dark' if appearance.get('theme') == 'darkmode' else 'light',
+                'textSize': int(appearance.get('text_size') or 16),
+                'fontStyle': font_key_map.get(font_style, 'arial'),
+                'fontWeight': boldness_map.get(boldness, '500')
+            }
+
+            return {'appearance_pref': pref}
+        except Exception:
+            return {'appearance_pref': default_pref}
+
     # Ensure upload folder exists
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -57,7 +108,7 @@ def create_app():
                 print("If you see DB connection errors, verify Config.MYSQL_HOST and network access.")
     except Exception:
         pass
-    
+
     return app
 
 if __name__ == '__main__':

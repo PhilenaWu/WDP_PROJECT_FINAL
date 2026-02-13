@@ -11,6 +11,125 @@
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <script>
+        (function () {
+            const currentUserId = "{{ current_user.id if current_user.is_authenticated else '' }}";
+            const serverAppearance = JSON.parse('{{ appearance_pref|tojson|safe }}');
+            const defaults = {
+                theme: 'light',
+                textSize: 16,
+                fontWeight: '500',
+                fontStyle: 'arial'
+            };
+
+            const fontFamilies = {
+                arial: 'Arial, sans-serif',
+                verdana: 'Verdana, Geneva, sans-serif',
+                tahoma: 'Tahoma, Geneva, sans-serif',
+                trebuchet: '"Trebuchet MS", sans-serif',
+                georgia: 'Georgia, "Times New Roman", serif',
+                times: '"Times New Roman", Times, serif',
+                courier: '"Courier New", Courier, monospace'
+            };
+
+            function clampTextSize(value) {
+                const numberValue = Number(value);
+                if (Number.isNaN(numberValue)) {
+                    return defaults.textSize;
+                }
+                return Math.min(48, Math.max(12, numberValue));
+            }
+
+            function normalize(settings) {
+                const merged = { ...defaults, ...(settings || {}) };
+                return {
+                    theme: merged.theme === 'dark' ? 'dark' : 'light',
+                    textSize: clampTextSize(merged.textSize),
+                    fontWeight: ['300', '500', '700'].includes(String(merged.fontWeight))
+                        ? String(merged.fontWeight)
+                        : defaults.fontWeight,
+                    fontStyle: fontFamilies[merged.fontStyle] ? merged.fontStyle : defaults.fontStyle
+                };
+            }
+
+            function getSaved() {
+                if (!currentUserId) {
+                    return { ...defaults };
+                }
+                return normalize(serverAppearance);
+            }
+
+            function applyAppearance(settings) {
+                const next = normalize(settings);
+                const html = document.documentElement;
+                html.setAttribute('data-theme', next.theme);
+                html.style.setProperty('--app-font-weight', next.fontWeight);
+                html.style.setProperty('--app-font-family', fontFamilies[next.fontStyle]);
+
+                const scale = next.textSize / 16;
+                if (document.body) {
+                    const elements = document.body.querySelectorAll('*:not(script):not(style):not(svg):not(path):not(img):not(video):not(canvas):not(iframe)');
+                    elements.forEach((element) => {
+                        const tag = element.tagName.toLowerCase();
+                        if (['script', 'style', 'svg', 'path', 'img', 'video', 'canvas', 'iframe'].includes(tag)) {
+                            return;
+                        }
+
+                        const hasText = Array.from(element.childNodes).some(
+                            (node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim().length > 0
+                        );
+
+                        const isTextInput = ['input', 'textarea', 'select', 'button'].includes(tag);
+                        const isActionElement = ['a', 'button'].includes(tag);
+
+                        if (element.classList.contains('bi')) {
+                            return;
+                        }
+
+                        if (!hasText && !isTextInput && !isActionElement) {
+                            return;
+                        }
+
+                        if (!element.dataset.baseFontSize) {
+                            const computedSize = parseFloat(window.getComputedStyle(element).fontSize);
+                            if (!Number.isNaN(computedSize)) {
+                                element.dataset.baseFontSize = String(computedSize);
+                            }
+                        }
+
+                        const baseSize = parseFloat(element.dataset.baseFontSize || '');
+                        if (!Number.isNaN(baseSize)) {
+                            element.style.fontSize = `${(baseSize * scale).toFixed(2)}px`;
+                        }
+
+                        element.style.fontWeight = next.fontWeight;
+                    });
+                }
+
+                return next;
+            }
+
+            function saveAppearance(settings) {
+                const next = normalize(settings);
+                return next;
+            }
+
+            window.genlinkAppearance = {
+                defaults,
+                getSaved,
+                applyAppearance,
+                saveAppearance
+            };
+
+            const initialAppearance = getSaved();
+            applyAppearance(initialAppearance);
+
+            document.addEventListener('DOMContentLoaded', () => {
+                applyAppearance(initialAppearance);
+            });
+        })();
+    </script>
     
     {% block extra_css %}{% endblock %}
 </head>

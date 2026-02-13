@@ -11,7 +11,7 @@
 		<nav class="sidebar-menu">
 			<button class="menu-item menu-item--active" type="button" aria-current="page">Appearance</button>
 			<a href="{{ url_for('auth.language_settings') }}" class="menu-item">Language</a>
-			<a href="{{ url_for('auth.settings') }}" class="menu-item">Log Out</a>
+			<a href="{{ url_for('auth.logout') }}" class="menu-item">Log Out</a>
 		</nav>
 		<div class="sidebar-footer">
 			<a href="{{ url_for('main.home') }}" class="btn btn-light sidebar-home-btn">
@@ -74,44 +74,28 @@
 			<div class="setting-group">
 				<label class="setting-label">Bold</label>
 				<div class="bold-options">
-					<button type="button" class="bold-btn">Light</button>
-					<button type="button" class="bold-btn bold-btn--active">Medium</button>
-					<button type="button" class="bold-btn">Dark</button>
+					<button type="button" class="bold-btn" data-weight="300">Light</button>
+					<button type="button" class="bold-btn bold-btn--active" data-weight="500">Medium</button>
+					<button type="button" class="bold-btn" data-weight="700">Dark</button>
 				</div>
 			</div>
 
 			<div class="setting-group">
 				<label class="setting-label" for="fontStyle">Font Style</label>
 				<select class="font-select" id="fontStyle">
-					<option value="open-sans" selected>Open Sans</option>
-					<option value="roboto">Roboto</option>
-					<option value="lato">Lato</option>
-					<option value="montserrat">Montserrat</option>
-					<option value="poppins">Poppins</option>
-					<option value="arial">Arial</option>
+					<option value="arial" selected>Arial</option>
+					<option value="verdana">Verdana</option>
+					<option value="tahoma">Tahoma</option>
+					<option value="trebuchet">Trebuchet MS</option>
+					<option value="georgia">Georgia</option>
+					<option value="times">Times New Roman</option>
+					<option value="courier">Courier New</option>
 				</select>
 			</div>
 
-			<div class="setting-group">
-				<label class="setting-label">Reduced Motion</label>
-				<div class="motion-control">
-					<label class="motion-toggle">
-						<input type="checkbox" id="reducedMotion" name="reduced_motion">
-						<div class="toggle-switch-box">
-							<span class="toggle-slider"></span>
-						</div>
-						<span class="toggle-text">Reduce animations and transitions</span>
-					</label>
-					<p class="motion-description">
-						<span class="recommended-badge">Recommended for elderly</span>
-						Minimizes movement effects for a calmer browsing experience that's easier on the eyes.
-					</p>
-				</div>
-			</div>
-
 			<div class="appearance-actions">
-				<button type="button" class="btn btn-light">Cancel</button>
-				<button type="button" class="btn btn-orange">Save Changes</button>
+				<button type="button" class="btn btn-light" id="appearanceDefaultBtn">Default</button>
+				<button type="button" class="btn btn-orange" id="appearanceSaveBtn">Save Changes</button>
 			</div>
 		</section>
 	</main>
@@ -120,8 +104,66 @@
 
 {% block extra_js %}
 <script>
+	const appearanceManager = window.genlinkAppearance;
+	let initialSettings = appearanceManager.getSaved();
+
 	const themeCards = document.querySelectorAll('.theme-card');
 	const themeRadios = document.querySelectorAll('input[name="theme"]');
+	const textSizeSlider = document.getElementById('textSize');
+	const textSizeValue = document.getElementById('textSizeValue');
+	const boldButtons = document.querySelectorAll('.bold-btn');
+	const fontStyleSelect = document.getElementById('fontStyle');
+	const defaultBtn = document.getElementById('appearanceDefaultBtn');
+	const saveBtn = document.getElementById('appearanceSaveBtn');
+
+	let currentSettings = { ...initialSettings };
+
+	async function syncAppearanceToDatabase(settings) {
+		const response = await fetch("{{ url_for('auth.update_appearance') }}", {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				theme: settings.theme,
+				text_size: settings.textSize,
+				font_style: settings.fontStyle,
+				font_weight: settings.fontWeight
+			})
+		});
+
+		if (!response.ok) {
+			throw new Error('Failed to save appearance settings.');
+		}
+	}
+
+	function syncControls(settings) {
+		themeRadios.forEach(radio => {
+			radio.checked = radio.value === settings.theme;
+		});
+
+		themeCards.forEach(card => {
+			const cardTheme = card.querySelector('input[name="theme"]').value;
+			card.classList.toggle('theme-card--active', cardTheme === settings.theme);
+		});
+
+		textSizeSlider.value = settings.textSize;
+		textSizeValue.textContent = settings.textSize;
+
+		boldButtons.forEach(button => {
+			button.classList.toggle('bold-btn--active', button.dataset.weight === settings.fontWeight);
+		});
+
+		fontStyleSelect.value = settings.fontStyle;
+	}
+
+	function applyAndPersist() {
+		currentSettings = appearanceManager.applyAppearance(currentSettings);
+		appearanceManager.saveAppearance(currentSettings);
+	}
+
+	syncControls(currentSettings);
+	applyAndPersist();
 
 	themeRadios.forEach(radio => {
 		radio.addEventListener('change', function() {
@@ -131,30 +173,58 @@
 
 			if (this.checked) {
 				this.closest('.theme-card').classList.add('theme-card--active');
+				currentSettings.theme = this.value;
+				applyAndPersist();
 			}
 		});
 	});
 
-	const textSizeSlider = document.getElementById('textSize');
-	const textSizeValue = document.getElementById('textSizeValue');
-
 	textSizeSlider.addEventListener('input', function() {
 		textSizeValue.textContent = this.value;
+		currentSettings.textSize = Number(this.value);
+		applyAndPersist();
 	});
-
-	const boldButtons = document.querySelectorAll('.bold-btn');
 
 	boldButtons.forEach(btn => {
 		btn.addEventListener('click', function() {
 			boldButtons.forEach(b => b.classList.remove('bold-btn--active'));
 			this.classList.add('bold-btn--active');
+			currentSettings.fontWeight = this.dataset.weight;
+			applyAndPersist();
 		});
 	});
 
-	const reducedMotionCheckbox = document.getElementById('reducedMotion');
-
-	reducedMotionCheckbox.addEventListener('change', function() {
-		console.log('Reduced motion:', this.checked);
+	fontStyleSelect.addEventListener('change', function() {
+		currentSettings.fontStyle = this.value;
+		applyAndPersist();
 	});
+
+	defaultBtn.addEventListener('click', async function() {
+		const defaultSettings = { ...appearanceManager.defaults };
+
+		currentSettings = { ...defaultSettings };
+		syncControls(currentSettings);
+		applyAndPersist();
+
+		try {
+			await syncAppearanceToDatabase(currentSettings);
+			initialSettings = { ...currentSettings };
+		} catch (error) {
+			console.error(error);
+			alert('Could not reset to default settings. Please try again.');
+		}
+	});
+
+	saveBtn.addEventListener('click', async function() {
+		try {
+			await syncAppearanceToDatabase(currentSettings);
+			initialSettings = { ...currentSettings };
+			appearanceManager.saveAppearance(initialSettings);
+		} catch (error) {
+			console.error(error);
+			alert('Could not save appearance settings. Please try again.');
+		}
+	});
+
 </script>
 {% endblock %}
