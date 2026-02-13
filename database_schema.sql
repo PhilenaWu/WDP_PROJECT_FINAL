@@ -1,0 +1,3 @@
+
+ALTER TABLE event_submissions
+ADD COLUMN image_url VARCHAR(255) DEFAULT NULL;

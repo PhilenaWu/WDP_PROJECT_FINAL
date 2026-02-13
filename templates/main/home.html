@@ -38,7 +38,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#">
+                <a class="nav-link" href="{{ url_for('events.events_home') }}">
                     <i class="bi bi-calendar-event"></i> Events
                 </a>
             </li>
@@ -49,6 +49,10 @@
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li><a class="dropdown-item" href="{{ url_for('profile.profile') }}">Profile</a></li>
                     <li><a class="dropdown-item" href="{{ url_for('auth.settings') }}">Settings</a></li>
+                    {% if current_user.user_type == 'admin' %}
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{{ url_for('events.admin_submissions') }}"><i class="bi bi-shield-check"></i> Admin Panel</a></li>
+                    {% endif %}
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item" href="{{ url_for('auth.feedback') }}">Send Feedback</a></li>
                     <li><a class="dropdown-item" href="{{ url_for('auth.logout_now') }}">Logout</a></li>

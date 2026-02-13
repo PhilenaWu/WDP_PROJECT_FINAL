@@ -30,3 +30,9 @@ class Config:
 
     # Password reset token
     RESET_TOKEN_MAX_AGE_SECONDS = int(os.environ.get('RESET_TOKEN_MAX_AGE_SECONDS', 1800))
+    
+    # Google Maps API
+    GOOGLE_MAPS_API_KEY = os.environ.get('GOOGLE_MAPS_API_KEY') or ''
+    
+    # Google Gemini AI Image Generation
+    GOOGLE_GENAI_API_KEY = os.environ.get('GOOGLE_GENAI_API_KEY') or ''

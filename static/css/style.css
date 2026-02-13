@@ -306,3 +306,27 @@ body.appearance-page .appearance-actions{margin-top:48px;padding-right:40px;}
 
 /* ===== Global Dark Mode (Background Only) ===== */
 html[data-theme='dark'] body,html[data-theme='dark'] body[class]{background-color:var(--app-bg) !important;}
+/* ===== Flash Messages ===== */
+.flash-messages-container {
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  margin: 20px 0 0;
+  position: static;
+  width: 100%;
+  pointer-events: none;
+}
+
+.flash-messages-container .container {
+  margin-top: 0 !important;
+  padding: 0 16px;
+  pointer-events: none;
+}
+
+.flash-messages-container .alert {
+  margin: 0 auto 12px;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  pointer-events: auto;
+}

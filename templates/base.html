@@ -151,6 +151,8 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body {% block body_class %}{% endblock %}>
+    {% block navbar %}{% endblock %}
+    
     <!-- Flash messages -->
     {% if request.endpoint != 'main.home' %}
         {% with messages = get_flashed_messages(with_categories=true) %}

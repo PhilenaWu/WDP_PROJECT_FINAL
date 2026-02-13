@@ -1,0 +1,618 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Submission - StoryConnect{% endblock %}
+
+{% block extra_css %}
+<style>
+    .submission-container {
+        max-width: 900px;
+        margin: 50px auto;
+        padding-bottom: 50px;
+    }
+    
+    .submission-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    
+    .submission-header h2 {
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 15px;
+    }
+    
+    .submission-header p {
+        color: #666;
+        font-size: 1.1rem;
+    }
+    
+    .heart-icon {
+        background: #fff3e6;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+    }
+    
+    .heart-icon i {
+        font-size: 1.8rem;
+        color: #f0ad4e;
+    }
+    
+    .form-section {
+        background: white;
+        border-radius: 15px;
+        padding: 40px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+        border-left: 5px solid #17a2b8;
+    }
+    
+    .section-number {
+        background: #17a2b8;
+        color: white;
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.3rem;
+        margin-bottom: 15px;
+    }
+    
+    .section-title {
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 25px;
+        font-size: 1.4rem;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #555;
+        margin-bottom: 8px;
+    }
+    
+    .form-label .text-danger {
+        margin-left: 3px;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 2px solid #e0e0e0;
+        padding: 12px;
+        transition: border-color 0.3s;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #17a2b8;
+        box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+    }
+    
+    textarea.form-control {
+        min-height: 120px;
+        resize: vertical;
+    }
+    
+    .char-counter {
+        font-size: 0.875rem;
+        color: #666;
+        text-align: right;
+        margin-top: 5px;
+    }
+    
+    .submit-section {
+        background: #e7f6f8;
+        border-radius: 15px;
+        padding: 40px;
+        text-align: center;
+        margin-top: 40px;
+    }
+    
+    .submit-btn {
+        background: #17a2b8;
+        color: white;
+        border: none;
+        padding: 18px 60px;
+        border-radius: 35px;
+        font-weight: 600;
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(23, 162, 184, 0.3);
+    }
+    
+    .submit-btn:hover {
+        background: #138496;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(23, 162, 184, 0.4);
+    }
+    
+    .submit-info {
+        color: #666;
+        margin-top: 20px;
+        font-size: 1rem;
+    }
+    
+    .back-btn {
+        background: white;
+        color: #17a2b8;
+        border: 2px solid #17a2b8;
+        padding: 10px 25px;
+        border-radius: 25px;
+        text-decoration: none;
+        display: inline-block;
+        margin-bottom: 30px;
+        transition: all 0.3s;
+    }
+    
+    .back-btn:hover {
+        background: #17a2b8;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block navbar %}
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand" href="#">
+            <i class="bi bi-people-fill me-2"></i>
+            <span>StoryConnect</span>
+        </a>
+        <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('events.events_home') }}">
+                    <i class="bi bi-calendar-event"></i> Events
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('events.my_submissions') }}">
+                    <i class="bi bi-file-earmark-text"></i> My Submissions
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container submission-container">
+    <!-- Header -->
+    <div class="submission-header">
+        <div class="heart-icon">
+            <i class="bi bi-pencil-fill"></i>
+        </div>
+        <h2>Edit Your Event Submission</h2>
+        <p>Update your event details below</p>
+    </div>
+    
+    <div class="text-start">
+        <a href="{{ url_for('events.my_submissions') }}" class="back-btn">
+            <i class="bi bi-arrow-left"></i> Back to Submissions
+        </a>
+    </div>
+    
+    <form method="POST" action="{{ url_for('events.edit_submission', submission_id=submission.id) }}" enctype="multipart/form-data" id="editSubmissionForm" novalidate>
+        <!-- Section 1: Who You Are -->
+        <div class="form-section">
+            <div class="section-number">1</div>
+            <h3 class="section-title">Who You Are</h3>
+            
+            <div class="row">
+                <div class="col-md-12 mb-3">
+                    <label for="organizer_name" class="form-label">
+                        Full Name<span class="text-danger">*</span>
+                    </label>
+                    <input type="text" class="form-control" id="organizer_name" name="organizer_name" 
+                           placeholder="Enter your full name" value="{{ submission.organizer_name }}" 
+                           minlength="2" required>
+                    <div class="invalid-feedback">Please enter your full name (at least 2 characters).</div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="organizer_dob" class="form-label">
+                        Date of Birth<span class="text-danger">*</span>
+                    </label>
+                          <input type="date" class="form-control" id="organizer_dob" name="organizer_dob" 
+                              value="{{ submission.organizer_dob.strftime('%Y-%m-%d') if submission.organizer_dob else '' }}" required>
+                    <small class="text-muted">Must be at least 13 years old</small>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="organizer_age_group" class="form-label">
+                        Age Group<span class="text-danger">*</span>
+                    </label>
+                    <input type="text" class="form-control" id="organizer_age_group" name="organizer_age_group" 
+                           value="{{ submission.organizer_age_group or '' }}" readonly 
+                           style="background-color: #e9ecef;">
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="organizer_email" class="form-label">
+                        Email<span class="text-danger">*</span>
+                    </label>
+                    <input type="email" class="form-control" id="organizer_email" name="organizer_email" 
+                           placeholder="johndoe@gmail.com" value="{{ submission.organizer_email }}"
+                           pattern="[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}" required>
+                    <div class="invalid-feedback">Please enter a valid email address with a real domain (e.g., user@gmail.com, user@yahoo.com).</div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="organizer_phone" class="form-label">
+                        Phone Number<span class="text-danger">*</span>
+                    </label>
+                    <input type="tel" class="form-control" id="organizer_phone" name="organizer_phone" 
+                           placeholder="81234567" pattern="[89][0-9]{7}" maxlength="8" inputmode="numeric"
+                           value="{{ submission.organizer_phone }}" required>
+                    <div class="invalid-feedback">Please enter a valid phone number (8 digits starting with 8 or 9).</div>
+                </div>
+                
+                <div class="col-md-12 mb-3">
+                    <label for="organizer_location" class="form-label">
+                        Location<span class="text-danger">*</span>
+                    </label>
+                    <input type="text" class="form-control" id="organizer_location" name="organizer_location" 
+                           placeholder="E.g. Wild Wild Wet - 519599" value="{{ submission.organizer_location or '' }}" required>
+                    <div class="invalid-feedback">Please enter a location.</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section 2: Your Event Idea -->
+        <div class="form-section">
+            <div class="section-number">2</div>
+            <h3 class="section-title">Your Event Idea</h3>
+            
+            <div class="mb-3">
+                <label for="event_title" class="form-label">
+                    Event Title<span class="text-danger">*</span>
+                </label>
+                <input type="text" class="form-control" id="event_title" name="event_title" 
+                       placeholder="Give your event a memorable name" value="{{ submission.event_title }}" 
+                       minlength="3" required>
+                <div class="invalid-feedback">Event title is required (at least 3 characters).</div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="event_summary" class="form-label">
+                    Event Summary<span class="text-danger">*</span>
+                </label>
+                <textarea class="form-control" id="event_summary" name="event_summary" 
+                          placeholder="Limit: 150 characters" 
+                          maxlength="150" minlength="10" required>{{ submission.event_summary }}</textarea>
+                <div class="char-counter">
+                    <span id="charCount">0</span> / 150
+                </div>
+                <div class="invalid-feedback">Event summary is required (10-150 characters).</div>
+                <small class="text-muted">Brief summary of your event (max 150 characters)</small>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="event_type" class="form-label">
+                        Event Type<span class="text-danger">*</span>
+                    </label>
+                    <select class="form-select" id="event_type" name="event_type" required>
+                        <option value="">Select event type</option>
+                        <option value="Social" {% if submission.event_type == 'Social' %}selected{% endif %}>Social</option>
+                        <option value="Educational" {% if submission.event_type == 'Educational' %}selected{% endif %}>Educational</option>
+                        <option value="Cultural" {% if submission.event_type == 'Cultural' %}selected{% endif %}>Cultural</option>
+                        <option value="Sports" {% if submission.event_type == 'Sports' %}selected{% endif %}>Sports</option>
+                        <option value="Community" {% if submission.event_type == 'Community' %}selected{% endif %}>Community</option>
+                        <option value="Arts & Crafts" {% if submission.event_type == 'Arts & Crafts' %}selected{% endif %}>Arts & Crafts</option>
+                        <option value="Technology" {% if submission.event_type == 'Technology' %}selected{% endif %}>Technology</option>
+                        <option value="Other" {% if submission.event_type == 'Other' %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-4 mb-3">
+                    <label for="preferred_date" class="form-label">
+                        Preferred Date<span class="text-danger">*</span>
+                    </label>
+                    <input type="date" class="form-control" id="preferred_date" name="preferred_date" 
+                           value="{{ submission.preferred_date.strftime('%Y-%m-%d') if submission.preferred_date else '' }}" required>
+                    <small class="text-muted">Must be at least 1 week from today</small>
+                </div>
+                
+                <div class="col-md-4 mb-3">
+                    <label for="expected_participants" class="form-label">
+                        Expected No. of Participants<span class="text-danger">*</span>
+                    </label>
+                    <select class="form-select" id="expected_participants" name="expected_participants" required>
+                        <option value="">Select range</option>
+                        <option value="1-20" {% if submission.expected_participants == '1-20' %}selected{% endif %}>1-20</option>
+                        <option value="21-50" {% if submission.expected_participants == '21-50' %}selected{% endif %}>21-50</option>
+                        <option value="51-100" {% if submission.expected_participants == '51-100' %}selected{% endif %}>51-100</option>
+                        <option value="100+" {% if submission.expected_participants == '100+' %}selected{% endif %}>100+</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section 3: Tell Us More -->
+        <div class="form-section">
+            <div class="section-number">3</div>
+            <h3 class="section-title">Tell Us More</h3>
+            
+            <div class="mb-3">
+                <label for="why_meaningful" class="form-label">
+                    Why is this event meaningful to you?<span class="text-danger">*</span>
+                </label>
+                <textarea class="form-control" id="why_meaningful" name="why_meaningful" 
+                          placeholder="Share your story and what inspires you to organize this event..." 
+                          minlength="20" required>{{ submission.why_meaningful }}</textarea>
+                <div class="invalid-feedback">Please explain why this event is meaningful (at least 20 characters).</div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="previous_experience" class="form-label">
+                    Previous Experience (Optional)
+                </label>
+                <textarea class="form-control" id="previous_experience" name="previous_experience" 
+                          placeholder="Have you organized similar events before? Tell us about it...">{{ submission.previous_experience or '' }}</textarea>
+            </div>
+            
+            <div class="mb-3">
+                <label for="accessibility" class="form-label">
+                    Accessibility Considerations<span class="text-danger">*</span>
+                </label>
+                <textarea class="form-control" id="accessibility" name="accessibility" 
+                          placeholder="How will you ensure the event is accessible for both youth and elderly?" 
+                          minlength="20" required>{{ submission.accessibility_considerations }}</textarea>
+                <div class="invalid-feedback">Please provide accessibility considerations (at least 20 characters).</div>
+            </div>
+        </div>
+        
+        <!-- Image Upload (required if no existing image) -->
+        <div class="form-section">
+            {% if submission.image_url %}
+            <div class="mb-3">
+                <label class="form-label">Current Image</label>
+                <div>
+                    <img src="{{ submission.image_url }}" alt="Event image" style="max-width:260px;border-radius:8px;">
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="mb-3">
+                <label for="edit_submission_image" class="form-label">
+                    Event Image {% if not (submission.image_url or submission.submission_image) %}<span class="text-danger">*</span>{% endif %}
+                </label>
+                <input type="file" class="form-control" id="edit_submission_image" name="submission_image" accept="image/*" onchange="validateEditSubmissionFileSize(this)" {% if not (submission.image_url or submission.submission_image) %}required{% endif %}>
+                <div class="invalid-feedback">Please upload an event image (max 5MB).</div>
+                <small class="text-muted">Accepted formats: JPG, PNG. Max size: 5MB.</small>
+                <div id="editSubmissionFileError" class="text-danger mt-2" style="display:none;">File is too large. Max 5MB.</div>
+            </div>
+        </div>
+
+        <!-- Submit Section -->
+            <button type="submit" class="submit-btn">
+                <i class="bi bi-check-circle"></i> Update Submission
+            </button>
+            <p class="submit-info">
+                Your updated submission will be reviewed again.
+            </p>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // List of known email domains
+    const knownEmailDomains = [
+        'gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'aol.com',
+        'mail.com', 'protonmail.com', 'zoho.com', 'yandex.com', 'icloud.com',
+        'me.com', 'mac.com', 'qq.com', 'aliyun.com', 'sina.com', '163.com',
+        'sohu.com', 'foxmail.com', 'live.com', 'msn.com', 'standardmail.com',
+        'inbox.com', 'mail.co.uk', 'googlemail.com', 'rediffmail.com', 'mailinator.com'
+    ];
+    
+    // Email validation function
+    function validateEmail(email) {
+        const emailRegex = /^[A-Za-z0-9._%+-]+@([A-Za-z0-9.-]+\.[A-Za-z]{2,})$/;
+        const match = email.match(emailRegex);
+        
+        if (!match) return false;
+        
+        const domain = match[1].toLowerCase();
+        return knownEmailDomains.includes(domain) || domain.includes('company') || domain.includes('work') || domain.includes('org');
+    }
+    
+    // Add custom validation to email fields
+    const emailInputs = document.querySelectorAll('input[type="email"]');
+    emailInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            if (this.value && !validateEmail(this.value)) {
+                this.setCustomValidity('Please use a valid email domain (gmail.com, yahoo.com, outlook.com, etc)');
+                this.classList.add('is-invalid');
+            } else {
+                this.setCustomValidity('');
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+    
+    // Character counter for event summary
+    const eventSummary = document.getElementById('event_summary');
+    const charCount = document.getElementById('charCount');
+    
+    function updateCharCount() {
+        charCount.textContent = eventSummary.value.length;
+    }
+    
+    eventSummary.addEventListener('input', updateCharCount);
+    updateCharCount(); // Initialize
+    
+    // Auto-compute age group from date of birth
+    const dobInput = document.getElementById('organizer_dob');
+    const ageGroupInput = document.getElementById('organizer_age_group');
+    
+    function calculateAgeGroup(dob) {
+        const today = new Date();
+        const birthDate = new Date(dob);
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        
+        // Adjust age if birthday hasn't occurred yet this year
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        
+        // Check minimum age requirement (must be exactly 13 or older)
+        if (age < 13) {
+            return null;
+        }
+        
+        // Determine age group
+        if (age >= 13 && age <= 20) {
+            return 'Youth';
+        } else if (age >= 21 && age <= 59) {
+            return 'Adult';
+        } else if (age >= 60) {
+            return 'Elderly';
+        }
+        
+        return null;
+    }
+    
+    function updateAgeGroup() {
+        const dob = dobInput.value;
+        if (dob) {
+            const ageGroup = calculateAgeGroup(dob);
+            if (ageGroup) {
+                ageGroupInput.value = ageGroup;
+                dobInput.setCustomValidity('');
+            } else {
+                ageGroupInput.value = '';
+                dobInput.setCustomValidity('You must be at least 13 years old to create an event.');
+            }
+        } else {
+            ageGroupInput.value = '';
+            dobInput.setCustomValidity('');
+        }
+    }
+    
+    dobInput.addEventListener('change', updateAgeGroup);
+    updateAgeGroup(); // Initialize
+    
+    // Date restrictions for DOB (must be 13+ years old)
+    function setDOBRestrictions() {
+        // Calculate the max date (13 years ago from today)
+        const today = new Date();
+        const maxDate = new Date(today.getFullYear() - 13, today.getMonth(), today.getDate());
+        
+        // Set max attribute to ensure user is at least 13 years old
+        dobInput.setAttribute('max', maxDate.toISOString().split('T')[0]);
+    }
+    
+    setDOBRestrictions();
+    
+    // Date restrictions for preferred_date (Singapore Time - must be at least 1 week away)
+    const preferredDateInput = document.getElementById('preferred_date');
+    
+    function setDateRestrictions() {
+        // Get current date in Singapore timezone (UTC+8)
+        const now = new Date();
+        const singaporeOffset = 8 * 60; // Singapore is UTC+8
+        const localOffset = now.getTimezoneOffset(); // Local offset in minutes (negative for ahead of UTC)
+        const offsetDiff = singaporeOffset + localOffset;
+        
+        // Adjust to Singapore time
+        const singaporeTime = new Date(now.getTime() + (offsetDiff * 60 * 1000));
+        
+        // 1 week from today (7 days from today)
+        const oneWeekFromToday = new Date(singaporeTime);
+        oneWeekFromToday.setDate(oneWeekFromToday.getDate() + 7);
+        
+        // Format date as YYYY-MM-DD
+        const minDate = oneWeekFromToday.toISOString().split('T')[0];
+        
+        preferredDateInput.setAttribute('min', minDate);
+    }
+    
+    setDateRestrictions();
+    
+    // Phone number restrictions (digits only, max 8)
+    const organizerPhoneInput = document.getElementById('organizer_phone');
+
+    function normalizePhoneInput(input) {
+        let value = input.value.replace(/\D/g, '').slice(0, 8);
+
+        while (value.length > 0 && !/^[89]/.test(value)) {
+            value = value.slice(1);
+        }
+
+        input.value = value;
+    }
+
+    organizerPhoneInput.addEventListener('input', function() {
+        normalizePhoneInput(organizerPhoneInput);
+    });
+    normalizePhoneInput(organizerPhoneInput);
+
+    // Bootstrap form validation with auto-scroll to first error
+    (function() {
+        'use strict';
+        
+        const form = document.querySelector('form');
+        
+        form.addEventListener('submit', function(event) {
+            // Validate DOB age
+            updateAgeGroup();
+            
+            // Validate emails
+            emailInputs.forEach(input => {
+                if (input.value && !validateEmail(input.value)) {
+                    input.setCustomValidity('Please use a valid email domain');
+                    input.classList.add('is-invalid');
+                }
+            });
+            
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+                
+                // Scroll to first invalid field
+                const firstInvalid = form.querySelector('.form-control:invalid, .form-select:invalid');
+                if (firstInvalid) {
+                    firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstInvalid.focus();
+                }
+            }
+            
+            form.classList.add('was-validated');
+        }, false);
+    })();
+
+    // Validate edit submission image file size (max 5MB)
+    function validateEditSubmissionFileSize(input) {
+        const file = input.files && input.files[0];
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        const errDiv = document.getElementById('editSubmissionFileError');
+
+        if (file && file.size > maxSize) {
+            input.classList.add('is-invalid');
+            input.setCustomValidity('File too large');
+            if (errDiv) errDiv.style.display = 'block';
+        } else {
+            input.classList.remove('is-invalid');
+            input.setCustomValidity('');
+            if (errDiv) errDiv.style.display = 'none';
+        }
+    }
+
+    const editSubmissionFileInput = document.getElementById('edit_submission_image');
+    if (editSubmissionFileInput) {
+        editSubmissionFileInput.addEventListener('change', function() { validateEditSubmissionFileSize(this); });
+    }
+</script>
+{% endblock %}
