@@ -33,7 +33,9 @@ def create_app():
     from routes.profile import profile_bp
     from routes.main import main_bp
     from routes.events import events_bp
+    from routes.messaging import messaging_bp
     
+    app.register_blueprint(messaging_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(profile_bp, url_prefix='/profile')
     app.register_blueprint(main_bp)
@@ -111,6 +113,18 @@ def create_app():
     except Exception:
         pass
 
+    @app.template_filter('format_time')
+    def format_time(value, offset_hours=8):
+        from datetime import datetime, timedelta
+        if value is None:
+            return ''
+        if isinstance(value, str):
+            try:
+                value = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+            except ValueError:
+                return value
+        return (value + timedelta(hours=offset_hours)).strftime('%I:%M %p')
+    
     return app
 
 if __name__ == '__main__':

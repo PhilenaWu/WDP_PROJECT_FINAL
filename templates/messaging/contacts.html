@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Contacts - Genlink{% endblock %}
+
+{% block extra_css %}
+<style>
+    .messaging-container { max-width: 1200px; margin: 2rem auto; padding: 2rem; display: grid; grid-template-columns: 300px 1fr; gap: 2rem; min-height: 80vh; }
+    .sidebar { background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .sidebar h3 { margin-bottom: 1rem; color: #2c2c2c; }
+    .contact-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; cursor: pointer; transition: background 0.3s; text-decoration: none; color: inherit; }
+    .contact-item:hover { background: #fff5f0; }
+    .contact-avatar { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #ff6b35, #ff8c42); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.3rem; flex-shrink: 0; }
+    .contact-info { flex: 1; }
+    .contact-name { font-weight: 600; color: #2c2c2c; }
+    .contact-status { font-size: 0.85rem; color: #999; }
+    .favorite-star { color: #ffc107; font-size: 1.2rem; }
+    .main-content { background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .add-contact-form { background: #f9f9f9; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; }
+    .contact-actions { display: flex; gap: 0.5rem; }
+    .btn-small { padding: 0.4rem 0.8rem; font-size: 0.9rem; }
+    .btn-edit { background: #2196f3; color: white; }
+    .btn-edit:hover { background: #1976d2; color: white; }
+    .btn-delete { background: #f44336; color: white; }
+    .btn-delete:hover { background: #d32f2f; color: white; }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.home') }}">
+            <i class="bi bi-people-fill me-2 navbar-brand-icon"></i>
+            <span class="navbar-brand-text">Genlink</span>
+        </a>
+        <ul class="navbar-nav ms-auto">
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('main.home') }}"><i class="bi bi-house-door"></i> Home</a></li>
+            <li class="nav-item"><a class="nav-link active" href="{{ url_for('messaging.view_contacts') }}"><i class="bi bi-chat-dots"></i> Messages</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('messaging.view_groups') }}"><i class="bi bi-people"></i> Groups</a></li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"><i class="bi bi-person-circle"></i></a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="{{ url_for('profile.profile') }}">Profile</a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('auth.settings') }}">Settings</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{{ url_for('auth.logout_now') }}">Logout</a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="messaging-container">
+    <div class="sidebar">
+        <h3>My Contacts</h3>
+        {% if contacts %}
+            {% for contact in contacts %}
+            <a href="{{ url_for('messaging.chat_direct', contact_id=contact.contact_user_id) }}" class="contact-item">
+                <div class="contact-avatar">{{ (contact.contact_display_name or '?')[0].upper() }}</div>
+                <div class="contact-info">
+                    <div class="contact-name">{{ contact.nickname or contact.contact_display_name }}{% if contact.is_favorite %} <span class="favorite-star">★</span>{% endif %}</div>
+                    <div class="contact-status">{{ contact.contact_age_group or '' }}</div>
+                </div>
+            </a>
+            {% endfor %}
+        {% else %}
+            <p style="color: #999; text-align: center; padding: 2rem;">No contacts yet</p>
+        {% endif %}
+    </div>
+    <div class="main-content">
+        <h2>Manage Contacts</h2>
+        <div class="add-contact-form">
+            <h3>Add New Contact</h3>
+            <form method="POST" action="{{ url_for('messaging.add_contact') }}">
+                <div class="mb-3">
+                    <label for="contact_user_id" class="form-label">Select User *</label>
+                    <select id="contact_user_id" name="contact_user_id" class="form-select" required>
+                        <option value="">-- Choose a user --</option>
+                        {% for user in available_users %}
+                        <option value="{{ user.id }}">{{ user.display_name or user.username }} ({{ user.age_group or 'N/A' }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="nickname" class="form-label">Nickname (Optional)</label>
+                    <input type="text" class="form-control" id="nickname" name="nickname" placeholder="e.g., Uncle Lim" minlength="2" maxlength="50">
+                </div>
+                <button type="submit" class="btn btn-primary">Add Contact</button>
+            </form>
+        </div>
+        <h3>Your Contacts ({{ contacts|length }})</h3>
+        <div style="margin-top: 1rem;">
+            {% for contact in contacts %}
+            <div class="contact-item" style="background: #f9f9f9; margin-bottom: 1rem; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div class="contact-avatar">{{ (contact.contact_display_name or '?')[0].upper() }}</div>
+                    <div class="contact-info">
+                        <div class="contact-name">{{ contact.nickname or contact.contact_display_name }}{% if contact.is_favorite %} <span class="favorite-star">★</span>{% endif %}</div>
+                        <div class="contact-status">@{{ contact.contact_username }} • {{ contact.contact_age_group or '' }}</div>
+                    </div>
+                </div>
+                <div class="contact-actions">
+                    <a href="{{ url_for('messaging.chat_direct', contact_id=contact.contact_user_id) }}" class="btn btn-primary btn-small">Chat</a>
+                    <a href="{{ url_for('messaging.edit_contact', contact_id=contact.id) }}" class="btn btn-edit btn-small">Edit</a>
+                    <form method="POST" action="{{ url_for('messaging.delete_contact', contact_id=contact.id) }}" style="display:inline;" onsubmit="return confirm('Remove this contact?');">
+                        <button type="submit" class="btn btn-delete btn-small">Remove</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
