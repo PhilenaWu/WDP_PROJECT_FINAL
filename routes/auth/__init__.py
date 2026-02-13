@@ -166,8 +166,13 @@ def reset_password(token):
         if password != confirm_password:
             return render_template('auth/resetpassword.html', token=token, error='Passwords do not match.')
 
-        if len(password) < 6:
-            return render_template('auth/resetpassword.html', token=token, error='Password must be at least 6 characters long.')
+        password_pattern = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}$'
+        if not re.match(password_pattern, password):
+            return render_template(
+                'auth/resetpassword.html',
+                token=token,
+                error='Password must be at least 8 characters and include 1 lowercase, 1 uppercase, 1 number, and 1 special character.'
+            )
 
         from database import execute_query
 
@@ -397,12 +402,12 @@ def login():
             session['failed_attempts'] = failed_attempts
             
             if failed_attempts >= 3:
-                # Lock out for 20 seconds
-                lockout_time = datetime.now() + timedelta(seconds=20)
+                # Lock out for 10 seconds
+                lockout_time = datetime.now() + timedelta(seconds=10)
                 session['lockout_time'] = lockout_time.isoformat()  # datetime to string
                 return render_template('auth/login.html', 
                     error="Too many failed attempts.", 
-                    lockout_seconds=20)
+                    lockout_seconds=10)
             else:
                 remaining_attempts = 3 - failed_attempts
                 return render_template('auth/login.html', 
@@ -467,7 +472,7 @@ def appearance_settings():
 @auth_bp.route('/appearance/update', methods=['POST'])
 @login_required
 def update_appearance():
-    from database import execute_query
+    from database import get_db
 
     try:
         data = request.get_json(silent=True) or request.form
@@ -501,31 +506,55 @@ def update_appearance():
         }
         boldness = boldness_map.get(font_weight_raw, 'medium')
 
-        existing = execute_query(
-            "SELECT id FROM appearance WHERE user_id = %s LIMIT 1",
-            (current_user.id,),
-            fetch_one=True
-        )
+        conn = get_db()
+        cur = conn.cursor(dictionary=True)
 
-        if existing:
-            execute_query(
+        try:
+            cur.execute(
                 """
-                UPDATE appearance
-                SET theme = %s, text_size = %s, font_style = %s, boldness = %s
+                SELECT id
+                FROM appearance
                 WHERE user_id = %s
+                ORDER BY id DESC
+                LIMIT 1
                 """,
-                (db_theme, text_size, font_style, boldness, current_user.id),
-                commit=True
+                (current_user.id,)
             )
-        else:
-            execute_query(
-                """
-                INSERT INTO appearance (user_id, theme, text_size, font_style, boldness)
-                VALUES (%s, %s, %s, %s, %s)
-                """,
-                (current_user.id, db_theme, text_size, font_style, boldness),
-                commit=True
-            )
+            latest_row = cur.fetchone()
+
+            if latest_row:
+                keep_id = latest_row.get('id')
+                cur.execute(
+                    """
+                    UPDATE appearance
+                    SET theme = %s, text_size = %s, font_style = %s, boldness = %s
+                    WHERE id = %s
+                    """,
+                    (db_theme, text_size, font_style, boldness, keep_id)
+                )
+
+                cur.execute(
+                    """
+                    DELETE FROM appearance
+                    WHERE user_id = %s AND id <> %s
+                    """,
+                    (current_user.id, keep_id)
+                )
+            else:
+                cur.execute(
+                    """
+                    INSERT INTO appearance (user_id, theme, text_size, font_style, boldness)
+                    VALUES (%s, %s, %s, %s, %s)
+                    """,
+                    (current_user.id, db_theme, text_size, font_style, boldness)
+                )
+
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            cur.close()
 
         return {'success': True}, 200
     except Exception as e:
@@ -558,15 +587,63 @@ def delete_account():
 
     user_id = current_user.id
     conn = get_db()
-    cur = conn.cursor()
+    cur = conn.cursor(dictionary=True)
 
     try:
-        cur.execute("DELETE FROM user_interests WHERE user_id = %s", (user_id,))
+        cur.execute("SELECT DATABASE() AS db_name")
+        db_row = cur.fetchone() or {}
+        db_name = db_row.get('db_name')
+
+        cleanup_targets = []
+
+        if db_name:
+            cur.execute(
+                """
+                SELECT TABLE_NAME, COLUMN_NAME
+                FROM information_schema.KEY_COLUMN_USAGE
+                WHERE TABLE_SCHEMA = %s
+                  AND REFERENCED_TABLE_NAME = 'users'
+                  AND REFERENCED_COLUMN_NAME = 'id'
+                """,
+                (db_name,)
+            )
+            for row in cur.fetchall() or []:
+                table_name = row.get('TABLE_NAME')
+                column_name = row.get('COLUMN_NAME')
+                if table_name and column_name:
+                    cleanup_targets.append((table_name, column_name))
+
+            cur.execute(
+                """
+                SELECT TABLE_NAME, COLUMN_NAME
+                FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = %s
+                  AND COLUMN_NAME = 'user_id'
+                """,
+                (db_name,)
+            )
+            for row in cur.fetchall() or []:
+                table_name = row.get('TABLE_NAME')
+                column_name = row.get('COLUMN_NAME')
+                if table_name and column_name:
+                    cleanup_targets.append((table_name, column_name))
+
+        unique_targets = set(cleanup_targets)
+
+        for table_name, column_name in sorted(unique_targets):
+            if table_name == 'users' and column_name == 'id':
+                continue
+            cur.execute(
+                f"DELETE FROM `{table_name}` WHERE `{column_name}` = %s",
+                (user_id,)
+            )
+
         cur.execute("DELETE FROM users WHERE id = %s", (user_id,))
         conn.commit()
-    except Exception:
+    except Exception as exc:
         conn.rollback()
-        raise
+        flash(f'Could not delete account: {str(exc)[:200]}', 'error')
+        return redirect(url_for('auth.logout'))
     finally:
         cur.close()
 

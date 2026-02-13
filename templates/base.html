@@ -23,6 +23,10 @@
                 fontStyle: 'arial'
             };
 
+            const appearanceStorageKey = currentUserId
+                ? `genlink:appearance:${currentUserId}`
+                : 'genlink:appearance:guest';
+
             const fontFamilies = {
                 arial: 'Arial, sans-serif',
                 verdana: 'Verdana, Geneva, sans-serif',
@@ -54,6 +58,14 @@
             }
 
             function getSaved() {
+                try {
+                    const stored = window.localStorage.getItem(appearanceStorageKey);
+                    if (stored) {
+                        return normalize(JSON.parse(stored));
+                    }
+                } catch (error) {
+                }
+
                 if (!currentUserId) {
                     return { ...defaults };
                 }
@@ -112,6 +124,10 @@
 
             function saveAppearance(settings) {
                 const next = normalize(settings);
+                try {
+                    window.localStorage.setItem(appearanceStorageKey, JSON.stringify(next));
+                } catch (error) {
+                }
                 return next;
             }
 
@@ -123,6 +139,7 @@
             };
 
             const initialAppearance = getSaved();
+            saveAppearance(initialAppearance);
             applyAppearance(initialAppearance);
 
             document.addEventListener('DOMContentLoaded', () => {

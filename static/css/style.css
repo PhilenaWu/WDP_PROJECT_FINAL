@@ -73,6 +73,10 @@ img,video,canvas,svg{max-width:100%;height:auto;}
   color: var(--app-muted) !important;
 }
 
+body.logout-page .delete-text {
+  color: #000 !important;
+}
+
 
 /* ===== Buttons - All use Bootstrap btn-primary ===== */
 .btn-primary, .btn-primary:hover, .btn-primary:focus, .btn-primary:active, 
