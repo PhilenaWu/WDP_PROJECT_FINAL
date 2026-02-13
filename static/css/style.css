@@ -84,7 +84,10 @@ img,video,canvas,svg{max-width:100%;height:auto;}
 .auth-form-container { max-width: 470px; }
 .auth-form-container-large { max-width: 550px; }
 .auth-search { max-width: 400px; }
+.login-banner { background-color: rgba(var(--bs-primary-rgb), .08) !important; }
 .auth-error-message { color: #c1533e; font-weight: 500; }
+.login-required-alert{background:rgba(var(--bs-primary-rgb), .08);border-color:rgba(var(--bs-primary-rgb), .22);color:#000 !important;}
+.login-required-alert .btn-close{filter:brightness(0.6) saturate(1.05);}
 .signup-actions{display:flex;gap:16px;margin-top:16px;}
 .signup-actions .btn{flex:1;padding-top:10px;padding-bottom:10px;}
 .signup-actions .btn-light{border:2px solid #d7d7d7;}
@@ -114,6 +117,14 @@ body.editprofile-page .profile-back:hover{border-color:#f39a1f;color:#f39a1f;}
 body.editprofile-page .profile-btn{border-radius:999px;padding:10px 26px;font-size:15px;font-weight:500;cursor:pointer;}
 body.editprofile-page .btn-orange{color:#ffffff !important;}
 body.editprofile-page .btn-light{background:#ffffff !important;border:1px solid #d5c7b1 !important;color:#222222 !important;}
+body.editprofile-page .feedback-card{max-width:860px;}
+body.editprofile-page .feedback-header{background:linear-gradient(135deg,#fff7ec 0%,#fff 100%);border:1px solid #f0e6d6;border-radius:12px;padding:18px 20px;margin-bottom:22px;}
+body.editprofile-page .feedback-header p{margin:0;}
+body.editprofile-page .feedback-group{margin-bottom:18px;}
+body.editprofile-page .feedback-group .form-label{font-weight:600;margin-bottom:8px;}
+body.editprofile-page .feedback-group .form-control,body.editprofile-page .feedback-group .form-select{border:1px solid #e3d6c7;border-radius:10px;min-height:44px;}
+body.editprofile-page .feedback-group textarea.form-control{min-height:170px;resize:vertical;}
+body.editprofile-page .feedback-actions{border-top:1px solid #f0e6d6;padding-top:16px;}
 
 /* ===== Password Visibility Toggle (Universal) ===== */
 .password-input-wrapper{position:relative;display:flex;align-items:center;}

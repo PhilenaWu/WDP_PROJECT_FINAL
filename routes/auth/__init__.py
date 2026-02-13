@@ -40,7 +40,7 @@ def send_password_reset_email(recipient_email, reset_link):
     msg.set_content(
         f"""Hello,
 
-We received a request to reset your StoryConnect password.
+We received a request to reset your Genlink password.
 
 Click the link below to set a new password:
 {reset_link}
@@ -60,10 +60,58 @@ If you did not request this, you can ignore this email.
         server.send_message(msg)
 
 
-@auth_bp.route('/feedback')
+@auth_bp.route('/feedback', methods=['GET', 'POST'])
 @login_required
 def feedback():
-    return render_template('auth/feedback.html')
+    from database import execute_query
+
+    if request.method == 'POST':
+        full_name = request.form.get('full_name', '').strip()
+        email = request.form.get('email', '').strip().lower()
+        feedback_type = request.form.get('feedback_type', '').strip()
+        feedback_text = request.form.get('feedback_text', '').strip()
+
+        if not full_name or not email or not feedback_type or not feedback_text:
+            return render_template(
+                'auth/feedbackform.html',
+                error='Please fill in all fields.',
+                form_data=request.form
+            )
+
+        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(email_pattern, email):
+            return render_template(
+                'auth/feedbackform.html',
+                error='Please enter a valid email address.',
+                form_data=request.form
+            )
+
+        if feedback_type not in {'Positive', 'Negative'}:
+            return render_template(
+                'auth/feedbackform.html',
+                error='Please select a valid feedback type.',
+                form_data=request.form
+            )
+
+        execute_query(
+            """
+            INSERT INTO feedback (user_id, full_name, email, feedback_type, feedback_text)
+            VALUES (%s, %s, %s, %s, %s)
+            """,
+            (current_user.id, full_name, email, feedback_type, feedback_text),
+            commit=True
+        )
+
+        flash('Thank you! Your feedback has been submitted.', 'success')
+        return redirect(url_for('main.home'))
+
+    return render_template('auth/feedbackform.html', form_data={})
+
+
+@auth_bp.route('/feedback/retrieve-email', methods=['GET'])
+@login_required
+def retrieve_feedback_email():
+    return {'email': current_user.email or ''}, 200
 
 
 @auth_bp.route('/forgot-password', methods=['GET', 'POST'])
