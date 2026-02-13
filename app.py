@@ -31,7 +31,9 @@ def create_app():
     from routes.auth import auth_bp
     from routes.profile import profile_bp
     from routes.main import main_bp
+    from routes.messaging import messaging_bp
     
+    app.register_blueprint(messaging_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(profile_bp, url_prefix='/profile')
     app.register_blueprint(main_bp)
