@@ -135,28 +135,28 @@
                 <div class="mb-3">
                     <label for="full_name" class="form-label">Full Name <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" id="full_name" name="full_name" 
-                           placeholder="Enter your full name" required>
+                           placeholder="Enter your full name" minlength="2" required>
                     <div class="invalid-feedback">
-                        Please enter your full name.
+                        Please enter your full name (at least 2 characters).
                     </div>
                 </div>
                 
                 <div class="mb-3">
                     <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
-                          <input type="email" class="form-control" id="email" name="email" 
-                              placeholder="your.email@example.com"
-                              pattern="[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}" required>
+                    <input type="email" class="form-control" id="email" name="email" 
+                           placeholder="your.email@example.com"
+                           pattern="[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}" required>
                     <div class="invalid-feedback">
-                        Please enter a valid email address.
+                        Please enter a valid email address with a real domain (e.g., user@gmail.com, user@yahoo.com).
                     </div>
                 </div>
                 
                 <div class="mb-3">
                     <label for="phone" class="form-label">Phone Number <span class="text-danger">*</span></label>
-                              <input type="tel" class="form-control" id="phone" name="phone" 
-                                  placeholder="81234567" pattern="[89][0-9]{7}" maxlength="8" inputmode="numeric" required>
+                    <input type="tel" class="form-control" id="phone" name="phone" 
+                           placeholder="81234567" pattern="[89][0-9]{7}" maxlength="8" inputmode="numeric" required>
                     <div class="invalid-feedback">
-                        Please enter a valid phone number.
+                        Please enter a valid phone number (8 digits starting with 8 or 9).
                     </div>
                 </div>
                 
@@ -183,6 +183,39 @@
 
 {% block extra_js %}
 <script>
+    // List of known email domains
+    const knownEmailDomains = [
+        'gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'aol.com',
+        'mail.com', 'protonmail.com', 'zoho.com', 'yandex.com', 'icloud.com',
+        'me.com', 'mac.com', 'qq.com', 'aliyun.com', 'sina.com', '163.com',
+        'sohu.com', 'foxmail.com', 'live.com', 'msn.com'
+    ];
+    
+    // Email validation function
+    function validateEmail(email) {
+        const emailRegex = /^[A-Za-z0-9._%+-]+@([A-Za-z0-9.-]+\.[A-Za-z]{2,})$/;
+        const match = email.match(emailRegex);
+        
+        if (!match) return false;
+        
+        const domain = match[1].toLowerCase();
+        return knownEmailDomains.includes(domain);
+    }
+    
+    // Add custom validation to email fields
+    const emailInput = document.getElementById('email');
+    if (emailInput) {
+        emailInput.addEventListener('change', function() {
+            if (this.value && !validateEmail(this.value)) {
+                this.setCustomValidity('Please use a valid email domain (gmail.com, yahoo.com, outlook.com, etc)');
+                this.classList.add('is-invalid');
+            } else {
+                this.setCustomValidity('');
+                this.classList.remove('is-invalid');
+            }
+        });
+    }
+    
     // Phone number restrictions (digits only, max 8)
     const phoneInput = document.getElementById('phone');
 
@@ -201,16 +234,29 @@
     });
     normalizePhoneInput(phoneInput);
 
-    // Bootstrap form validation
+    // Bootstrap form validation with auto-scroll to first error
     (function() {
         'use strict';
         
         const form = document.querySelector('form');
         
         form.addEventListener('submit', function(event) {
+            // Validate email domain
+            if (emailInput && emailInput.value && !validateEmail(emailInput.value)) {
+                emailInput.setCustomValidity('Please use a valid email domain');
+                emailInput.classList.add('is-invalid');
+            }
+            
             if (!form.checkValidity()) {
                 event.preventDefault();
                 event.stopPropagation();
+                
+                // Scroll to first invalid field
+                const firstInvalid = form.querySelector('.form-control:invalid, .form-check-input:invalid');
+                if (firstInvalid) {
+                    firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstInvalid.focus();
+                }
             }
             
             form.classList.add('was-validated');

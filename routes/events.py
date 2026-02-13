@@ -255,7 +255,25 @@ def submit_event():
             if len(event_summary) > 150:
                 flash('Event summary must be 150 characters or less', 'error')
                 return render_template('events/submit_event.html', form_data=request.form)
-            
+            # Handle submission image upload (optional)
+            image_url = None
+            if 'submission_image' in request.files:
+                file = request.files['submission_image']
+                if file and file.filename:
+                    allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
+                    filename = secure_filename(file.filename)
+                    file_ext = filename.rsplit('.', 1)[1].lower() if '.' in filename else ''
+                    if file_ext in allowed_extensions:
+                        unique_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
+                        upload_dir = os.path.join('static', 'uploads', 'events')
+                        os.makedirs(upload_dir, exist_ok=True)
+                        filepath = os.path.join(upload_dir, unique_filename)
+                        file.save(filepath)
+                        image_url = f'/static/uploads/events/{unique_filename}'
+                    else:
+                        flash('Invalid file type. Please upload PNG, JPG, JPEG, or GIF.', 'error')
+                        return render_template('events/submit_event.html', form_data=request.form)
+
             # Create submission
             EventSubmission.create({
                 'user_id': current_user.id,
@@ -268,6 +286,7 @@ def submit_event():
                 'event_title': event_title,
                 'event_summary': event_summary,
                 'event_type': event_type,
+                'image_url': image_url,
                 'preferred_date': preferred_date,
                 'expected_participants': expected_participants,
                 'why_meaningful': why_meaningful,
@@ -388,6 +407,25 @@ def edit_submission(submission_id):
                 flash('Event summary must be 150 characters or less', 'error')
                 return render_template('events/edit_submission.html', submission=submission)
             
+            # Handle new/updated submission image
+            image_url = submission.get('image_url') if submission else None
+            if 'submission_image' in request.files:
+                file = request.files['submission_image']
+                if file and file.filename:
+                    allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
+                    filename = secure_filename(file.filename)
+                    file_ext = filename.rsplit('.', 1)[1].lower() if '.' in filename else ''
+                    if file_ext in allowed_extensions:
+                        unique_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
+                        upload_dir = os.path.join('static', 'uploads', 'events')
+                        os.makedirs(upload_dir, exist_ok=True)
+                        filepath = os.path.join(upload_dir, unique_filename)
+                        file.save(filepath)
+                        image_url = f'/static/uploads/events/{unique_filename}'
+                    else:
+                        flash('Invalid file type. Please upload PNG, JPG, JPEG, or GIF.', 'error')
+                        return render_template('events/edit_submission.html', submission=submission)
+
             # Update submission
             EventSubmission.update(submission_id, {
                 'organizer_name': organizer_name,
@@ -403,7 +441,8 @@ def edit_submission(submission_id):
                 'expected_participants': expected_participants,
                 'why_meaningful': why_meaningful,
                 'previous_experience': previous_experience if previous_experience else None,
-                'accessibility_considerations': accessibility
+                'accessibility_considerations': accessibility,
+                'image_url': image_url
             })
             
             flash('Submission updated successfully!', 'success')
@@ -478,27 +517,27 @@ def admin_review_submission(submission_id):
             
             # Create event from approved submission
             try:
-                Event.create({
-                    'title': submission['event_title'],
-                    'description': submission['event_summary'],
-                    'event_date': submission['preferred_date'],
-                    'start_time': '09:00:00',  # Default time, can be customized
-                    'end_time': '17:00:00',    # Default time, can be customized
-                    'location': submission['organizer_location'] or 'TBA',
-                    'location_address': submission['organizer_location'],
-                    'latitude': None,
-                    'longitude': None,
-                    'image_url': None,
-                    'max_participants': 50,  # Default, parse from expected_participants if needed
-                    'event_type': submission['event_type'],
-                    'age_group': submission['organizer_age_group'],
-                    'created_by': current_user.id
-                })
-                flash('Submission approved and event created!', 'success')
+                    Event.create({
+                        'title': submission['event_title'],
+                        'description': submission['event_summary'],
+                        'event_date': submission['preferred_date'],
+                        'start_time': '09:00:00',  # Default time, can be customized
+                        'end_time': '17:00:00',    # Default time, can be customized
+                        'location': submission['organizer_location'] or 'TBA',
+                        'location_address': submission['organizer_location'],
+                        'latitude': None,
+                        'longitude': None,
+                        'image_url': submission.get('image_url'),
+                        'max_participants': 50,  # Default, parse from expected_participants if needed
+                        'event_type': submission['event_type'],
+                        'age_group': submission['organizer_age_group'],
+                        'created_by': current_user.id
+                    })
+                    flash('Submission approved and event created!', 'success')
             except Exception as e:
-                print(f"Event creation error: {e}")
-                flash('Submission approved but event creation failed. Please create manually.', 'warning')
-        
+                    print(f"Event creation error: {e}")
+                    flash('Submission approved but event creation failed. Please create manually.', 'warning')
+            
         elif action == 'reject':
             EventSubmission.update_status(submission_id, 'rejected', current_user.id, admin_notes)
             flash('Submission rejected', 'success')

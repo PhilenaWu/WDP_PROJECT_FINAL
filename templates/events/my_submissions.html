@@ -264,6 +264,7 @@
         font-size: 4rem;
         color: #e0e0e0;
         margin-bottom: 20px;
+        display: none;
     }
     
     .empty-state h4 {
@@ -274,12 +275,34 @@
     .empty-state .btn {
         background: #f0ad4e;
         color: white;
-        padding: 12px 30px;
-        border-radius: 25px;
-        text-decoration: none;
-        display: inline-block;
-        margin-top: 20px;
+        border: none;
+        cursor: pointer;
         transition: background 0.3s;
+        text-decoration: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        margin-top: 30px;
+        padding: 10px 10px;
+        border-radius: 15px;
+        margin-left: auto;
+        margin-right: auto;
+        width: 300px;
+    }
+    
+    .empty-state .btn i {
+        font-size: 2.5rem;
+        color: white;
+        display: block;
+        margin: 0;
+    }
+    
+    .empty-state .btn span {
+        font-size: 1rem;
+        font-weight: 600;
+        text-align: center;
     }
     
     .empty-state .btn:hover {
@@ -434,11 +457,11 @@
         {% endfor %}
     {% else %}
     <div class="empty-state">
-        <i class="bi bi-inbox"></i>
         <h4>No Submissions Yet</h4>
         <p>You haven't submitted any event proposals yet.<br>Start by submitting your first event idea!</p>
         <a href="{{ url_for('events.submit_event') }}" class="btn">
-            <i class="bi bi-plus-circle"></i> Submit Event
+            <i class="bi bi-plus-circle"></i>
+            <span>Submit Event</span>
         </a>
     </div>
     {% endif %}

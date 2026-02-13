@@ -290,7 +290,12 @@
             <div class="submission-card {{ submission.status }}" data-status="{{ submission.status }}">
                 <div class="submission-header">
                     <div>
-                        <div class="submission-title">{{ submission.event_title }}</div>
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            {% if submission.image_url %}
+                            <img src="{{ submission.image_url }}" alt="thumb" style="width:96px;height:64px;object-fit:cover;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.08);" />
+                            {% endif %}
+                            <div class="submission-title">{{ submission.event_title }}</div>
+                        </div>
                         <div class="submitter-info">
                             Submitted by: <strong>{{ submission.username }}</strong> ({{ submission.user_email }})
                         </div>

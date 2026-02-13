@@ -139,6 +139,16 @@
     
     textarea.form-control {
         min-height: 120px;
+        border-radius: 10px;
+        padding: 14px;
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+
+    /* Admin notes specific */
+    #admin_notes {
+        background: #fffefb;
+        border: 1px solid #e6e6e6;
     }
     
     .action-buttons {
@@ -278,6 +288,18 @@
                 <div class="detail-label mb-2">Event Summary</div>
                 <div class="text-content">{{ submission.event_summary }}</div>
             </div>
+
+            {% if submission.image_url %}
+            <div class="mt-3">
+                <div class="detail-label mb-2">Event Image</div>
+                <div style="display:flex;align-items:center;gap:16px;">
+                    <a href="{{ submission.image_url }}" target="_blank" rel="noopener noreferrer">
+                        <img src="{{ submission.image_url }}" alt="Event image" style="max-width:320px; width:100%; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.12);" />
+                    </a>
+                    <div style="flex:1; color:#555;">Preview of the submitted image. Click to open full size in a new tab.</div>
+                </div>
+            </div>
+            {% endif %}
         </div>
         
         <!-- Organizer Info -->
@@ -349,14 +371,18 @@
     <div class="review-actions">
         <h3 class="action-title">Make Your Decision</h3>
         
-        <form method="POST" action="{{ url_for('events.admin_review_submission', submission_id=submission.id) }}">
+        <form method="POST" action="{{ url_for('events.admin_review_submission', submission_id=submission.id) }}" novalidate>
             <div class="mb-4">
                 <label for="admin_notes" class="form-label">
                     Admin Notes (Optional)
                 </label>
-                <textarea class="form-control" id="admin_notes" name="admin_notes" 
-                          placeholder="Add any notes or feedback for the organizer..."></textarea>
-                <small class="text-muted">These notes will be visible to the organizer</small>
+                <textarea class="form-control" id="admin_notes" name="admin_notes"
+                          placeholder="Add any notes or feedback for the organizer..." maxlength="500" rows="6">{{ submission.admin_notes or '' }}</textarea>
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                    <div class="invalid-feedback">Please keep notes under 500 characters.</div>
+                    <small class="text-muted"><span id="adminNotesCount">0</span>/500</small>
+                </div>
+                <small class="text-muted">These notes will be visible to the organizer (max 500 characters)</small>
             </div>
             
             <div class="action-buttons">
@@ -383,4 +409,45 @@
     {% endif %}
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function() {
+        'use strict';
+        const form = document.querySelector('form');
+        
+        if (form) {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    
+                    // Scroll to first invalid field
+                    const firstInvalid = form.querySelector('.form-control:invalid');
+                    if (firstInvalid) {
+                        firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        firstInvalid.focus();
+                    }
+                }
+                form.classList.add('was-validated');
+            }, false);
+        }
+    })();
+
+    // Admin notes character counter
+    (function(){
+        const notes = document.getElementById('admin_notes');
+        const counter = document.getElementById('adminNotesCount');
+        if (!notes || !counter) return;
+
+        function updateCount() {
+            counter.textContent = notes.value.length;
+        }
+
+        notes.addEventListener('input', updateCount);
+        // initialize count using existing content
+        updateCount();
+    })();
+</script>
 {% endblock %}

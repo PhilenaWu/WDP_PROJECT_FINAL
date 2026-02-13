@@ -246,15 +246,15 @@ class EventSubmission:
             INSERT INTO event_submissions 
             (user_id, organizer_name, organizer_dob, organizer_age_group, organizer_email,
              organizer_phone, organizer_location, event_title, event_summary, event_type,
-             preferred_date, expected_participants, why_meaningful, previous_experience,
+             image_url, preferred_date, expected_participants, why_meaningful, previous_experience,
              accessibility_considerations)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
         return execute_query(query, (
             data['user_id'], data['organizer_name'], data.get('organizer_dob'),
             data.get('organizer_age_group'), data['organizer_email'], data['organizer_phone'],
             data.get('organizer_location'), data['event_title'], data['event_summary'],
-            data['event_type'], data['preferred_date'], data['expected_participants'],
+            data['event_type'], data.get('image_url'), data['preferred_date'], data['expected_participants'],
             data['why_meaningful'], data.get('previous_experience'),
             data['accessibility_considerations']
         ), commit=True)
@@ -316,7 +316,7 @@ class EventSubmission:
             SET organizer_name = %s, organizer_dob = %s, organizer_age_group = %s,
                 organizer_email = %s, organizer_phone = %s, organizer_location = %s,
                 event_title = %s, event_summary = %s, event_type = %s,
-                preferred_date = %s, expected_participants = %s, why_meaningful = %s,
+                image_url = %s, preferred_date = %s, expected_participants = %s, why_meaningful = %s,
                 previous_experience = %s, accessibility_considerations = %s
             WHERE id = %s
         """
@@ -324,7 +324,7 @@ class EventSubmission:
             data['organizer_name'], data.get('organizer_dob'),
             data.get('organizer_age_group'), data['organizer_email'], data['organizer_phone'],
             data.get('organizer_location'), data['event_title'], data['event_summary'],
-            data['event_type'], data['preferred_date'], data['expected_participants'],
+            data['event_type'], data.get('image_url'), data['preferred_date'], data['expected_participants'],
             data['why_meaningful'], data.get('previous_experience'),
             data['accessibility_considerations'], submission_id
         ), commit=True)

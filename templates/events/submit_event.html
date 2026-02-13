@@ -215,7 +215,7 @@
         </a>
     </div>
     
-    <form method="POST" action="{{ url_for('events.submit_event') }}" novalidate>
+    <form method="POST" action="{{ url_for('events.submit_event') }}" enctype="multipart/form-data" id="submissionForm" novalidate>
         <!-- Section 1: Who You Are -->
         <div class="form-section">
             <div class="section-number">1</div>
@@ -227,7 +227,9 @@
                         Full Name<span class="text-danger">*</span>
                     </label>
                     <input type="text" class="form-control" id="organizer_name" name="organizer_name" 
-                           placeholder="Enter your full name" value="{{ form_data.organizer_name or '' }}" required>
+                           placeholder="Enter your full name" value="{{ form_data.organizer_name or '' }}" 
+                           minlength="2" required>
+                    <div class="invalid-feedback">Please enter your full name (at least 2 characters).</div>
                 </div>
                 
                 <div class="col-md-6 mb-3">
@@ -252,18 +254,20 @@
                     <label for="organizer_email" class="form-label">
                         Email<span class="text-danger">*</span>
                     </label>
-                          <input type="email" class="form-control" id="organizer_email" name="organizer_email" 
-                              placeholder="johndoe@gmail.com" value="{{ form_data.organizer_email or '' }}"
-                              pattern="[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}" required>
+                    <input type="email" class="form-control" id="organizer_email" name="organizer_email" 
+                           placeholder="johndoe@gmail.com" value="{{ form_data.organizer_email or '' }}"
+                           pattern="[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}" required>
+                    <div class="invalid-feedback">Please enter a valid email address with a real domain (e.g., user@gmail.com, user@yahoo.com).</div>
                 </div>
                 
                 <div class="col-md-6 mb-3">
                     <label for="organizer_phone" class="form-label">
                         Phone Number<span class="text-danger">*</span>
                     </label>
-                              <input type="tel" class="form-control" id="organizer_phone" name="organizer_phone" 
-                                  placeholder="81234567" pattern="[89][0-9]{7}" maxlength="8" inputmode="numeric"
-                              value="{{ form_data.organizer_phone or '' }}" required>
+                    <input type="tel" class="form-control" id="organizer_phone" name="organizer_phone" 
+                           placeholder="81234567" pattern="[89][0-9]{7}" maxlength="8" inputmode="numeric"
+                           value="{{ form_data.organizer_phone or '' }}" required>
+                    <div class="invalid-feedback">Please enter a valid phone number (8 digits starting with 8 or 9).</div>
                 </div>
                 
                 <div class="col-md-12 mb-3">
@@ -271,7 +275,8 @@
                         Location<span class="text-danger">*</span>
                     </label>
                     <input type="text" class="form-control" id="organizer_location" name="organizer_location" 
-                           placeholder="E.g. Wild Wild Wet - 519599" value="{{ form_data.organizer_location or '' }}">
+                           placeholder="E.g. Wild Wild Wet - 519599" value="{{ form_data.organizer_location or '' }}" required>
+                    <div class="invalid-feedback">Please enter a location.</div>
                 </div>
             </div>
         </div>
@@ -286,7 +291,9 @@
                     Event Title<span class="text-danger">*</span>
                 </label>
                 <input type="text" class="form-control" id="event_title" name="event_title" 
-                       placeholder="Give your event a memorable name" value="{{ form_data.event_title or '' }}" required>
+                       placeholder="Give your event a memorable name" value="{{ form_data.event_title or '' }}" 
+                       minlength="3" required>
+                <div class="invalid-feedback">Event title is required (at least 3 characters).</div>
             </div>
             
             <div class="mb-3">
@@ -295,10 +302,11 @@
                 </label>
                 <textarea class="form-control" id="event_summary" name="event_summary" 
                           placeholder="Limit: 150 characters. E.g. Learn family recipes and cook side by side with elders in a friendly kitchen." 
-                          maxlength="150" required>{{ form_data.event_summary or '' }}</textarea>
+                          maxlength="150" minlength="10" required>{{ form_data.event_summary or '' }}</textarea>
                 <div class="char-counter">
                     <span id="charCount">0</span> / 150
                 </div>
+                <div class="invalid-feedback">Event summary is required (10-150 characters).</div>
                 <small class="text-muted">Brief summary of your event (max 150 characters)</small>
             </div>
             
@@ -355,7 +363,8 @@
                 </label>
                 <textarea class="form-control" id="why_meaningful" name="why_meaningful" 
                           placeholder="Share your story and what inspires you to organize this event..." 
-                          required>{{ form_data.why_meaningful or '' }}</textarea>
+                          minlength="20" required>{{ form_data.why_meaningful or '' }}</textarea>
+                <div class="invalid-feedback">Please explain why this event is meaningful (at least 20 characters).</div>
             </div>
             
             <div class="mb-3">
@@ -372,11 +381,25 @@
                 </label>
                 <textarea class="form-control" id="accessibility" name="accessibility" 
                           placeholder="How will you ensure the event is accessible for both youth and elderly? (e.g. wheelchair access, clear signage, activity pacing)" 
-                          required>{{ form_data.accessibility or '' }}</textarea>
+                          minlength="20" required>{{ form_data.accessibility or '' }}</textarea>
+                <div class="invalid-feedback">Please provide accessibility considerations (at least 20 characters).</div>
             </div>
         </div>
         
         <!-- Submit Section -->
+
+        <div class="form-section">
+            <div class="mb-3">
+                <label for="submission_image" class="form-label">
+                    Event Image<span class="text-danger">*</span>
+                </label>
+                <input type="file" class="form-control" id="submission_image" name="submission_image" accept="image/*" onchange="validateSubmissionFileSize(this)" required>
+                <div class="invalid-feedback">Please upload an event image (max 5MB). This image may be used in the carousel if your event is approved.</div>
+                <small class="text-muted">Accepted formats: JPG, PNG. Max size: 5MB.</small>
+                <div id="submissionFileError" class="text-danger mt-2" style="display:none;">File is too large. Max 5MB.</div>
+            </div>
+        </div>
+
         <div class="submit-section">
             <button type="submit" class="submit-btn">
                 Submit Your Event Idea
@@ -398,6 +421,40 @@
 
 {% block extra_js %}
 <script>
+    // List of known email domains
+    const knownEmailDomains = [
+        'gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'aol.com',
+        'mail.com', 'protonmail.com', 'zoho.com', 'yandex.com', 'icloud.com',
+        'me.com', 'mac.com', 'qq.com', 'aliyun.com', 'sina.com', '163.com',
+        'sohu.com', 'foxmail.com', 'live.com', 'msn.com', 'standardmail.com',
+        'inbox.com', 'mail.co.uk', 'googlemail.com', 'rediffmail.com', 'mailinator.com'
+    ];
+    
+    // Email validation function
+    function validateEmail(email) {
+        const emailRegex = /^[A-Za-z0-9._%+-]+@([A-Za-z0-9.-]+\.[A-Za-z]{2,})$/;
+        const match = email.match(emailRegex);
+        
+        if (!match) return false;
+        
+        const domain = match[1].toLowerCase();
+        return knownEmailDomains.includes(domain) || domain.includes('company') || domain.includes('work') || domain.includes('org');
+    }
+    
+    // Add custom validation to email fields
+    const emailInputs = document.querySelectorAll('input[type="email"]');
+    emailInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            if (this.value && !validateEmail(this.value)) {
+                this.setCustomValidity('Please use a valid email domain (gmail.com, yahoo.com, outlook.com, etc)');
+                this.classList.add('is-invalid');
+            } else {
+                this.setCustomValidity('');
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+    
     // Character counter for event summary
     const eventSummary = document.getElementById('event_summary');
     const charCount = document.getElementById('charCount');
@@ -516,7 +573,7 @@
     });
     normalizePhoneInput(organizerPhoneInput);
 
-    // Bootstrap form validation
+    // Bootstrap form validation with auto-scroll to first error
     (function() {
         'use strict';
         
@@ -526,13 +583,50 @@
             // Validate DOB age
             updateAgeGroup();
             
+            // Validate emails
+            emailInputs.forEach(input => {
+                if (input.value && !validateEmail(input.value)) {
+                    input.setCustomValidity('Please use a valid email domain');
+                    input.classList.add('is-invalid');
+                }
+            });
+            
             if (!form.checkValidity()) {
                 event.preventDefault();
                 event.stopPropagation();
+                
+                // Scroll to first invalid field
+                const firstInvalid = form.querySelector('.form-control:invalid, .form-select:invalid');
+                if (firstInvalid) {
+                    firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstInvalid.focus();
+                }
             }
             
             form.classList.add('was-validated');
         }, false);
     })();
+
+    // Validate submission image file size (max 5MB)
+    function validateSubmissionFileSize(input) {
+        const file = input.files && input.files[0];
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        const errDiv = document.getElementById('submissionFileError');
+
+        if (file && file.size > maxSize) {
+            input.classList.add('is-invalid');
+            input.setCustomValidity('File too large');
+            if (errDiv) errDiv.style.display = 'block';
+        } else {
+            input.classList.remove('is-invalid');
+            input.setCustomValidity('');
+            if (errDiv) errDiv.style.display = 'none';
+        }
+    }
+
+    const submissionFileInput = document.getElementById('submission_image');
+    if (submissionFileInput) {
+        submissionFileInput.addEventListener('change', function() { validateSubmissionFileSize(this); });
+    }
 </script>
 {% endblock %}
