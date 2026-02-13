@@ -1,4 +1,4 @@
-from flask import Flask, app, redirect, url_for
+from flask import Flask, app, redirect, url_for,render_template
 from flask_login import LoginManager
 from flask_session import Session
 from config import Config
@@ -31,6 +31,13 @@ def create_app():
     from routes.auth import auth_bp
     from routes.profile import profile_bp
     from routes.main import main_bp
+    from routes.topics_routes import bp_topics
+    from routes.storyboard import storyboard_bp
+    app.register_blueprint(storyboard_bp)
+
+
+    app.register_blueprint(bp_topics)
+
     
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(profile_bp, url_prefix='/profile')
@@ -39,6 +46,10 @@ def create_app():
     @app.route('/')
     def index():
         return redirect(url_for('main.home'))
+
+    @app.route("/storyboard")
+    def storyboard():
+        return render_template("storyboard/main_topics.html")
 
     
     # Ensure upload folder exists
@@ -57,8 +68,13 @@ def create_app():
                 print("If you see DB connection errors, verify Config.MYSQL_HOST and network access.")
     except Exception:
         pass
-    
+
     return app
+
+
+
+    
+
 
 if __name__ == '__main__':
     app = create_app()

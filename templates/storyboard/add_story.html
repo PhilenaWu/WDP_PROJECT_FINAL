@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block title %}Add Story{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width:720px;">
+  <h2 class="mb-3">Add a Story</h2>
+  <div class="text-muted mb-3">Topic: <strong>{{ topic.title }}</strong></div>
+
+  <form method="POST" enctype="multipart/form-data" class="card p-4 rounded-4 shadow-sm">
+
+    <label class="form-label fw-semibold">Title</label>
+    <input class="form-control mb-3" name="title" required>
+
+    <label class="form-label fw-semibold">Text (optional)</label>
+    <textarea class="form-control mb-3" name="body" rows="5"></textarea>
+
+    <label class="form-label fw-semibold">Voice Message (record in browser)</label>
+
+    <div class="border rounded-3 p-3 mb-3">
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+        <button type="button" id="btnStart" class="btn btn-outline-success btn-sm">● Start</button>
+        <button type="button" id="btnStop" class="btn btn-outline-secondary btn-sm" disabled>■ Stop</button>
+        <button type="button" id="btnDelete" class="btn btn-outline-danger btn-sm" disabled>Delete</button>
+        <span id="recStatus" class="text-muted small">Not recording</span>
+    </div>
+
+    <div class="mt-3">
+        <audio id="audioPreview" controls class="w-100 d-none"></audio>
+    </div>
+
+    <!-- This hidden file input will be filled programmatically -->
+    <input type="file" id="audioFile" name="audio" accept="audio/*" class="d-none">
+    <div class="text-muted small mt-2">
+        Tip: If your mic doesn’t work, allow microphone permission in your browser.
+    </div>
+    </div>
+
+
+    <label class="form-label fw-semibold">Images / Videos (optional)</label>
+    <input class="form-control mb-4" type="file" name="media" multiple accept="image/*,video/*">
+
+    <div class="d-flex gap-2">
+      <button class="btn btn-warning">Post Story</button>
+      <a class="btn btn-light border" href="{{ url_for('storyboard.topic_detail', slug=topic.slug) }}">Cancel</a>
+    </div>
+
+  </form>
+</div>
+
+<script>
+  let mediaRecorder;
+  let audioChunks = [];
+  let audioBlob = null;
+
+  const btnStart = document.getElementById("btnStart");
+  const btnStop = document.getElementById("btnStop");
+  const btnDelete = document.getElementById("btnDelete");
+  const recStatus = document.getElementById("recStatus");
+  const audioPreview = document.getElementById("audioPreview");
+  const audioFileInput = document.getElementById("audioFile");
+
+  function setUI(state) {
+    if (state === "idle") {
+      btnStart.disabled = false;
+      btnStop.disabled = true;
+      btnDelete.disabled = !audioBlob;
+      recStatus.textContent = audioBlob ? "Ready to upload" : "Not recording";
+    }
+    if (state === "recording") {
+      btnStart.disabled = true;
+      btnStop.disabled = false;
+      btnDelete.disabled = true;
+      recStatus.textContent = "Recording...";
+    }
+    if (state === "stopped") {
+      btnStart.disabled = false;
+      btnStop.disabled = true;
+      btnDelete.disabled = false;
+      recStatus.textContent = "Recorded. You can play, delete, then submit.";
+    }
+  }
+
+  async function startRecording() {
+    if (!navigator.mediaDevices || !window.MediaRecorder) {
+      alert("Your browser does not support audio recording. Try Chrome/Edge.");
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunks = [];
+
+      // Pick a supported mime type
+      let mimeType = "";
+      const candidates = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus", "audio/ogg"];
+      for (const c of candidates) {
+        if (MediaRecorder.isTypeSupported(c)) { mimeType = c; break; }
+      }
+
+      mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) audioChunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        // Stop mic
+        stream.getTracks().forEach(t => t.stop());
+
+        audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || "audio/webm" });
+        const url = URL.createObjectURL(audioBlob);
+
+        audioPreview.src = url;
+        audioPreview.classList.remove("d-none");
+
+        // Put blob into hidden <input type="file"> so Flask receives it like a normal upload
+        const ext = (audioBlob.type.includes("ogg")) ? "ogg" : "webm";
+        const file = new File([audioBlob], `recording.${ext}`, { type: audioBlob.type });
+
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        audioFileInput.files = dt.files;
+
+        setUI("stopped");
+      };
+
+      mediaRecorder.start();
+      setUI("recording");
+
+    } catch (err) {
+      console.error(err);
+      alert("Microphone permission denied or not available.");
+      setUI("idle");
+    }
+  }
+
+  function stopRecording() {
+    if (mediaRecorder && mediaRecorder.state === "recording") {
+      mediaRecorder.stop();
+    }
+  }
+
+  function deleteRecording() {
+    audioBlob = null;
+    audioChunks = [];
+    audioPreview.src = "";
+    audioPreview.classList.add("d-none");
+    audioFileInput.value = ""; // clears input
+    setUI("idle");
+  }
+
+  btnStart.addEventListener("click", startRecording);
+  btnStop.addEventListener("click", stopRecording);
+  btnDelete.addEventListener("click", deleteRecording);
+
+  setUI("idle");
+</script>
+
+
+
+
+
+{% endblock %}
