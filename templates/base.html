@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}StoryConnect{% endblock %}</title>
+    <title>{% block title %}Genlink | Home{% endblock %}</title>
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -11,29 +11,217 @@
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <script>
+        (function () {
+            const currentUserId = "{{ current_user.id if current_user.is_authenticated else '' }}";
+            const serverAppearance = JSON.parse('{{ appearance_pref|tojson|safe }}');
+            const defaults = {
+                theme: 'light',
+                textSize: 16,
+                fontWeight: '500',
+                fontStyle: 'arial'
+            };
+
+            const appearanceStorageKey = currentUserId
+                ? `genlink:appearance:${currentUserId}`
+                : 'genlink:appearance:guest';
+
+            const fontFamilies = {
+                arial: 'Arial, sans-serif',
+                verdana: 'Verdana, Geneva, sans-serif',
+                tahoma: 'Tahoma, Geneva, sans-serif',
+                trebuchet: '"Trebuchet MS", sans-serif',
+                georgia: 'Georgia, "Times New Roman", serif',
+                times: '"Times New Roman", Times, serif',
+                courier: '"Courier New", Courier, monospace'
+            };
+
+            function clampTextSize(value) {
+                const numberValue = Number(value);
+                if (Number.isNaN(numberValue)) {
+                    return defaults.textSize;
+                }
+                return Math.min(48, Math.max(12, numberValue));
+            }
+
+            function normalize(settings) {
+                const merged = { ...defaults, ...(settings || {}) };
+                return {
+                    theme: merged.theme === 'dark' ? 'dark' : 'light',
+                    textSize: clampTextSize(merged.textSize),
+                    fontWeight: ['300', '500', '700'].includes(String(merged.fontWeight))
+                        ? String(merged.fontWeight)
+                        : defaults.fontWeight,
+                    fontStyle: fontFamilies[merged.fontStyle] ? merged.fontStyle : defaults.fontStyle
+                };
+            }
+
+            function getSaved() {
+                try {
+                    const stored = window.localStorage.getItem(appearanceStorageKey);
+                    if (stored) {
+                        return normalize(JSON.parse(stored));
+                    }
+                } catch (error) {
+                }
+
+                if (!currentUserId) {
+                    return { ...defaults };
+                }
+                return normalize(serverAppearance);
+            }
+
+            function applyAppearance(settings) {
+                const next = normalize(settings);
+                const html = document.documentElement;
+                html.setAttribute('data-theme', next.theme);
+                html.style.setProperty('--app-font-weight', next.fontWeight);
+                html.style.setProperty('--app-font-family', fontFamilies[next.fontStyle]);
+
+                const scale = next.textSize / 16;
+                if (document.body) {
+                    const elements = document.body.querySelectorAll('*:not(script):not(style):not(svg):not(path):not(img):not(video):not(canvas):not(iframe)');
+                    elements.forEach((element) => {
+                        const tag = element.tagName.toLowerCase();
+                        if (['script', 'style', 'svg', 'path', 'img', 'video', 'canvas', 'iframe'].includes(tag)) {
+                            return;
+                        }
+
+                        const hasText = Array.from(element.childNodes).some(
+                            (node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim().length > 0
+                        );
+
+                        const isTextInput = ['input', 'textarea', 'select', 'button'].includes(tag);
+                        const isActionElement = ['a', 'button'].includes(tag);
+
+                        if (element.classList.contains('bi')) {
+                            return;
+                        }
+
+                        if (!hasText && !isTextInput && !isActionElement) {
+                            return;
+                        }
+
+                        if (!element.dataset.baseFontSize) {
+                            const computedSize = parseFloat(window.getComputedStyle(element).fontSize);
+                            if (!Number.isNaN(computedSize)) {
+                                element.dataset.baseFontSize = String(computedSize);
+                            }
+                        }
+
+                        const baseSize = parseFloat(element.dataset.baseFontSize || '');
+                        if (!Number.isNaN(baseSize)) {
+                            element.style.fontSize = `${(baseSize * scale).toFixed(2)}px`;
+                        }
+
+                        element.style.fontWeight = next.fontWeight;
+                    });
+                }
+
+                return next;
+            }
+
+            function saveAppearance(settings) {
+                const next = normalize(settings);
+                try {
+                    window.localStorage.setItem(appearanceStorageKey, JSON.stringify(next));
+                } catch (error) {
+                }
+                return next;
+            }
+
+            window.genlinkAppearance = {
+                defaults,
+                getSaved,
+                applyAppearance,
+                saveAppearance
+            };
+
+            const initialAppearance = getSaved();
+            saveAppearance(initialAppearance);
+            applyAppearance(initialAppearance);
+
+            document.addEventListener('DOMContentLoaded', () => {
+                applyAppearance(initialAppearance);
+            });
+        })();
+    </script>
     
     {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body {% block body_class %}{% endblock %}>
     <!-- Flash messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <div class="container mt-3">
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-    {% endwith %}
+    {% if request.endpoint != 'main.home' %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="container-fluid mt-3 px-3">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show {% if message == 'Please log in to access this page.' %}login-required-alert{% endif %}" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+    {% endif %}
     
     {% block content %}{% endblock %}
+
+    <!--Google Translate Element-->
+
+    <div id="google_translate_element" style="display:none;"></div>
     
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
+    <script>
+        const userLang = "{{ current_user.language if current_user.is_authenticated else '' }}";
+
+        if (userLang) {
+            localStorage.setItem('siteLanguage', userLang);
+        }
+
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement(
+                {
+                    pageLanguage: 'en',
+                    includedLanguages: 'en,zh-CN,ta,ms',
+                    autoDisplay: false
+                },
+                'google_translate_element'
+            );
+        }
+
+        function setSiteLanguage(lang) {
+            const select = document.querySelector('.goog-te-combo');
+            if (!select) {
+                return;
+            }
+            select.value = lang;
+            select.dispatchEvent(new Event('change'));
+            localStorage.setItem('siteLanguage', lang);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const stored = localStorage.getItem('siteLanguage');
+            if (!stored) {
+                return;
+            }
+            const interval = setInterval(() => {
+                const select = document.querySelector('.goog-te-combo');
+                if (select) {
+                    select.value = stored;
+                    select.dispatchEvent(new Event('change'));
+                    clearInterval(interval);
+                }
+            }, 200);
+            setTimeout(() => clearInterval(interval), 4000);
+        });
+    </script>
+    <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
     {% block extra_js %}{% endblock %}
 </body>
 </html>

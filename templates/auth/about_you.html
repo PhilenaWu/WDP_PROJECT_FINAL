@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}Genlink | About you{% endblock %}
+{% block body_class %}class="aboutyou-page"{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="wrapper">
+  <div class="card"> 
+
+    <!-- form box -->
+    <div class="form-box">
+      <h2 class="heading">About You</h2>
+
+      {% if error %}
+        <p class="error-message">{{ error }}</p>
+      {% endif %}
+
+      <form class="main-form" id="aboutYouForm" method="post" action="{{ url_for('auth.signup') }}" novalidate>
+        <!-- first and last name row -->
+        <div class="two-col">
+          <div class="input-box">
+            <input
+              id="firstName"
+              name="first_name"
+              type="text"
+              class="input-field"
+              placeholder="First name"
+              required
+              pattern="[A-Za-z\s]+"
+              title="Only letters allowed."
+              value="{{ user.first_name or '' }}">
+            <span class="star">*</span>
+          </div>
+          <div class="input-box">
+            <input
+              id="lastName"
+              name="last_name"
+              type="text"
+              class="input-field"
+              placeholder="Last name"
+              required
+              pattern="[A-Za-z\s]+"
+              title="Only letters allowed."
+              value="{{ user.last_name or '' }}">
+            <span class="star">*</span>
+          </div>
+        </div>
+
+        <!-- display name -->
+        <div class="input-box">
+          <input
+            id="displayName"
+            name="display_name"
+            type="text"
+            class="input-field"
+            placeholder="Display name"
+            value="{{ user.display_name or '' }}">
+        </div>
+
+        <!-- email -->
+        <div class="input-box">
+          <input
+            id="email"
+            name="email"
+            type="email"
+            class="input-field"
+            placeholder="Email address"
+            required
+            pattern="[a-zA-Z0-9._%+-]+@gmail\.com"
+            title="Please enter a valid Gmail address ending with @gmail.com."
+            value="{{ user.email or '' }}">
+          <span class="star">*</span>
+        </div>
+
+        <!-- username -->
+        <div class="input-box">
+          <input
+            id="username"
+            name="username"
+            type="text"
+            class="input-field"
+            placeholder="Username"
+            required
+            minlength="3"
+            maxlength="20"
+            pattern="[A-Za-z][A-Za-z0-9_]{2,19}"
+            title="3-20 characters. Start with a letter; only letters, numbers, and underscore are allowed."
+            value="{{ user.username or '' }}">
+          <span class="star">*</span>
+        </div>
+
+        <!-- password -->
+        <div class="input-box">
+          <input
+            id="password"
+            name="password"
+            type="password"
+            class="input-field"
+            placeholder="Password"
+            required
+            minlength="8"
+            pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}"
+            title="At least 8 characters with 1 lowercase, 1 uppercase, 1 number, and 1 special character."
+            value="{{ user.password or '' }}">
+          <button
+            type="button"
+            class="eye-btn"
+            id="passwordEye"
+            aria-label="Show password"></button>
+          <span class="star">*</span>
+        </div>
+
+        <!-- phone -->
+        <div class="input-box">
+          <input
+            id="phone"
+            name="phone"
+            type="tel"
+            class="input-field"
+            placeholder="Phone number"
+            required
+            inputmode="numeric"
+            minlength="8"
+            maxlength="8"
+            pattern="[0-9]{8}"
+            title="Enter an 8-digit number, digits only."
+            value="{{ user.phone or '' }}">
+          <span class="lock"></span>
+          <span class="star">*</span>
+        </div>
+
+        <!-- location toggle -->
+        <div class="location-box">
+          <label class="check-item location-check">
+            <input type="checkbox" name="location_enabled" id="locationToggle">
+            <span class="check-label">Turn on location</span>
+          </label>
+          <p class="location-note">To find activities and people near you</p>
+        </div>
+
+        <!-- birthday -->
+        <div class="birthday-box">
+        <label class="birthday-title" for="birthday">Birthday<span class="star">*</span></label>
+        <input
+            id="birthday"
+            name="birthday"
+            type="date"
+            class="input-field"
+            required
+            value="{{ user.birthday or '' }}">
+        <p class="birthday-note">Your age category will be determined automatically</p>
+        </div>
+
+        <!-- next button -->
+        <div class="btn-row">
+          <button type="submit" class="btn btn-orange">Next</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    const form = document.getElementById('aboutYouForm');
+    const passwordInput = document.getElementById('password');
+    const passwordEye = document.getElementById('passwordEye');
+    const firstNameInput = document.getElementById('firstName');
+    const lastNameInput = document.getElementById('lastName');
+    const emailInput = document.getElementById('email');
+
+    // validate names on input - use custom validity message (like password)
+    function validateName(input) {
+      const value = input.value;
+      const hasInvalidChars = /[^A-Za-z\s]/.test(value);
+      
+      if (hasInvalidChars) {
+        input.setCustomValidity('Only letters are allowed');
+        input.reportValidity();
+        input.value = value.replace(/[^A-Za-z\s]/g, ''); 
+      } else {
+        input.setCustomValidity(''); 
+      }
+    }
+
+    // validate email format
+    function validateEmail(input) {
+      const value = input.value;
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i;
+      
+      if (value && !emailRegex.test(value)) {
+        input.setCustomValidity('Please enter a valid Gmail address ending with @gmail.com');
+      } else {
+        input.setCustomValidity('');
+      }
+    }
+
+    firstNameInput.addEventListener('input', () => validateName(firstNameInput));
+    lastNameInput.addEventListener('input', () => validateName(lastNameInput));
+    emailInput.addEventListener('blur', () => validateEmail(emailInput));
+    emailInput.addEventListener('input', () => validateEmail(emailInput));
+
+    form.addEventListener('submit', e => {
+      if (!form.checkValidity()) {
+        e.preventDefault();
+        form.reportValidity();
+      }
+    });
+
+    // toggle password visibility
+    passwordEye.addEventListener('click', () => {
+      const hidden = passwordInput.type === 'password';
+      passwordInput.type = hidden ? 'text' : 'password';
+      passwordEye.classList.toggle('open', hidden);
+    });
+  </script>
+{% endblock %}

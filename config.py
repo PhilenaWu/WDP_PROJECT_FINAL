@@ -20,3 +20,13 @@ class Config:
     UPLOAD_FOLDER = 'static/uploads/profile_pics'
     MAX_CONTENT_LENGTH = 5 * 1024 * 1024  # 5MB max file size
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+    # Password reset email (Gmail SMTP)
+    MAIL_SERVER = os.environ.get('MAIL_SERVER') or 'smtp.gmail.com'
+    MAIL_PORT = int(os.environ.get('MAIL_PORT', 587))
+    MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'true').lower() == 'true'
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME') or 'Genlink.Response@gmail.com'
+    MAIL_APP_PASSWORD = os.environ.get('MAIL_APP_PASSWORD') or '' # Remember to delete PASSWORD!!
+
+    # Password reset token
+    RESET_TOKEN_MAX_AGE_SECONDS = int(os.environ.get('RESET_TOKEN_MAX_AGE_SECONDS', 1800))

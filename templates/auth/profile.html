@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}Genlink | Profile{% endblock %}
+{% block body_class %}class="editprofile-page"{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+	<div class="profile-card">
+		<h1 class="main-title">Profile</h1>
+
+		<section class="profile-area">
+			<div class="d-flex align-items-center gap-4 flex-wrap mb-4">
+				<div class="profile-avatar rounded-circle overflow-hidden">
+					<img
+						id="profileImage"
+						src="{{ url_for('static', filename='uploads/profile_pics/' + (user.profile_picture or 'defaultProfile.webp')) }}"
+						alt="Profile photo"
+						class="w-100 h-100 object-fit-cover rounded-circle">
+				</div>
+				<div class="d-flex flex-column gap-2">
+					<input type="file" id="photoUpload" name="profile_picture" accept="image/*" form="profileForm" class="d-none">
+					<button class="btn btn-orange profile-btn" type="button" id="uploadTrigger">Upload Photo</button>
+					<p class="upload-hint">JPG or PNG (max 5MB)</p>
+				</div>
+			</div>
+
+			<form class="profile-form mt-2" id="profileForm" method="post" enctype="multipart/form-data">
+				<div class="row align-items-center profile-row">
+					<label for="displayName" class="col-md-3 col-form-label text-md-end">Display Name:</label>
+					<div class="col-md-9">
+						<input
+							id="displayName"
+							name="display_name"
+							type="text"
+							class="form-control"
+							value="{{ user.display_name or '' }}">
+					</div>
+				</div>
+
+				<div class="row align-items-center profile-row">
+					<label for="username" class="col-md-3 col-form-label text-md-end">Username*:</label>
+					<div class="col-md-9">
+						<input
+							id="username"
+							name="username"
+							type="text"
+							class="form-control"
+							required
+							minlength="3"
+							maxlength="20"
+							pattern="[A-Za-z][A-Za-z0-9_]{2,19}"
+							title="3-20 characters. Start with a letter; only letters, numbers, and underscore are allowed."
+							value="{{ user.username or '' }}">
+					</div>
+				</div>
+
+				<div class="row align-items-center profile-row">
+					<label for="email" class="col-md-3 col-form-label text-md-end">Email*:</label>
+					<div class="col-md-9">
+						<input
+							id="email"
+							name="email"
+							type="email"
+							class="form-control"
+							required
+							pattern="[a-zA-Z0-9._%+-]+@gmail\.com"
+							title="Please enter a valid Gmail address ending with @gmail.com."
+							value="{{ user.email or '' }}">
+					</div>
+				</div>
+
+				<div class="row align-items-center profile-row">
+					<label for="firstName" class="col-md-3 col-form-label text-md-end">First Name:</label>
+					<div class="col-md-9">
+						<input
+							id="firstName"
+							name="first_name"
+							type="text"
+							class="form-control"
+							pattern="[A-Za-z\s]+"
+							title="Only letters are allowed."
+							value="{{ user.first_name or '' }}">
+					</div>
+				</div>
+
+				<div class="row align-items-center profile-row">
+					<label for="lastName" class="col-md-3 col-form-label text-md-end">Last Name:</label>
+					<div class="col-md-9">
+						<input
+							id="lastName"
+							name="last_name"
+							type="text"
+							class="form-control"
+							pattern="[A-Za-z\s]+"
+							title="Only letters are allowed."
+							value="{{ user.last_name or '' }}">
+					</div>
+				</div>
+
+				<div class="row align-items-center profile-row">
+					<label for="password" class="col-md-3 col-form-label text-md-end">Password:</label>
+					<div class="col-md-9">
+						<div class="password-input-wrapper position-relative">
+							<input
+								id="password"
+								name="password"
+								type="password"
+								class="form-control"
+								minlength="8"
+								pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}"
+								  title="At least 8 characters with 1 lowercase, 1 uppercase, 1 number, and 1 special character.">
+							<button
+								type="button"
+								class="eye-icon"
+								id="passwordEye"
+								aria-label="Show password"></button>
+						</div>
+					</div>
+				</div>
+
+				<div class="row align-items-center profile-row">
+					<label for="phone" class="col-md-3 col-form-label text-md-end">Phone Number*:</label>
+					<div class="col-md-9">
+						<input
+							id="phone"
+							name="phone_number"
+							type="tel"
+							class="form-control"
+							required
+							inputmode="numeric"
+							minlength="8"
+							maxlength="8"
+							pattern="[0-9]{8}"
+							title="Enter an 8-digit number, digits only."
+							value="{{ user.phone_number or '' }}">
+					</div>
+				</div>
+
+				<div class="row align-items-center profile-row">
+					<label for="birthday" class="col-md-3 col-form-label text-md-end">Birthday:</label>
+					<div class="col-md-9">
+						<input
+							id="birthday"
+							name="date_of_birth"
+							type="date"
+							class="form-control"
+							value="{{ dob_value }}">
+					</div>
+				</div>
+
+				<div class="row align-items-center profile-row">
+					<label class="col-md-3 col-form-label text-md-end">Age Category:</label>
+					<div class="col-md-9 d-flex flex-column gap-2">
+						{% if user.age_group %}
+							<span class="category-badge badge-{{ user.age_group }}">{{ user.age_group|capitalize }}</span>
+						{% else %}
+							<span class="category-badge">Not Set</span>
+						{% endif %}
+						<span class="category-note">Based on your birthday</span>
+					</div>
+				</div>
+
+				<div class="d-flex justify-content-end gap-2 mt-4">
+					<a class="btn btn-light profile-btn" href="{{ url_for('main.home') }}">Cancel</a>
+					<button type="submit" class="btn btn-orange profile-btn">Save Changes</button>
+				</div>
+			</form>
+		</section>
+		<a class="profile-back" href="{{ url_for('main.home') }}" aria-label="Back to home">
+			<i class="bi bi-arrow-left"></i>
+		</a>
+	</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+	const passwordInput = document.getElementById('password');
+	const passwordEye = document.getElementById('passwordEye');
+	const firstNameInput = document.getElementById('firstName');
+	const lastNameInput = document.getElementById('lastName');
+	const emailInput = document.getElementById('email');
+	const profileForm = document.getElementById('profileForm');
+	const photoUpload = document.getElementById('photoUpload');
+	const profileImage = document.getElementById('profileImage');
+	const uploadTrigger = document.getElementById('uploadTrigger');
+
+	function validateName(input) {
+		const value = input.value;
+		const hasInvalidChars = /[^A-Za-z\s]/.test(value);
+
+		if (hasInvalidChars) {
+			input.setCustomValidity('Only letters are allowed');
+			input.reportValidity();
+			input.value = value.replace(/[^A-Za-z\s]/g, '');
+		} else {
+			input.setCustomValidity('');
+		}
+	}
+
+	if (firstNameInput) {
+		firstNameInput.addEventListener('input', () => validateName(firstNameInput));
+	}
+
+	if (lastNameInput) {
+		lastNameInput.addEventListener('input', () => validateName(lastNameInput));
+	}
+
+	if (emailInput) {
+		emailInput.addEventListener('input', () => {
+			const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i;
+			if (emailInput.value && !emailRegex.test(emailInput.value)) {
+				emailInput.setCustomValidity('Please enter a valid Gmail address ending with @gmail.com');
+			} else {
+				emailInput.setCustomValidity('');
+			}
+		});
+	}
+
+	if (profileForm) {
+		profileForm.addEventListener('submit', (event) => {
+			if (!profileForm.checkValidity()) {
+				event.preventDefault();
+				profileForm.reportValidity();
+			}
+		});
+	}
+
+	if (passwordEye && passwordInput) {
+		passwordEye.addEventListener('click', () => {
+			const hidden = passwordInput.type === 'password';
+			passwordInput.type = hidden ? 'text' : 'password';
+			passwordEye.classList.toggle('open', hidden);
+			passwordEye.setAttribute('aria-label', hidden ? 'Hide password' : 'Show password');
+		});
+	}
+
+	if (uploadTrigger && photoUpload) {
+		uploadTrigger.addEventListener('click', () => {
+			photoUpload.click();
+		});
+	}
+
+	if (photoUpload && profileImage) {
+		photoUpload.addEventListener('change', (event) => {
+			const file = event.target.files[0];
+
+			if (!file) {
+				return;
+			}
+
+			if (!file.type.match('image.*')) {
+				alert('Please select an image file (JPG, PNG, or GIF)');
+				return;
+			}
+
+			if (file.size > 5 * 1024 * 1024) {
+				alert('File size must be less than 5MB');
+				return;
+			}
+
+			const reader = new FileReader();
+			reader.onload = (e) => {
+				profileImage.src = e.target.result;
+			};
+			reader.readAsDataURL(file);
+		});
+	}
+</script>
+{% endblock %}
