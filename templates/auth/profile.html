@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Profile{% endblock %}
+{% block title %}Genlink | Profile{% endblock %}
 {% block body_class %}class="editprofile-page"{% endblock %}
 
 {% block content %}
@@ -51,6 +51,21 @@
 							pattern="[A-Za-z][A-Za-z0-9_]{2,19}"
 							title="3-20 characters. Start with a letter; only letters, numbers, and underscore are allowed."
 							value="{{ user.username or '' }}">
+					</div>
+				</div>
+
+				<div class="row align-items-center profile-row">
+					<label for="email" class="col-md-3 col-form-label text-md-end">Email*:</label>
+					<div class="col-md-9">
+						<input
+							id="email"
+							name="email"
+							type="email"
+							class="form-control"
+							required
+							pattern="[a-zA-Z0-9._%+-]+@gmail\.com"
+							title="Please enter a valid Gmail address ending with @gmail.com."
+							value="{{ user.email or '' }}">
 					</div>
 				</div>
 
@@ -164,6 +179,8 @@
 	const passwordEye = document.getElementById('passwordEye');
 	const firstNameInput = document.getElementById('firstName');
 	const lastNameInput = document.getElementById('lastName');
+	const emailInput = document.getElementById('email');
+	const profileForm = document.getElementById('profileForm');
 	const photoUpload = document.getElementById('photoUpload');
 	const profileImage = document.getElementById('profileImage');
 	const uploadTrigger = document.getElementById('uploadTrigger');
@@ -187,6 +204,26 @@
 
 	if (lastNameInput) {
 		lastNameInput.addEventListener('input', () => validateName(lastNameInput));
+	}
+
+	if (emailInput) {
+		emailInput.addEventListener('input', () => {
+			const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i;
+			if (emailInput.value && !emailRegex.test(emailInput.value)) {
+				emailInput.setCustomValidity('Please enter a valid Gmail address ending with @gmail.com');
+			} else {
+				emailInput.setCustomValidity('');
+			}
+		});
+	}
+
+	if (profileForm) {
+		profileForm.addEventListener('submit', (event) => {
+			if (!profileForm.checkValidity()) {
+				event.preventDefault();
+				profileForm.reportValidity();
+			}
+		});
 	}
 
 	if (passwordEye && passwordInput) {

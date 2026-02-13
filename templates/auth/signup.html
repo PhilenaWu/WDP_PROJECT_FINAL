@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Sign Up{% endblock %}
+{% block title %}Genlink | Sign up{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 {% endblock %}
@@ -70,8 +70,8 @@
                 type="email"
                 class="form-control"
                 required
-                pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
-                title="Please enter a valid email address with @ symbol."
+                pattern="[a-zA-Z0-9._%+-]+@gmail\.com"
+                title="Please enter a valid Gmail address ending with @gmail.com."
                 value="{{ user.email or '' }}">
             </div>
             <div class="col-12">
@@ -180,10 +180,10 @@
     // validate email format
     function validateEmail(input) {
       const value = input.value;
-      const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i;
       
       if (value && !emailRegex.test(value)) {
-        input.setCustomValidity('Please enter a valid email address with @ symbol');
+        input.setCustomValidity('Please enter a valid Gmail address ending with @gmail.com');
       } else {
         input.setCustomValidity('');
       }

@@ -9,6 +9,13 @@ from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 
 auth_bp = Blueprint('auth', __name__)
 
+GMAIL_EMAIL_PATTERN = r'^[a-zA-Z0-9._%+-]+@gmail\.com$'
+
+
+def is_valid_gmail(email):
+    normalized = (email or '').strip().lower()
+    return bool(re.match(GMAIL_EMAIL_PATTERN, normalized))
+
 
 def generate_reset_token(email):
     serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
@@ -78,11 +85,10 @@ def feedback():
                 form_data=request.form
             )
 
-        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-        if not re.match(email_pattern, email):
+        if not is_valid_gmail(email):
             return render_template(
                 'auth/feedbackform.html',
-                error='Please enter a valid email address.',
+                error='Please enter a valid Gmail address ending with @gmail.com.',
                 form_data=request.form
             )
 
@@ -121,6 +127,9 @@ def forgot_password():
 
         if not email:
             return render_template('auth/forgotpassword.html', error='Please enter your email address.')
+
+        if not is_valid_gmail(email):
+            return render_template('auth/forgotpassword.html', error='Please use a valid Gmail address ending with @gmail.com.')
 
         user = User.get_by_email(email)
         if not user:
@@ -209,7 +218,7 @@ def signup():
         # get birthday + calculate age
         birthday_str = request.form.get('birthday', '').strip()
         username = request.form.get('username', '').strip()
-        email = request.form.get('email', '').strip()
+        email = request.form.get('email', '').strip().lower()
         first_name = request.form.get('first_name', '').strip()
         last_name = request.form.get('last_name', '').strip()
         display_name = request.form.get('display_name', '').strip()
@@ -236,11 +245,10 @@ def signup():
             )
 
         # Validate email format
-        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-        if not re.match(email_pattern, email):
+        if not is_valid_gmail(email):
             return render_template('auth/signup.html',
                 user=user_data,
-                error="Please enter a valid email address.",
+                error="Please enter a valid Gmail address ending with @gmail.com.",
                 location_enabled=location_enabled
             )
 

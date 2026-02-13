@@ -4,6 +4,7 @@ from datetime import datetime
 from database import execute_query
 from models import User
 from utils import save_profile_picture, calculate_age, get_age_group
+import re
 
 profile_bp = Blueprint('profile', __name__)
 
@@ -29,12 +30,24 @@ def profile():
 
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
+        email = request.form.get('email', '').strip().lower()
         display_name = request.form.get('display_name', '').strip()
         first_name = request.form.get('first_name', '').strip()
         last_name = request.form.get('last_name', '').strip()
         phone_number = request.form.get('phone_number', '').strip()
         date_of_birth_str = request.form.get('date_of_birth', '').strip()
         new_password = request.form.get('password', '').strip()
+
+        gmail_pattern = r'^[a-zA-Z0-9._%+-]+@gmail\.com$'
+        if not re.match(gmail_pattern, email):
+            flash('Please enter a valid Gmail address ending with @gmail.com.', 'error')
+            return render_template('auth/profile.html', user=user, dob_value=_format_dob(user))
+
+        if email != (user.email or '').lower():
+            existing_email_user = User.get_by_email(email)
+            if existing_email_user and existing_email_user.id != user.id:
+                flash('Email already registered. Please use a different Gmail address.', 'error')
+                return render_template('auth/profile.html', user=user, dob_value=_format_dob(user))
 
         if username and username != user.username:
             existing_user = User.get_by_username(username)
@@ -66,6 +79,7 @@ def profile():
             """
             UPDATE users SET
                 username = %s,
+                email = %s,
                 password_hash = %s,
                 display_name = %s,
                 first_name = %s,
@@ -78,6 +92,7 @@ def profile():
             """,
             (
                 username or user.username,
+                email,
                 password_hash,
                 display_name,
                 first_name,
@@ -92,6 +107,7 @@ def profile():
         )
 
         user.username = username or user.username
+        user.email = email
         user.display_name = display_name
         user.first_name = first_name
         user.last_name = last_name
