@@ -242,6 +242,35 @@ body.editprofile-page .btn-light{background:var(--app-surface-1) !important;bord
 body.editprofile-page .feedback-card{max-width:860px;}
 html[data-theme='dark'] body.editprofile-page .eye-icon::before{filter:brightness(0) invert(1);}
 html[data-theme='dark'] body.editprofile-page input[type="date"]::-webkit-calendar-picker-indicator{filter:brightness(0) invert(1);opacity:1;}
+html[data-theme='dark'] body.editprofile-page .profile-form .form-control{
+  background-color: var(--app-surface-2) !important;
+  border: 1px solid #3a4b6a !important;
+  color: var(--app-text) !important;
+}
+html[data-theme='dark'] body.editprofile-page .profile-form .form-control::placeholder{
+  color: var(--app-muted) !important;
+}
+html[data-theme='dark'] body.editprofile-page .profile-form .form-control:focus{
+  border-color: #f39a1f !important;
+  box-shadow: 0 0 0 0.25rem var(--app-focus-ring);
+}
+html[data-theme='dark'] body.editprofile-page .feedback-group .form-select{
+  background-color: var(--app-surface-2) !important;
+  border-color: #3a4b6a !important;
+  color: var(--app-text) !important;
+}
+html[data-theme='dark'] body.editprofile-page .feedback-group .form-select option{
+  background-color: var(--app-surface-2);
+  color: var(--app-text);
+}
+html[data-theme='dark'] body.editprofile-page .profile-form .form-control:-webkit-autofill,
+html[data-theme='dark'] body.editprofile-page .profile-form .form-control:-webkit-autofill:hover,
+html[data-theme='dark'] body.editprofile-page .profile-form .form-control:-webkit-autofill:focus{
+  -webkit-text-fill-color: var(--app-text) !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--app-surface-2) inset !important;
+  box-shadow: 0 0 0 1000px var(--app-surface-2) inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
 body.editprofile-page .feedback-header{background:linear-gradient(135deg, rgba(var(--bs-primary-rgb), .14) 0%, var(--app-surface-1) 100%);border:1px solid var(--app-border);border-radius:12px;padding:18px 20px;margin-bottom:22px;}
 body.editprofile-page .feedback-header p{margin:0;}
 body.editprofile-page .feedback-group{margin-bottom:18px;}
@@ -258,6 +287,11 @@ body.editprofile-page .feedback-entry-text{white-space:pre-wrap;line-height:1.5;
 body.editprofile-page .feedback-entry-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;}
 body.editprofile-page .feedback-entry-actions form{margin:0;}
 body.editprofile-page .feedback-empty-state{border:1px dashed var(--app-border);border-radius:12px;padding:28px;text-align:center;background:var(--app-surface-1);}
+
+/* ===== Past Feedback Sticky Footer ===== */
+body.feedback-history-page{min-height:100vh;display:flex;flex-direction:column;}
+body.feedback-history-page > .container.py-5{flex:1 0 auto;}
+body.feedback-history-page > footer{margin-top:auto !important;}
 
 /* ===== Events Calendar (Restore Original Styling) ===== */
 .calendar-container,
@@ -494,6 +528,43 @@ body.appearance-page .bold-btn--active{border-color:#f39a1f;background:#f39a1f;c
 body.appearance-page .font-select{padding:14px 20px;font-size:16px;border-radius:8px;border:2px solid #d7d7d7;background:#fff;cursor:pointer;color:#222;}
 body.appearance-page .font-select:focus{outline:none;border-color:#f39a1f;}
 body.appearance-page .appearance-actions{margin-top:48px;padding-right:40px;}
+
+/* ===== Settings Pages (Dark Theme Fixes) ===== */
+html[data-theme='dark'] body:is(.logout-page,.language-page,.appearance-page) .sidebar-home-icon{background:var(--app-surface-1);box-shadow:var(--app-shadow-1);}
+html[data-theme='dark'] body:is(.logout-page,.language-page,.appearance-page) .sidebar-home-text{color:var(--app-text);}
+html[data-theme='dark'] body:is(.logout-page,.language-page,.appearance-page) .menu-item{color:var(--app-text);}
+html[data-theme='dark'] body:is(.logout-page,.language-page,.appearance-page) .menu-item--active{background:var(--app-surface-1);}
+html[data-theme='dark'] body:is(.logout-page,.language-page,.appearance-page) .btn-light{background:var(--app-surface-1);border-color:var(--app-border);color:var(--app-text);}
+html[data-theme='dark'] body:is(.logout-page,.language-page,.appearance-page) .btn-light:hover{background:var(--app-surface-2);}
+
+html[data-theme='dark'] body.logout-page .signout-text,
+html[data-theme='dark'] body.logout-page .delete-text,
+html[data-theme='dark'] body.logout-page .modal-header h2,
+html[data-theme='dark'] body.logout-page .modal-text,
+html[data-theme='dark'] body.logout-page .modal-confirm-text{color:var(--app-text);}
+html[data-theme='dark'] body.logout-page .delete-block{border-top-color:var(--app-border);}
+html[data-theme='dark'] body.logout-page .modal{background-color:var(--app-overlay);}
+html[data-theme='dark'] body.logout-page .modal-content{background:var(--app-surface-1);border:1px solid var(--app-border);box-shadow:var(--app-shadow-2);}
+
+html[data-theme='dark'] body.language-page .section-subtitle,
+html[data-theme='dark'] body.language-page .language-name,
+html[data-theme='dark'] body.appearance-page .theme-label,
+html[data-theme='dark'] body.appearance-page .setting-label,
+html[data-theme='dark'] body.appearance-page .slider-value{color:var(--app-text);}
+html[data-theme='dark'] body.language-page .language-card,
+html[data-theme='dark'] body.appearance-page .theme-card,
+html[data-theme='dark'] body.appearance-page .theme-cards,
+html[data-theme='dark'] body.appearance-page .bold-btn,
+html[data-theme='dark'] body.appearance-page .font-select{background:var(--app-surface-1);border-color:var(--app-border);color:var(--app-text);}
+html[data-theme='dark'] body.language-page .language-card:hover,
+html[data-theme='dark'] body.appearance-page .theme-card:hover{box-shadow:var(--app-shadow-1);}
+html[data-theme='dark'] body.language-page .language-card--active,
+html[data-theme='dark'] body.appearance-page .theme-card--active{background:rgba(var(--bs-primary-rgb), .18);border-color:#f39a1f;}
+html[data-theme='dark'] body.appearance-page .theme-preview{border-color:var(--app-border);}
+html[data-theme='dark'] body.appearance-page .text-slider,
+html[data-theme='dark'] body.appearance-page .text-slider::-webkit-slider-runnable-track,
+html[data-theme='dark'] body.appearance-page .text-slider::-moz-range-track{background:var(--app-border);}
+html[data-theme='dark'] body.appearance-page .bold-btn--active{background:#f39a1f;border-color:#f39a1f;color:#fff;}
 
 @media (max-width: 900px){
   body:is(.logout-page,.language-page,.appearance-page) .settings-layout{grid-template-columns:1fr;}

@@ -588,9 +588,16 @@ def update_language():
     from database import execute_query
 
     data = request.get_json(silent=True) or request.form
-    language = (data.get('language') or 'en').strip()
-    if language not in {'en', 'zh-CN', 'ta', 'ms'}:
-        language = 'en'
+    raw_language = (data.get('language') or 'en').strip()
+    language_map = {
+        'en': 'en',
+        'zh': 'zh-CN',
+        'zh-cn': 'zh-CN',
+        'zh-CN': 'zh-CN',
+        'ta': 'ta',
+        'ms': 'ms',
+    }
+    language = language_map.get(raw_language.lower(), 'en')
 
     execute_query(
         "UPDATE users SET language = %s WHERE id = %s",

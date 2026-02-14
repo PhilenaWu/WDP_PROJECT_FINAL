@@ -283,7 +283,7 @@
                     <li><a class="dropdown-item" href="{{ url_for('auth.settings') }}">Settings</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item" href="{{ url_for('auth.feedback') }}">Send Feedback</a></li>
-                    <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('auth.logout_now') }}">Logout</a></li>
                 </ul>
             </li>
         </ul>
@@ -332,8 +332,42 @@
     <script>
         const userLang = "{{ current_user.language if current_user.is_authenticated else '' }}";
 
+        const languageMap = {
+            'en': 'en',
+            'zh': 'zh-CN',
+            'zh-cn': 'zh-CN',
+            'ta': 'ta',
+            'ms': 'ms'
+        };
+
+        function normalizeLanguage(lang) {
+            const normalized = (lang || '').trim().toLowerCase();
+            return languageMap[normalized] || 'en';
+        }
+
+        function applyLanguageWhenReady(lang, timeoutMs = 5000) {
+            const target = normalizeLanguage(lang);
+            const started = Date.now();
+
+            const tryApply = () => {
+                const select = document.querySelector('.goog-te-combo');
+                if (select) {
+                    select.value = target;
+                    select.dispatchEvent(new Event('change'));
+                    localStorage.setItem('siteLanguage', target);
+                    return;
+                }
+
+                if (Date.now() - started < timeoutMs) {
+                    window.setTimeout(tryApply, 200);
+                }
+            };
+
+            tryApply();
+        }
+
         if (userLang) {
-            localStorage.setItem('siteLanguage', userLang);
+            localStorage.setItem('siteLanguage', normalizeLanguage(userLang));
         }
 
         function googleTranslateElementInit() {
@@ -348,13 +382,7 @@
         }
 
         function setSiteLanguage(lang) {
-            const select = document.querySelector('.goog-te-combo');
-            if (!select) {
-                return;
-            }
-            select.value = lang;
-            select.dispatchEvent(new Event('change'));
-            localStorage.setItem('siteLanguage', lang);
+            applyLanguageWhenReady(lang);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -362,15 +390,7 @@
             if (!stored) {
                 return;
             }
-            const interval = setInterval(() => {
-                const select = document.querySelector('.goog-te-combo');
-                if (select) {
-                    select.value = stored;
-                    select.dispatchEvent(new Event('change'));
-                    clearInterval(interval);
-                }
-            }, 200);
-            setTimeout(() => clearInterval(interval), 4000);
+            applyLanguageWhenReady(stored);
         });
     </script>
     <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
