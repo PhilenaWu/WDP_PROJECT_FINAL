@@ -7,65 +7,6 @@
 {% endblock %}
 
 {% block content %}
-<!-- Navigation -->
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-    <div class="container-fluid px-4">
-        <a class="navbar-brand d-flex align-items-center" href="#">
-            <i class="bi bi-people-fill me-2 navbar-brand-icon"></i>
-            <span class="navbar-brand-text">Genlink</span>
-        </a>
-        
-        <!-- Search -->
-        <form class="d-flex mx-auto auth-search">
-            <input class="form-control" type="search" placeholder="Search" aria-label="Search">
-        </form>
-        
-        <!-- Nav items -->
-        <ul class="navbar-nav">
-            <li class="nav-item">
-                <a class="nav-link active" href="{{ url_for('main.home') }}">
-                    <i class="bi bi-house-door"></i> Home
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="bi bi-book"></i> Storyboard
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="bi bi-controller"></i> Activities
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('events.events_home') }}">
-                    <i class="bi bi-calendar-event"></i> Events
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('messaging.view_contacts') }}">
-                    <i class="bi bi-chat-dots"></i> Messages
-                </a>
-            </li>
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                    <i class="bi bi-person-circle"></i>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="{{ url_for('profile.profile') }}">Profile</a></li>
-                    <li><a class="dropdown-item" href="{{ url_for('auth.settings') }}">Settings</a></li>
-                    {% if current_user.user_type == 'admin' %}
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="{{ url_for('events.admin_submissions') }}"><i class="bi bi-shield-check"></i> Admin Panel</a></li>
-                    {% endif %}
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="{{ url_for('auth.feedback') }}">Send Feedback</a></li>
-                    <li><a class="dropdown-item" href="{{ url_for('auth.logout_now') }}">Logout</a></li>
-                </ul>
-            </li>
-        </ul>
-    </div>
-</nav>
 
 {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
@@ -82,6 +23,7 @@
 
 <!-- Main Content -->
 <div class="container py-4">
+
     <!-- Voice Story Upload Banner -->
     <div class="card mb-4 banner-gradient">
         <div class="card-body p-4">
@@ -91,23 +33,109 @@
                     <p class="mb-0">Share your stories with the community through voice recordings</p>
                 </div>
                 <div class="col-md-4 text-end">
-                    <button class="btn btn-light">
+                    <button class="btn btn-light" disabled>
                         <i class="bi bi-upload"></i> Upload Story
                     </button>
                 </div>
             </div>
         </div>
     </div>
-    
+
+    <!-- Announcements Carousel -->
+    <div class="mb-5">
+        <h3 class="mb-3">Latest Announcements</h3>
+        <div class="carousel-wrapper position-relative">
+            <div id="announcementsCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
+                <div class="carousel-inner">
+
+                    <!-- Announcement 1 -->
+                    <div class="carousel-item active">
+                        <div class="card bg-light border-1">
+                            <div class="card-body p-4">
+                                <div class="text-center">
+                                    <h5 class="card-title mb-2">New Community Event This Weekend!</h5>
+                                    <p class="card-text text-muted mb-3">
+                                        Join us for an exciting intergenerational storytelling session with special guests.
+                                        Limited spots available!
+                                    </p>
+                                    <button class="btn btn-sm btn-primary">Learn More</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Announcement 2 -->
+                    <div class="carousel-item">
+                        <div class="card bg-light border-1">
+                            <div class="card-body p-4">
+                                <div class="text-center">
+                                    <h5 class="card-title mb-2">Platform Updates - New Features Released</h5>
+                                    <p class="card-text text-muted mb-3">
+                                        Check out our latest features including improved connections, better search,
+                                        and voice story enhancements!
+                                    </p>
+                                    <button class="btn btn-sm btn-primary">Explore</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Announcement 3 -->
+                    <div class="carousel-item">
+                        <div class="card bg-light border-1">
+                            <div class="card-body p-4">
+                                <div class="text-center">
+                                    <h5 class="card-title mb-2">Community Recognition Program</h5>
+                                    <p class="card-text text-muted mb-3">
+                                        Help us celebrate outstanding members! Nominate someone who's made an impact in our community.
+                                    </p>
+                                    <button class="btn btn-sm btn-primary">Nominate</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- arrows -->
+                <div class="carousel-arrows d-flex justify-content-center align-items-center mt-3">
+                    <button class="carousel-control-prev announcement-carousel-control mx-3" type="button"
+                            data-bs-target="#announcementsCarousel" data-bs-slide="prev">
+                        <span class="carousel-arrow-icon" aria-hidden="true"><i class="bi bi-chevron-left"></i></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+
+                    <button class="carousel-control-next announcement-carousel-control mx-3" type="button"
+                            data-bs-target="#announcementsCarousel" data-bs-slide="next">
+                        <span class="carousel-arrow-icon" aria-hidden="true"><i class="bi bi-chevron-right"></i></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+
+                <!-- dots -->
+                <div class="carousel-indicators mt-3">
+                    <button type="button" data-bs-target="#announcementsCarousel" data-bs-slide-to="0"
+                            class="active" aria-current="true" aria-label="Slide 1"></button>
+                    <button type="button" data-bs-target="#announcementsCarousel" data-bs-slide-to="1"
+                            aria-label="Slide 2"></button>
+                    <button type="button" data-bs-target="#announcementsCarousel" data-bs-slide-to="2"
+                            aria-label="Slide 3"></button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
     <!-- Upcoming Events Section -->
     <h3 class="mb-3">Upcoming Events</h3>
     <div class="row g-3">
+
         <!-- Event Card 1 -->
         <div class="col-md-6">
             <div class="card h-100 shadow-sm">
                 <div class="card-body">
                     <div class="d-flex mb-2">
-                        <span class="badge bg-info">Intergenerational Storytelling (Planned)</span>
+                        <span class="badge bg-info">Intergenerational Storytelling</span>
                     </div>
                     <h5 class="card-title">Community Storytelling Session</h5>
                     <p class="card-text text-muted">
@@ -120,7 +148,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Event Card 2 -->
         <div class="col-md-6">
             <div class="card h-100 shadow-sm">
@@ -139,8 +167,9 @@
                 </div>
             </div>
         </div>
+
     </div>
-    
+
     <!-- Welcome Message -->
     <div class="alert alert-success mt-4" role="alert">
         <h4 class="alert-heading">Welcome, {{ user.username }}! 🎉</h4>
@@ -150,7 +179,6 @@
             <strong>Age Group:</strong> {{ user.age_group.capitalize() if user.age_group else 'N/A' }}
         </p>
     </div>
-</div>
 
 <!-- Footer -->
 <footer class="bg-dark text-white py-4 mt-5">
@@ -179,6 +207,138 @@
         </div>
         <hr class="bg-secondary">
         <p class="text-center text-muted mb-0">© 2025 Genlink. All Rights Reserved.</p>
+    <!-- Connections Section -->
+    <div class="row g-4 mt-4">
+
+        <!-- Your Connections -->
+        <div class="col-lg-6">
+            <div class="card h-100 shadow-sm d-flex flex-column">
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-people"></i> Your Connections
+                    </h5>
+                </div>
+
+                <div class="card-body d-flex flex-column">
+
+                    <!-- Dynamic Connections -->
+                    <div class="d-flex flex-column gap-3 flex-grow-1">
+                        {% if current and current|length > 0 %}
+                            {% for u in current %}
+                                <div class="d-flex align-items-center">
+                                    <img
+                                        src="{{ u.profile_picture or url_for('static', filename='images/default-avatar.png') }}"
+                                        alt="User"
+                                        class="rounded-circle me-3"
+                                        style="width: 50px; height: 50px; object-fit: cover;"
+                                    >
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">{{ u.name }}</h6>
+                                        <small class="text-muted">{{ u.age_group|capitalize }}</small>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-secondary" disabled>Message</button>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted mb-0">No connections yet. Start connecting with others!</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- View All Button -->
+                    <div class="mt-3">
+                        <a href="{{ url_for('connections.connections') }}" class="btn btn-primary w-100">
+                            <i class="bi bi-arrow-right"></i> View All Connections
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Suggested Connections -->
+        <div class="col-lg-6">
+            <div class="card h-100 shadow-sm d-flex flex-column">
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-person-plus"></i> Suggested Connections
+                    </h5>
+                </div>
+
+                <div class="card-body d-flex flex-column">
+
+                    {% if suggestions and suggestions|length > 0 %}
+                        {% for u in suggestions %}
+                            <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+                                <img
+                                    src="{{ u.profile_picture or url_for('static', filename='images/default-avatar.png') }}"
+                                    alt="User"
+                                    class="rounded-circle me-3"
+                                    style="width: 50px; height: 50px; object-fit: cover;"
+                                >
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">{{ u.name }}</h6>
+                                    <small class="text-muted">
+                                        {{ u.age_group|capitalize }}
+                                        {% if u.mutual_count is not none %}
+                                            • {{ u.mutual_count }} mutual connections
+                                        {% endif %}
+                                    </small>
+                                </div>
+
+                                <!-- IMPORTANT: safe JS (no Jinja inside function args) -->
+                                <button class="btn btn-sm btn-primary"
+                                        data-id="{{ u.id }}"
+                                        onclick="sendRequest(this)">
+                                    Add
+                                </button>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted mb-0">No suggestions right now.</p>
+                    {% endif %}
+
+                    <!-- View More Button -->
+                    <div class="mt-3">
+                        <a class="btn btn-outline-primary w-100" href="{{ url_for('connections.connections') }}">
+                            <i class="bi bi-arrow-right"></i> View More Suggestions
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
-</footer>
+</div>
+
+<!-- JS for Add button -->
+<script>
+function postJSON(url, data){
+  return fetch(url, {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify(data)
+  }).then(r => r.json());
+}
+
+function sendRequest(btn){
+  const id = Number(btn.dataset.id);
+  btn.disabled = true;
+
+  postJSON("/connections/api/send", { target_id: id })
+    .then(res => {
+      if (!res.ok) {
+        btn.disabled = false;
+        alert(res.msg || "Failed");
+        return;
+      }
+      btn.textContent = "Pending";
+      btn.classList.remove("btn-primary");
+      btn.classList.add("btn-secondary");
+    })
+    .catch(() => {
+      btn.disabled = false;
+      alert("Network error");
+    });
+}
+</script>
+
 {% endblock %}

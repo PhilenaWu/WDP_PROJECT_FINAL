@@ -34,12 +34,14 @@ def create_app():
     from routes.main import main_bp
     from routes.events import events_bp
     from routes.messaging import messaging_bp
+    from routes.connections import connections_bp
     
     app.register_blueprint(messaging_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(profile_bp, url_prefix='/profile')
     app.register_blueprint(main_bp)
     app.register_blueprint(events_bp, url_prefix='/events')
+    app.register_blueprint(connections_bp, url_prefix='/connections')
     
     @app.route('/')
     def index():

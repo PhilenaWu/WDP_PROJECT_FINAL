@@ -17,12 +17,6 @@ def setup():
 def interests():
     return redirect(url_for('main.home'))
 
-
-@profile_bp.route('/connections', methods=['GET', 'POST'])
-def connections():
-    return redirect(url_for('main.home'))
-
-
 @profile_bp.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
