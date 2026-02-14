@@ -36,3 +36,4 @@ class Config:
     
     # Google Gemini AI Image Generation
     GOOGLE_GENAI_API_KEY = os.environ.get('GOOGLE_GENAI_API_KEY') or ''
+    

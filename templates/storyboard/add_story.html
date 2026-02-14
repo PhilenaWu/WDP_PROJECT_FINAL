@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+{% block title %}Add Story{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width:750px;">
+
+  <div class="card border-0 shadow-sm rounded-4 p-4">
+
+    <h3 class="fw-bold mb-1">Share Your Story</h3>
+    <p class="text-muted mb-4">
+      Topic: <strong>{{ topic.title }}</strong>
+    </p>
+
+    <form method="POST" enctype="multipart/form-data">
+
+      <!-- Title -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Title</label>
+        <input class="form-control rounded-3" name="title" required>
+      </div>
+
+      <!-- Text -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Story Text</label>
+        <textarea class="form-control rounded-3"
+                  name="body"
+                  rows="5"
+                  placeholder="Write your story..."></textarea>
+      </div>
+
+      <!-- ================= VOICE RECORDING ================= -->
+      <div class="mb-4">
+        <label class="form-label fw-semibold">Record Voice Message</label>
+
+        <div class="border rounded-4 p-3">
+
+          <div class="d-flex gap-2 mb-3">
+            <button type="button" id="startBtn"
+                    class="btn btn-success rounded-pill px-3">
+              ● Start
+            </button>
+
+            <button type="button" id="stopBtn"
+                    class="btn btn-secondary rounded-pill px-3"
+                    disabled>
+              ■ Stop
+            </button>
+
+            <button type="button" id="deleteBtn"
+                    class="btn btn-outline-danger rounded-pill px-3"
+                    disabled>
+              Delete
+            </button>
+          </div>
+
+          <audio id="audioPreview"
+                 controls
+                 class="w-100 d-none rounded-3"></audio>
+
+          <!-- Hidden file input -->
+          <input type="file"
+                 name="audio"
+                 id="audioFile"
+                 class="d-none">
+        </div>
+      </div>
+
+      <!-- ================= MEDIA UPLOAD ================= -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Upload Images / Videos</label>
+
+        <input type="file"
+               name="media"
+               id="mediaInput"
+               class="form-control rounded-3"
+               multiple
+               accept="image/*,video/*">
+
+        <div class="form-text text-muted">
+          Maximum 10 images or videos allowed per story.
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div id="mediaPreview" class="row g-2 mb-3"></div>
+
+      <!-- Buttons -->
+      <div class="d-flex justify-content-end gap-2 mt-4">
+        <a href="{{ url_for('storyboard.topic_detail', slug=topic.slug) }}"
+           class="btn btn-outline-secondary rounded-pill px-4">
+          Cancel
+        </a>
+
+        <button class="btn btn-warning rounded-pill px-4 shadow-sm">
+          Post Story
+        </button>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+<script>
+/* ================= VOICE RECORDING ================= */
+
+let mediaRecorder;
+let audioChunks = [];
+let audioBlob = null;
+
+const startBtn = document.getElementById("startBtn");
+const stopBtn = document.getElementById("stopBtn");
+const deleteBtn = document.getElementById("deleteBtn");
+const audioPreview = document.getElementById("audioPreview");
+const audioFile = document.getElementById("audioFile");
+
+startBtn.onclick = async () => {
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+  mediaRecorder = new MediaRecorder(stream);
+  audioChunks = [];
+
+  mediaRecorder.ondataavailable = e => {
+    audioChunks.push(e.data);
+  };
+
+  mediaRecorder.onstop = () => {
+    audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+    const url = URL.createObjectURL(audioBlob);
+
+    audioPreview.src = url;
+    audioPreview.classList.remove("d-none");
+
+    const file = new File([audioBlob], "recording.webm", { type: "audio/webm" });
+
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    audioFile.files = dt.files;
+
+    deleteBtn.disabled = false;
+  };
+
+  mediaRecorder.start();
+  startBtn.disabled = true;
+  stopBtn.disabled = false;
+};
+
+stopBtn.onclick = () => {
+  mediaRecorder.stop();
+  startBtn.disabled = false;
+  stopBtn.disabled = true;
+};
+
+deleteBtn.onclick = () => {
+  audioBlob = null;
+  audioPreview.src = "";
+  audioPreview.classList.add("d-none");
+  audioFile.value = "";
+  deleteBtn.disabled = true;
+};
+
+/* ================= MEDIA PREVIEW + 10 FILE LIMIT ================= */
+
+const mediaInput = document.getElementById("mediaInput");
+const preview = document.getElementById("mediaPreview");
+const MAX_FILES = 10;
+
+mediaInput.addEventListener("change", function() {
+
+  if (this.files.length > MAX_FILES) {
+    alert("You can upload a maximum of 10 files per story.");
+    this.value = "";
+    preview.innerHTML = "";
+    return;
+  }
+
+  preview.innerHTML = "";
+
+  Array.from(this.files).forEach(file => {
+
+    const col = document.createElement("div");
+    col.className = "col-6 col-md-4";
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "border rounded-4 overflow-hidden shadow-sm";
+    wrapper.style.height = "160px";
+
+    const url = URL.createObjectURL(file);
+
+    if (file.type.startsWith("image/")) {
+      const img = document.createElement("img");
+      img.src = url;
+      img.style.width = "100%";
+      img.style.height = "160px";
+      img.style.objectFit = "cover";
+      wrapper.appendChild(img);
+    } else if (file.type.startsWith("video/")) {
+      const video = document.createElement("video");
+      video.src = url;
+      video.controls = true;
+      video.muted = true;
+      video.style.width = "100%";
+      video.style.height = "160px";
+      video.style.objectFit = "cover";
+      wrapper.appendChild(video);
+    }
+
+    col.appendChild(wrapper);
+    preview.appendChild(col);
+  });
+});
+</script>
+
+{% endblock %}
+
+
+

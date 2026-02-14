@@ -2,10 +2,6 @@
 
 {% block title %}Genlink | Home{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-{% endblock %}
-
 {% block content %}
 
 {% with messages = get_flashed_messages(with_categories=true) %}

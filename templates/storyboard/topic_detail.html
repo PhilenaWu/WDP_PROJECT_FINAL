@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% block title %}{{ topic.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <!-- Header -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div>
+        <h2 class="fw-bold mb-1">{{ topic.title }}</h2>
+        <div class="text-muted">Explore stories shared by the community.</div>
+      </div>
+
+      <a class="btn btn-warning rounded-pill px-4 shadow-sm"
+         href="{{ url_for('storyboard.add_story', slug=topic.slug) }}">
+        + Add Story
+      </a>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="mb-4">
+    <div class="btn-group w-100">
+      <a class="btn {% if feed=='for_you' %}btn-warning{% else %}btn-outline-warning{% endif %}"
+         href="{{ url_for('storyboard.topic_detail', slug=topic.slug, feed='for_you') }}">
+        For You
+      </a>
+      <a class="btn {% if feed=='connections' %}btn-warning{% else %}btn-outline-warning{% endif %}"
+         href="{{ url_for('storyboard.topic_detail', slug=topic.slug, feed='connections') }}">
+        Connections
+      </a>
+      <a class="btn {% if feed=='mine' %}btn-warning{% else %}btn-outline-warning{% endif %}"
+         href="{{ url_for('storyboard.topic_detail', slug=topic.slug, feed='mine') }}">
+        Your Stories
+      </a>
+    </div>
+  </div>
+
+  {% if stories|length == 0 %}
+    <div class="text-center text-muted mt-5">No stories yet.</div>
+  {% endif %}
+
+  <!-- Stories -->
+  {% for s in stories %}
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+
+      <div class="card-body">
+
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <div class="d-flex align-items-center gap-3">
+            <img
+              src="{% if s.profile_pic %}{{ url_for('static', filename=s.profile_pic) }}{% else %}{{ url_for('static', filename='uploads/main_topics_images/default_pfp.png') }}{% endif %}"
+              class="rounded-circle"
+              style="width:42px;height:42px;object-fit:cover;"
+              alt="avatar">
+
+            <div>
+              <div class="fw-semibold">{{ s.username }}</div>
+              <div class="text-muted small">
+                {% if s.created_at.strftime %}{{ s.created_at.strftime('%d %b %Y, %I:%M %p') }}{% else %}{{ s.created_at }}{% endif %}
+              </div>
+            </div>
+          </div>
+
+          {% if feed == 'mine' %}
+            <form method="POST" action="{{ url_for('storyboard.delete_story', story_id=s.id) }}">
+              <button class="btn btn-sm btn-outline-danger rounded-pill">Delete</button>
+            </form>
+          {% endif %}
+        </div>
+
+        <!-- Title -->
+        <h5 class="fw-bold mb-2">{{ s.title }}</h5>
+
+        {% if s.body %}
+          <div class="text-muted mb-3">{{ s.body }}</div>
+        {% endif %}
+
+        {% if s.audio_path %}
+          <audio controls class="w-100 mb-3">
+            <source src="{{ url_for('static', filename=s.audio_path) }}">
+          </audio>
+        {% endif %}
+
+        <!-- ================= MEDIA (Instagram smaller centered) ================= -->
+        {% if s.media and s.media|length > 0 %}
+          {% set carousel_id = "carousel_" ~ s.id %}
+
+          <div class="d-flex justify-content-center mb-3">
+            <div class="border rounded-4 overflow-hidden bg-dark"
+                 style="max-width: 360px; width: 100%;">
+
+              {% if s.media|length == 1 %}
+                {% set m = s.media[0] %}
+                <div class="ratio ratio-1x1">
+                  {% if m.media_type == 'image' %}
+                    <img src="{{ url_for('static', filename=m.file_path) }}"
+                         class="w-100 h-100 object-fit-cover"
+                         alt="story media">
+                  {% else %}
+                    <video controls class="w-100 h-100 object-fit-cover">
+                      <source src="{{ url_for('static', filename=m.file_path) }}">
+                    </video>
+                  {% endif %}
+                </div>
+
+              {% else %}
+                <div id="{{ carousel_id }}" class="carousel slide" data-bs-ride="false">
+
+                  <div class="carousel-inner">
+                    {% for m in s.media %}
+                      <div class="carousel-item {% if loop.first %}active{% endif %}">
+                        <div class="ratio ratio-1x1">
+                          {% if m.media_type == 'image' %}
+                            <img src="{{ url_for('static', filename=m.file_path) }}"
+                                 class="w-100 h-100 object-fit-cover"
+                                 alt="story media">
+                          {% else %}
+                            <video controls class="w-100 h-100 object-fit-cover">
+                              <source src="{{ url_for('static', filename=m.file_path) }}">
+                            </video>
+                          {% endif %}
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+
+                  <button class="carousel-control-prev"
+                          type="button"
+                          data-bs-target="#{{ carousel_id }}"
+                          data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon"></span>
+                  </button>
+
+                  <button class="carousel-control-next"
+                          type="button"
+                          data-bs-target="#{{ carousel_id }}"
+                          data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                  </button>
+
+                  <div class="carousel-indicators">
+                    {% for _ in s.media %}
+                      <button type="button"
+                              data-bs-target="#{{ carousel_id }}"
+                              data-bs-slide-to="{{ loop.index0 }}"
+                              class="{% if loop.first %}active{% endif %}">
+                      </button>
+                    {% endfor %}
+                  </div>
+
+                </div>
+              {% endif %}
+
+            </div>
+          </div>
+        {% endif %}
+
+        <!-- Like -->
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <form method="POST" action="{{ url_for('storyboard.toggle_story_like', story_id=s.id) }}">
+            <button class="btn btn-sm rounded-pill {% if s.liked_by_me %}btn-danger{% else %}btn-outline-danger{% endif %}">
+              ♥ {{ s.like_count }}
+            </button>
+          </form>
+
+          <span class="text-muted small">💬 {{ s.comment_count }}</span>
+        </div>
+
+        <!-- Comments -->
+        <div class="border-top pt-3">
+          <button class="btn btn-sm btn-outline-secondary rounded-pill mb-3"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#comments_{{ s.id }}">
+            View comments ({{ s.comment_count }})
+          </button>
+
+          <div class="collapse" id="comments_{{ s.id }}">
+
+            {% for c in s.comments %}
+              <div class="d-flex gap-3 mb-3">
+
+                <img
+                  src="{% if c.profile_pic %}{{ url_for('static', filename=c.profile_pic) }}{% else %}{{ url_for('static', filename='uploads/main_topics_images/default_pfp.png') }}{% endif %}"
+                  class="rounded-circle"
+                  style="width:32px;height:32px;object-fit:cover;"
+                  alt="avatar">
+
+                <div class="flex-grow-1 bg-light rounded-3 p-2">
+                  <div class="small fw-semibold">{{ c.username }}</div>
+                  <div class="small text-muted mb-1">
+                    {% if c.created_at.strftime %}{{ c.created_at.strftime('%d %b %Y, %I:%M %p') }}{% else %}{{ c.created_at }}{% endif %}
+                  </div>
+                  <div class="small">{{ c.body }}</div>
+                </div>
+
+              </div>
+            {% endfor %}
+
+            <form method="POST"
+                  action="{{ url_for('storyboard.add_comment', story_id=s.id) }}"
+                  class="d-flex gap-2">
+              <input class="form-control rounded-pill"
+                     name="comment"
+                     placeholder="Write a comment..."
+                     required>
+              <button class="btn btn-warning rounded-pill px-3">Post</button>
+            </form>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  {% endfor %}
+
+</div>
+{% endblock %}

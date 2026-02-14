@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for
+from flask import Flask, redirect, url_for, render_template
 from flask_login import LoginManager, current_user
 from flask_session import Session
 from config import Config
@@ -35,6 +35,13 @@ def create_app():
     from routes.events import events_bp
     from routes.messaging import messaging_bp
     from routes.connections import connections_bp
+    from routes.topics_routes import bp_topics
+    from routes.storyboard import storyboard_bp
+    app.register_blueprint(storyboard_bp)
+
+
+    app.register_blueprint(bp_topics)
+
     
     app.register_blueprint(messaging_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -98,6 +105,11 @@ def create_app():
         except Exception:
             return {'appearance_pref': default_pref}
 
+    @app.route("/storyboard")
+    def storyboard():
+        return render_template("storyboard/main_topics.html")
+
+    
     # Ensure upload folder exists
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -128,6 +140,11 @@ def create_app():
         return (value + timedelta(hours=offset_hours)).strftime('%I:%M %p')
     
     return app
+
+
+
+    
+
 
 if __name__ == '__main__':
     app = create_app()
