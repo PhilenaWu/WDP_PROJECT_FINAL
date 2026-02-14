@@ -87,18 +87,22 @@ body {
 }
 
 /* ===== Global Text System ===== */
-body,
-body :is(h1,h2,h3,h4,h5,h6,p,span,small,strong,em,label,legend,a,li,td,th,caption,figcaption),
-body :is(.text-muted,.card-title,.card-text,.form-label,.dropdown-item,.menu-item,.sidebar-home-text,.section-subtitle,.main-title,.signout-text,.delete-text,.modal-text,.modal-confirm-text,.language-name,.theme-label,.setting-label,.slider-value) {
+html[data-theme='dark'] body,
+html[data-theme='dark'] body :is(h1,h2,h3,h4,h5,h6,p,span,small,strong,em,label,legend,a,li,td,th,caption,figcaption),
+html[data-theme='dark'] body :is(.text-muted,.card-title,.card-text,.form-label,.dropdown-item,.menu-item,.sidebar-home-text,.section-subtitle,.main-title,.signout-text,.delete-text,.modal-text,.modal-confirm-text,.language-name,.theme-label,.setting-label,.slider-value) {
   color: var(--app-global-fg) !important;
 }
 
-body :is(.form-control,.form-select,input,textarea,select,button) {
+html[data-theme='dark'] body :is(.form-control,.form-select,input,textarea,select,button) {
   color: var(--app-global-fg) !important;
   caret-color: var(--app-global-fg);
 }
 
-body :is(input,textarea,.form-control,.form-select)::placeholder {
+html[data-theme='dark'] :is(select,.form-select) {
+  --bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+}
+
+html[data-theme='dark'] body :is(input,textarea,.form-control,.form-select)::placeholder {
   color: var(--app-global-muted-fg) !important;
   opacity: 1;
 }
@@ -124,11 +128,7 @@ img,video,canvas,svg{max-width:100%;height:auto;}
   border-color: var(--app-container-border);
 }
 
-.text-muted,
-.modal-text,
-.delete-text,
-.category-note,
-.upload-hint {
+html[data-theme='dark'] :is(.text-muted,.modal-text,.delete-text,.category-note,.upload-hint) {
   color: var(--app-global-muted-fg) !important;
 }
 
@@ -240,6 +240,8 @@ body.editprofile-page .profile-btn{border-radius:999px;padding:10px 26px;font-si
 body.editprofile-page .btn-orange{color:#ffffff !important;}
 body.editprofile-page .btn-light{background:var(--app-surface-1) !important;border:1px solid var(--app-border) !important;color:var(--app-text) !important;}
 body.editprofile-page .feedback-card{max-width:860px;}
+html[data-theme='dark'] body.editprofile-page .eye-icon::before{filter:brightness(0) invert(1);}
+html[data-theme='dark'] body.editprofile-page input[type="date"]::-webkit-calendar-picker-indicator{filter:brightness(0) invert(1);opacity:1;}
 body.editprofile-page .feedback-header{background:linear-gradient(135deg, rgba(var(--bs-primary-rgb), .14) 0%, var(--app-surface-1) 100%);border:1px solid var(--app-border);border-radius:12px;padding:18px 20px;margin-bottom:22px;}
 body.editprofile-page .feedback-header p{margin:0;}
 body.editprofile-page .feedback-group{margin-bottom:18px;}
@@ -256,6 +258,28 @@ body.editprofile-page .feedback-entry-text{white-space:pre-wrap;line-height:1.5;
 body.editprofile-page .feedback-entry-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;}
 body.editprofile-page .feedback-entry-actions form{margin:0;}
 body.editprofile-page .feedback-empty-state{border:1px dashed var(--app-border);border-radius:12px;padding:28px;text-align:center;background:var(--app-surface-1);}
+
+/* ===== Events Calendar (Restore Original Styling) ===== */
+.calendar-container,
+.calendar-container :is(h1,h2,h3,h4,h5,h6,p,span,strong,small,div,button,i) {
+  color: #ffffff !important;
+}
+
+.calendar-container .calendar-day.has-event {
+  color: #ffffff !important;
+}
+
+.calendar-container .btn-outline-light,
+.calendar-container .btn-outline-light i {
+  color: #ffffff !important;
+  border-color: rgba(255,255,255,.75) !important;
+}
+
+.calendar-container .btn-outline-light:hover,
+.calendar-container .btn-outline-light:focus {
+  color: #ffffff !important;
+  background: rgba(255,255,255,.14) !important;
+}
 
 /* ===== Password Visibility Toggle (Universal) ===== */
 .password-input-wrapper{position:relative;display:flex;align-items:center;}
@@ -500,115 +524,67 @@ html[data-theme='dark'] body.editprofile-page .badge-elderly {
   color: var(--app-global-fg) !important;
 }
 
-/* ===== Events Page Dark-Mode Exceptions (Keep Light-Mode Styling) ===== */
-html[data-theme='dark'] .event-card,
-html[data-theme='dark'] .event-card-body,
-html[data-theme='dark'] .event-list-item,
-html[data-theme='dark'] .event-list-media,
-html[data-theme='dark'] .navigation-section,
-html[data-theme='dark'] .navigation-section .bg-white {
-  background-color: #ffffff !important;
+/* ===== Auto Surface Tone Rules (Dark Mode) ===== */
+html[data-theme='dark'] [data-surface-tone='light'] {
+  color: #212529 !important;
 }
 
-html[data-theme='dark'] .event-card-title {
-  color: #333333 !important;
+html[data-theme='dark'] [data-surface-tone='light'] :is(h1,h2,h3,h4,h5,h6,p,span,small,strong,em,label,legend,a,li,td,th,caption,figcaption,.text-muted,.card-title,.card-text,.form-label,.dropdown-item,.menu-item,.sidebar-home-text,.section-subtitle,.main-title,.signout-text,.delete-text,.modal-text,.modal-confirm-text,.language-name,.theme-label,.setting-label,.slider-value,.contact-name,.contact-status,.message-time) {
+  color: #212529 !important;
 }
 
-html[data-theme='dark'] .event-card-date,
-html[data-theme='dark'] .event-card-time,
-html[data-theme='dark'] .event-card-description,
-html[data-theme='dark'] .event-list-date,
-html[data-theme='dark'] .event-list-title,
-html[data-theme='dark'] .event-list-content,
-html[data-theme='dark'] .event-list-placeholder {
-  color: #666666 !important;
-}
-
-html[data-theme='dark'] .navigation-section,
-html[data-theme='dark'] .navigation-section h3,
-html[data-theme='dark'] .navigation-section .form-label,
-html[data-theme='dark'] .navigation-section p,
-html[data-theme='dark'] .navigation-section span,
-html[data-theme='dark'] .navigation-section strong {
-  color: #222222 !important;
-}
-
-html[data-theme='dark'] .navigation-section .form-control,
-html[data-theme='dark'] .navigation-section .form-select,
-html[data-theme='dark'] .navigation-section input,
-html[data-theme='dark'] .navigation-section select {
-  background-color: #ffffff !important;
+html[data-theme='dark'] [data-surface-tone='light'] :is(.form-control,.form-select,input,textarea,select,button) {
   color: #212529 !important;
   border-color: #ced4da !important;
 }
 
-html[data-theme='dark'] .navigation-section :is(input,textarea,.form-control,.form-select)::placeholder {
+html[data-theme='dark'] [data-surface-tone='light'] :is(input,textarea,.form-control,.form-select)::placeholder {
   color: #6c757d !important;
 }
 
-/* ===== Messaging Dark-Mode Exceptions (Keep Light-Mode Styling) ===== */
-html[data-theme='dark'] .messaging-container,
-html[data-theme='dark'] .messaging-container h1,
-html[data-theme='dark'] .messaging-container h2,
-html[data-theme='dark'] .messaging-container h3,
-html[data-theme='dark'] .messaging-container p,
-html[data-theme='dark'] .messaging-container span,
-html[data-theme='dark'] .messaging-container a,
-html[data-theme='dark'] .chat-container,
-html[data-theme='dark'] .chat-container h1,
-html[data-theme='dark'] .chat-container h2,
-html[data-theme='dark'] .chat-container h3,
-html[data-theme='dark'] .chat-container p,
-html[data-theme='dark'] .chat-container span,
-html[data-theme='dark'] .chat-container a {
-  color: #212529 !important;
-}
-
-html[data-theme='dark'] .messaging-container .sidebar,
-html[data-theme='dark'] .messaging-container .main-content,
-html[data-theme='dark'] .messaging-container .add-contact-form,
-html[data-theme='dark'] .chat-container,
-html[data-theme='dark'] .chat-input-area,
-html[data-theme='dark'] .message-received,
-html[data-theme='dark'] .file-upload-modal {
+html[data-theme='dark'] [data-surface-tone='light'] .dropdown-menu {
   background-color: #ffffff !important;
-}
-
-html[data-theme='dark'] #chatContainer .chat-messages {
-  background: #ffe8d8 !important;
-}
-
-html[data-theme='dark'] .chat-container:not(#chatContainer) .chat-messages {
-  background: linear-gradient(135deg, #fff5f0 0%, #ffe8d8 100%) !important;
-}
-
-html[data-theme='dark'] .message-received {
-  color: #2c2c2c !important;
-}
-
-html[data-theme='dark'] .messaging-container .contact-name,
-html[data-theme='dark'] .messaging-container .sidebar h3,
-html[data-theme='dark'] .messaging-container .main-content h2,
-html[data-theme='dark'] .messaging-container .main-content h3 {
-  color: #2c2c2c !important;
-}
-
-html[data-theme='dark'] .messaging-container .contact-status,
-html[data-theme='dark'] .chat-container .message-time {
-  color: #999999 !important;
-}
-
-html[data-theme='dark'] .chat-container .message-input,
-html[data-theme='dark'] .chat-container .form-control,
-html[data-theme='dark'] .chat-container .form-select,
-html[data-theme='dark'] .messaging-container .form-control,
-html[data-theme='dark'] .messaging-container .form-select {
-  background-color: #ffffff !important;
-  color: #212529 !important;
   border-color: #ced4da !important;
 }
 
-html[data-theme='dark'] .chat-container :is(input,textarea,.form-control,.form-select)::placeholder,
-html[data-theme='dark'] .messaging-container :is(input,textarea,.form-control,.form-select)::placeholder {
-  color: #6c757d !important;
+html[data-theme='dark'] [data-surface-tone='light'] .dropdown-item {
+  color: #212529 !important;
+}
+
+html[data-theme='dark'] [data-surface-tone='light'] .dropdown-item:hover,
+html[data-theme='dark'] [data-surface-tone='light'] .dropdown-item:focus {
+  background-color: #f8f9fa !important;
+  color: #212529 !important;
+}
+
+html[data-theme='dark'] [data-surface-tone='light'] :is(select, .form-select) option {
+  background-color: #ffffff;
+  color: #212529;
+}
+
+html[data-theme='dark'] [data-surface-tone='dark'] {
+  color: #f8fbff !important;
+}
+
+html[data-theme='dark'] [data-surface-tone='dark'] :is(h1,h2,h3,h4,h5,h6,p,span,small,strong,em,label,legend,a,li,td,th,caption,figcaption,.text-muted,.card-title,.card-text,.form-label,.dropdown-item,.menu-item,.sidebar-home-text,.section-subtitle,.main-title,.signout-text,.delete-text,.modal-text,.modal-confirm-text,.language-name,.theme-label,.setting-label,.slider-value,.contact-name,.contact-status,.message-time) {
+  color: #f8fbff !important;
+}
+
+html[data-theme='dark'] [data-surface-tone='dark'] :is(.form-control,.form-select,input,textarea,select,button) {
+  color: #f8fbff !important;
+  caret-color: #f8fbff;
+}
+
+html[data-theme='dark'] :is(.form-control,.form-select,input,textarea,select,button)[data-surface-tone='dark'] {
+  color: #f8fbff !important;
+  border-color: #2f3d59 !important;
+  caret-color: #f8fbff;
+}
+
+html[data-theme='dark'] :is(.form-control,.form-select,input,textarea,select,button)[data-surface-tone='dark']::placeholder {
+  color: rgba(248,251,255,.74) !important;
+}
+
+html[data-theme='dark'] [data-surface-tone='dark'] :is(input,textarea,.form-control,.form-select)::placeholder {
+  color: rgba(248,251,255,.74) !important;
 }

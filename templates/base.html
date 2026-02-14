@@ -117,9 +117,65 @@
 
                         element.style.fontWeight = next.fontWeight;
                     });
+
+                    if (window.genlinkAppearance && typeof window.genlinkAppearance.updateSurfaceTones === 'function') {
+                        window.genlinkAppearance.updateSurfaceTones();
+                    }
                 }
 
                 return next;
+            }
+
+            function parseRgb(value) {
+                const match = value && value.match(/^rgba?\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?\)$/i);
+                if (!match) {
+                    return null;
+                }
+
+                return {
+                    r: Number(match[1]),
+                    g: Number(match[2]),
+                    b: Number(match[3]),
+                    a: match[4] === undefined ? 1 : Number(match[4])
+                };
+            }
+
+            function classifySurfaceTone(backgroundColor) {
+                const rgb = parseRgb(backgroundColor);
+                if (!rgb || rgb.a === 0) {
+                    return null;
+                }
+
+                const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
+                const isNavyLike = rgb.b >= rgb.r + 15 && rgb.b >= rgb.g + 15 && brightness <= 170;
+
+                if (brightness >= 210) {
+                    return 'light';
+                }
+
+                if (brightness <= 150 || isNavyLike) {
+                    return 'dark';
+                }
+
+                return null;
+            }
+
+            function updateSurfaceTones() {
+                if (!document.body) {
+                    return;
+                }
+
+                const themedNodes = document.body.querySelectorAll('*');
+                themedNodes.forEach((element) => {
+                    const computed = window.getComputedStyle(element);
+                    const tone = classifySurfaceTone(computed.backgroundColor);
+
+                    if (tone) {
+                        element.setAttribute('data-surface-tone', tone);
+                    } else {
+                        element.removeAttribute('data-surface-tone');
+                    }
+                });
             }
 
             function saveAppearance(settings) {
@@ -135,7 +191,8 @@
                 defaults,
                 getSaved,
                 applyAppearance,
-                saveAppearance
+                saveAppearance,
+                updateSurfaceTones
             };
 
             const initialAppearance = getSaved();
@@ -144,6 +201,18 @@
 
             document.addEventListener('DOMContentLoaded', () => {
                 applyAppearance(initialAppearance);
+                updateSurfaceTones();
+
+                const observer = new MutationObserver(() => {
+                    updateSurfaceTones();
+                });
+
+                observer.observe(document.body, {
+                    childList: true,
+                    subtree: true,
+                    attributes: true,
+                    attributeFilter: ['class', 'style']
+                });
             });
         })();
     </script>
