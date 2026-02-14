@@ -222,22 +222,6 @@
 <body {% block body_class %}{% endblock %}>
     {% block navbar %}{% endblock %}
     
-    <!-- Flash messages -->
-    {% if request.endpoint != 'main.home' %}
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div class="container-fluid mt-3 px-3">
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show {% if message == 'Please log in to access this page.' %}login-required-alert{% endif %}" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
-    {% endif %}
-    
     <!-- Navigation -->
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
     <div class="container-fluid px-4">
@@ -249,24 +233,31 @@
         <ul class="navbar-nav w-100 justify-content-center">
             <li class="nav-item">
                 <a class="nav-link active" href="{{ url_for('main.home') }}">
-                    <i class="bi bi-house-door"></i> Home
+                    <i class="bi bi-house-door"></i>Home
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('main.storyboard') }}">
-                    <i class="bi bi-book"></i> Storyboard
+                    <i class="bi bi-book"></i>Storyboard
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('events.events_home') }}">
-                    <i class="bi bi-calendar-event"></i> Events
+                    <i class="bi bi-calendar-event"></i>Events
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('events.submit_event') }}">
-                    <i class="bi bi-calendar-event"></i> Proposal
+                    <i class="bi bi-envelope-paper"></i>Proposal
                 </a>
             </li>
+            {% if current_user.is_authenticated and current_user.user_type == 'admin' %}
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('events.admin_create_event') }}">
+                    <i class="bi bi-plus-circle"></i>Create Event
+                </a>
+            </li>
+            {% endif %}
         </ul>
         <ul class="navbar-nav">
             <li class="nav-item">
@@ -281,6 +272,10 @@
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li><a class="dropdown-item" href="{{ url_for('profile.profile') }}">My Profile</a></li>
                     <li><a class="dropdown-item" href="{{ url_for('auth.settings') }}">Settings</a></li>
+                    {% if current_user.is_authenticated and current_user.user_type == 'admin' %}
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{{ url_for('events.admin_submissions') }}"><i class="bi bi-shield-check"></i> Admin Panel</a></li>
+                    {% endif %}
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item" href="{{ url_for('auth.feedback') }}">Send Feedback</a></li>
                     <li><a class="dropdown-item" href="{{ url_for('auth.logout_now') }}">Logout</a></li>
@@ -290,6 +285,22 @@
     </div>
 </nav>
 
+<!-- Flash messages -->
+{% if request.endpoint != 'main.home' %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container-fluid mt-3 px-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show {% if message == 'Please log in to access this page.' %}login-required-alert{% endif %}" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+{% endif %}
+
 {% block content %}{% endblock %}
 
 <!-- Footer -->
@@ -297,15 +308,15 @@
     <div class="container">
         <div class="row">
             <div class="col-md-4">
-                <h5><img src="{{ url_for('static', filename='uploads/profile_pics/logo.png') }}" alt="Logo" class="footer-logo me-2"> GenLink</h5>
+                <h5><img src="{{ url_for('static', filename='uploads/profile_pics/logo.png') }}" alt="Logo" class="footer-logo me-2"></h5>
                 <p class="text-white-50">Bringing Generations Storytelling Hub</p>
             </div>
             <div class="col-md-4">
                 <h6>Platform</h6>
                 <ul class="list-unstyled">
-                    <li><a href="#" class="text-white-50">Home</a></li>
-                    <li><a href="#" class="text-white-50">Events</a></li>
-                    <li><a href="#" class="text-white-50">Activities</a></li>
+                    <li><a href="{{ url_for('main.home') }}" class="text-white-50">Home</a></li>
+                    <li><a href="{{ url_for('storyboard') }}" class="text-white-50">Storyboard</a></li>
+                    <li><a href="{{ url_for('events.events_home') }}" class="text-white-50">Events</a></li>
                 </ul>
             </div>
             <div class="col-md-4">

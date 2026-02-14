@@ -219,34 +219,7 @@
 </style>
 {% endblock %}
 
-{% block navbar %}
-<!-- Navigation Bar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
-    <div class="container-fluid px-4">
-        <a class="navbar-brand" href="#">
-            <i class="bi bi-shield-check me-2"></i>
-            <span>Admin Panel</span>
-        </a>
-        <ul class="navbar-nav ms-auto">
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('events.events_home') }}">
-                    <i class="bi bi-calendar-event"></i> Events
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('events.admin_create_event') }}">
-                    <i class="bi bi-plus-circle"></i> Create Event
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('profile.profile') }}">
-                    <i class="bi bi-person-circle"></i> Profile
-                </a>
-            </li>
-        </ul>
-    </div>
-</nav>
-{% endblock %}
+
 
 {% block content %}
 <div class="container admin-container">
