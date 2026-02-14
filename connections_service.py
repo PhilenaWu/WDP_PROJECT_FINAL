@@ -1,6 +1,6 @@
 from database import execute_query
 
-def get_connected_user_ids(user_id):
+def get_connection_ids(user_id):
     query = """
         SELECT user_low, user_high
         FROM connections
