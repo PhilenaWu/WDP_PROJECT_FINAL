@@ -353,3 +353,138 @@ body.appearance-page .appearance-actions{margin-top:48px;padding-right:40px;}
   body.appearance-page .setting-group{grid-template-columns:1fr;padding-left:0;}
   body.appearance-page .appearance-actions{padding-right:0;}
 }
+
+/* ===== Connections Page ===== */
+.connection-card {
+  border: 1px solid #ffe0b2;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(243,154,31,0.06);
+  transition: box-shadow 0.2s, border-color 0.2s;
+  background: #fffdfa;
+}
+.connection-card:hover {
+  box-shadow: 0 4px 16px rgba(243,154,31,0.13);
+  border-color: #f39a1f;
+}
+.connection-card .btn-success {
+  background: #2ecc71 !important;
+  border: none;
+}
+.connection-card .btn-warning {
+  background: #f39a1f !important;
+  border: none;
+}
+.connection-card .btn-outline-danger, .connection-card .btn-outline-secondary {
+  border-radius: 999px;
+  padding-left: 18px;
+  padding-right: 18px;
+}
+.connection-card img.rounded-circle {
+  border: 2px solid #ffe0b2;
+  background: #fff7e6;
+  object-fit: cover;
+}
+.connection-card strong {
+  color: #f39a1f;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+.connection-card small.text-muted {
+  color: #ff8c61 !important;
+  font-size: 0.95em;
+}
+.connection-card .btn-close {
+  background: #ffe0b2;
+  border-radius: 50%;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+.connection-card .btn-close:hover {
+  opacity: 1;
+  background: #f39a1f;
+}
+.container > h3, h5 {
+  color: #f39a1f;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.badge.bg-primary, .badge.bg-success, .badge.bg-warning {
+  font-size: 1em;
+  border-radius: 8px;
+  padding: 0.4em 0.8em;
+}
+.badge.bg-primary { background: #f39a1f !important; }
+.badge.bg-success, .badge.bg-warning {
+  background: #f39a1f !important;
+  color: #fff !important;
+}
+.suggestions-list .connection-card .btn-close {
+  margin-left: 8px;
+}
+.form-control, .form-select {
+  border-radius: 8px;
+  border: 1.5px solid #ffe0b2;
+  background: #fffdfa;
+}
+.form-control:focus, .form-select:focus {
+  border-color: #f39a1f;
+  box-shadow: 0 0 0 0.15rem rgba(243,154,31,0.13);
+}
+.btn-primary, .btn-primary:focus, .btn-primary:active {
+  background: #f39a1f !important;
+  border: none !important;
+}
+.btn-primary:hover {
+  background: #e58a0d !important;
+}
+
+.btn-connection-action {
+  background: #ff8c61;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 1em;
+  padding: 6px 20px 6px 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(255,140,97,0.08);
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+.btn-connection-action:hover, .btn-connection-action:focus {
+  background: #f39a1f;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(243,154,31,0.13);
+}
+.btn-connection-action.btn-accept {
+  background: #2ecc71;
+}
+.btn-connection-action.btn-accept:hover, .btn-connection-action.btn-accept:focus {
+  background: #27ae60;
+}
+.btn-connection-action.btn-reject, .btn-connection-action.btn-cancel {
+  background: #e74c3c;
+}
+.btn-connection-action.btn-reject:hover, .btn-connection-action.btn-reject:focus,
+.btn-connection-action.btn-cancel:hover, .btn-connection-action.btn-cancel:focus {
+  background: #c0392b;
+}
+.btn-suggestion-close {
+  background: #fff3e6;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background 0.2s;
+}
+.btn-suggestion-close:hover {
+  background: #ffe0b2;
+}
+.btn-suggestion-close svg {
+  display: block;
+}

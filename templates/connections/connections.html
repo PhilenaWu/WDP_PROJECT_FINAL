@@ -1,6 +1,915 @@
-{extends "base.html"}
+{% extends "base.html" %}
+{% block title %}Connections{% endblock %}
 
-{% block title %}Connections | GenLink{% endblock %}
-{% block body_class %}class="connections-page"{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<style>
+  /* =========================
+     PAGE LAYOUT
+     ========================= */
+  .connections-page{
+    min-height: calc(100vh - 140px);
+    padding-top: 1.25rem;
+    padding-bottom: 1.25rem;
+  }
+
+  /* =========================
+     SECTION COUNTERS (consistent badges)
+     ========================= */
+  .section-badge{
+    background:#ff8c61 !important;
+    color:#fff !important;
+    font-size:0.8rem;
+    font-weight:800;
+    border-radius:999px;
+    padding:4px 10px;
+    vertical-align:middle;
+  }
+
+  /* =========================
+     THEME BUTTONS (match homepage style)
+     Orange filled + Blue outline
+     ========================= */
+  .btn-theme{
+    border-radius:6px;
+    font-weight:700;
+    font-size:0.85rem;
+    padding:6px 12px;
+    line-height:1.1;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    border:1px solid transparent;
+    white-space:nowrap;
+  }
+  .btn-theme:disabled{ opacity:0.6; cursor:not-allowed; }
+
+  /* Orange filled (like "Add") */
+  .btn-theme-orange{
+    background:#f59e0b;      /* warm orange like your UI */
+    border-color:#f59e0b;
+    color:#fff;
+  }
+  .btn-theme-orange:hover{ filter:brightness(0.95); color:#fff; }
+
+  /* Blue outline (like "View Details") */
+  .btn-theme-outline-blue{
+    background:transparent;
+    border-color:#2563eb;
+    color:#2563eb;
+  }
+  .btn-theme-outline-blue:hover{
+    background:#2563eb;
+    color:#fff;
+  }
+
+  /* Soft neutral outline (optional for "Reject/Cancel") */
+  .btn-theme-outline-gray{
+    background:transparent;
+    border-color:#cbd5e1;
+    color:#334155;
+  }
+  .btn-theme-outline-gray:hover{
+    background:#f1f5f9;
+    color:#0f172a;
+  }
+
+  /* Danger outline (remove) but still consistent */
+  .btn-theme-outline-red{
+    background:transparent;
+    border-color:#ef4444;
+    color:#ef4444;
+  }
+  .btn-theme-outline-red:hover{
+    background:#ef4444;
+    color:#fff;
+  }
+
+  /* =========================
+     TOAST
+     ========================= */
+  #toast-container{
+    position:fixed;
+    top:24px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:9999;
+    width:360px;
+    max-width:92%;
+  }
+  .custom-toast{
+    background:#ff8c61;
+    color:#fff;
+    border-radius:12px;
+    padding:14px 16px;
+    box-shadow:0 4px 16px rgba(255,140,97,0.13);
+    margin-bottom:12px;
+    font-size:1.0em;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    position:relative;
+    overflow:hidden;
+    animation:toast-in 0.35s ease;
+  }
+  .custom-toast.toast-out{ animation:toast-out 0.35s forwards; }
+  @keyframes toast-in{
+    from{ transform: translateY(-10px); opacity:0; }
+    to{ transform: translateY(0); opacity:1; }
+  }
+  @keyframes toast-out{
+    from{ transform: translateY(0); opacity:1; }
+    to{ transform: translateY(-10px); opacity:0; }
+  }
+  .custom-toast .toast-msg{ flex:1 1 auto; }
+  .custom-toast .toast-actions{ display:flex; gap:8px; align-items:center; }
+  .custom-toast .btn{
+    background:#fff;
+    color:#ff8c61;
+    border-radius:999px;
+    font-weight:800;
+    font-size:0.85em;
+    padding:6px 12px;
+    border:none;
+  }
+  .toast-progress{
+    position:absolute;
+    left:0; bottom:0;
+    width:100%;
+    height:4px;
+    background: rgba(255,255,255,0.35);
+  }
+  .toast-progress-bar{
+    height:100%;
+    background:#fff;
+    width:100%;
+  }
+
+  /* =========================
+     Cards + Smooth slide animations
+     ========================= */
+  .connection-card{
+    border-radius:10px;
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .connection-card:hover{
+    transform: translateY(-1px);
+    box-shadow: 0 10px 26px rgba(0,0,0,0.06);
+  }
+  .slide-out{ animation: slideOut .28s ease forwards; }
+  .slide-in{ animation: slideIn .28s ease forwards; }
+  @keyframes slideOut{
+    to{ transform: translateX(18px); opacity:0; height:0; margin:0; padding:0; }
+  }
+  @keyframes slideIn{
+    from{ transform: translateX(-18px); opacity:0; }
+    to{ transform: translateX(0); opacity:1; }
+  }
+
+  /* Suggestion close button */
+  .btn-suggestion-close{
+    background: transparent;
+    border: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .btn-suggestion-close:hover{
+    background: rgba(255,140,97,0.12);
+  }
+
+  /* =========================
+     CONFIRM MODAL (Remove Connection)
+     ========================= */
+  .confirm-overlay{
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .confirm-overlay.show{ display:flex; }
+
+  .confirm-modal{
+    width: 420px;
+    max-width: 100%;
+    background:#fff;
+    border-radius: 16px;
+    box-shadow: 0 18px 60px rgba(0,0,0,0.18);
+    overflow: hidden;
+    animation: popIn .16s ease;
+  }
+  @keyframes popIn{
+    from{ transform: scale(0.98); opacity:0; }
+    to{ transform: scale(1); opacity:1; }
+  }
+  .confirm-head{
+    padding: 16px 18px 10px;
+    border-bottom: 1px solid #eee;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .confirm-icon{
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: rgba(239,68,68,0.12);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex: 0 0 auto;
+  }
+  .confirm-title{
+    font-weight: 900;
+    margin: 0;
+    font-size: 1.05rem;
+  }
+  .confirm-body{
+    padding: 12px 18px 6px;
+    color:#333;
+  }
+  .confirm-actions{
+    padding: 12px 18px 16px;
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+  }
+  .btn-confirm{
+    border:none;
+    border-radius: 999px;
+    padding: 9px 14px;
+    font-weight: 900;
+  }
+  .btn-confirm-cancel{
+    background:#f1f5f9;
+    color:#0f172a;
+  }
+  .btn-confirm-danger{
+    background:#ef4444;
+    color:#fff;
+  }
+</style>
+{% endblock %}
 
 {% block content %}
+<div id="toast-container"></div>
+
+<!-- Confirm Modal -->
+<div id="confirm-overlay" class="confirm-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="confirm-modal">
+    <div class="confirm-head">
+      <div class="confirm-icon">
+        <i class="bi bi-exclamation-triangle-fill" style="color:#ef4444;"></i>
+      </div>
+      <div>
+        <p class="confirm-title" id="confirm-title">Remove connection?</p>
+      </div>
+    </div>
+    <div class="confirm-body">
+      <p id="confirm-text">Are you sure you want to remove this connection?</p>
+    </div>
+    <div class="confirm-actions">
+      <button type="button" class="btn-confirm btn-confirm-cancel" id="confirm-cancel">Cancel</button>
+      <button type="button" class="btn-confirm btn-confirm-danger" id="confirm-ok">Remove</button>
+    </div>
+  </div>
+</div>
+
+<div class="container connections-page">
+
+  <!-- Header (no top corner counters) -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">Connections</h3>
+  </div>
+
+  <!-- Search + Filter -->
+  <form class="row g-2 align-items-center mb-4" method="GET">
+    <div class="col-md-6">
+      <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Search users...">
+    </div>
+    <div class="col-md-3">
+      <select name="role" class="form-select">
+        <option value="">All age groups</option>
+        <option value="youth" {% if role=="youth" %}selected{% endif %}>Youth</option>
+        <option value="adult" {% if role=="adult" %}selected{% endif %}>Adult</option>
+        <option value="elderly" {% if role=="elderly" %}selected{% endif %}>Elderly</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <button class="btn btn-primary w-100">Search</button>
+    </div>
+  </form>
+
+  {# =========================
+     SEARCH MODE: show ONLY results
+     ========================= #}
+  {% if q %}
+    <h5 class="mt-2 mb-3">Search Results for "{{ q }}"</h5>
+
+    <div id="search-results-list">
+      {% if search_results is defined and search_results %}
+        {% for u in search_results %}
+          <div class="card mb-3 connection-card px-2 py-1" data-user-id="{{ u.id }}">
+            <div class="card-body d-flex justify-content-between align-items-center">
+              <div class="d-flex align-items-center gap-3">
+                <img src="{{ u.profile_picture or url_for('static', filename='images/default-avatar.png') }}"
+                     class="rounded-circle" width="48" height="48" alt="avatar">
+                <div>
+                  <strong>{{ u.name }}</strong><br>
+                  <small class="text-muted">{{ u.age_group }}</small>
+                </div>
+              </div>
+
+              {% if u.rel_status == 'connected' %}
+                <button class="btn-theme btn-theme-outline-red"
+                        data-id="{{ u.id }}"
+                        onclick="confirmRemoveConnection(this)">
+                  Remove
+                </button>
+
+              {% elif u.rel_status == 'outgoing' %}
+                <button class="btn-theme btn-theme-outline-blue"
+                        data-id="{{ u.id }}"
+                        onclick="cancelRequest(this)">
+                  Cancel
+                </button>
+
+              {% elif u.rel_status == 'incoming' %}
+                <div class="d-flex gap-2">
+                  <button class="btn-theme btn-theme-orange"
+                          data-id="{{ u.id }}"
+                          onclick="acceptRequest(this)">
+                    Accept
+                  </button>
+                  <button class="btn-theme btn-theme-outline-gray"
+                          data-id="{{ u.id }}"
+                          onclick="rejectRequest(this)">
+                    Reject
+                  </button>
+                </div>
+
+              {% else %}
+                <button class="btn-theme btn-theme-orange"
+                        data-id="{{ u.id }}"
+                        onclick="sendRequest(this)">
+                  Add
+                </button>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted">No users found for your search.</p>
+      {% endif %}
+    </div>
+
+  {% else %}
+    {# =========================
+       NORMAL MODE: show sections
+       ========================= #}
+
+    <!-- Current -->
+    <h5 class="mt-5 mb-3">
+      Your Connections
+      <span class="section-badge ms-2" id="badge-current">{{ counts.current }}</span>
+    </h5>
+
+    <div id="current-list" class="mb-4">
+      {% for u in current %}
+        <div class="card mb-3 connection-card px-2 py-1" data-user-id="{{ u.id }}">
+          <div class="card-body d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3">
+              <img src="{{ u.profile_picture or url_for('static', filename='images/default-avatar.png') }}"
+                   class="rounded-circle" width="48" height="48" alt="avatar">
+              <div>
+                <strong>{{ u.name }}</strong><br>
+                <small class="text-muted">{{ u.age_group }}</small>
+              </div>
+            </div>
+
+            <button class="btn-theme btn-theme-outline-red"
+                    data-id="{{ u.id }}"
+                    onclick="confirmRemoveConnection(this)">
+              Remove
+            </button>
+          </div>
+        </div>
+      {% else %}
+        <p class="text-muted" id="empty-current">No connections yet</p>
+      {% endfor %}
+    </div>
+
+    <!-- Incoming -->
+    <h5 class="mt-5 mb-3">
+      Incoming Requests
+      <span class="section-badge ms-2" id="badge-incoming">{{ counts.incoming }}</span>
+    </h5>
+
+    <div id="incoming-list" class="mb-4">
+      {% for u in incoming %}
+        <div class="card mb-3 connection-card px-2 py-1" data-user-id="{{ u.id }}">
+          <div class="card-body d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3">
+              <img src="{{ u.profile_picture or url_for('static', filename='images/default-avatar.png') }}"
+                   class="rounded-circle" width="48" height="48" alt="avatar">
+              <div>
+                <strong>{{ u.name }}</strong><br>
+                <small class="text-muted">{{ u.age_group }}</small>
+              </div>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button class="btn-theme btn-theme-orange"
+                      data-id="{{ u.id }}"
+                      onclick="acceptRequest(this)">
+                Accept
+              </button>
+              <button class="btn-theme btn-theme-outline-gray"
+                      data-id="{{ u.id }}"
+                      onclick="rejectRequest(this)">
+                Reject
+              </button>
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <p class="text-muted" id="empty-incoming">No incoming requests</p>
+      {% endfor %}
+    </div>
+
+    <!-- Outgoing -->
+    <h5 class="mt-5 mb-3">
+      Outgoing Requests
+      <span class="section-badge ms-2" id="badge-outgoing">{{ counts.outgoing }}</span>
+    </h5>
+
+    <div id="outgoing-list" class="mb-4">
+      {% for u in outgoing %}
+        <div class="card mb-3 connection-card px-2 py-1" data-user-id="{{ u.id }}">
+          <div class="card-body d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3">
+              <img src="{{ u.profile_picture or url_for('static', filename='images/default-avatar.png') }}"
+                   class="rounded-circle" width="48" height="48" alt="avatar">
+              <div>
+                <strong>{{ u.name }}</strong><br>
+                <small class="text-muted">{{ u.age_group }}</small>
+              </div>
+            </div>
+
+            <button class="btn-theme btn-theme-outline-blue"
+                    data-id="{{ u.id }}"
+                    onclick="cancelRequest(this)">
+              Cancel
+            </button>
+          </div>
+        </div>
+      {% else %}
+        <p class="text-muted" id="empty-outgoing">No outgoing requests</p>
+      {% endfor %}
+    </div>
+
+    <!-- Suggestions -->
+    <h5 class="mt-5 mb-3">Suggested Connections</h5>
+    <div id="suggestions-list" class="mb-4">
+      {% for u in suggestions %}
+        <div class="card mb-3 connection-card position-relative px-2 py-1" data-user-id="{{ u.id }}">
+          <div class="card-body d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3">
+              <img src="{{ u.profile_picture or url_for('static', filename='images/default-avatar.png') }}"
+                   class="rounded-circle" width="48" height="48" alt="avatar">
+              <div>
+                <strong>{{ u.name }}</strong><br>
+                <small class="text-muted">{{ u.age_group }} · {{ u.mutual_count }} mutual</small>
+              </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+              <button class="btn-theme btn-theme-orange"
+                      data-id="{{ u.id }}"
+                      onclick="sendRequest(this)">
+                Add
+              </button>
+
+              <button class="btn-suggestion-close"
+                      title="Dismiss"
+                      onclick="dismissSuggestion(this)">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 5L13 13M13 5L5 13" stroke="#ff8c61" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <p class="text-muted" id="empty-suggestions">No suggestions</p>
+      {% endfor %}
+    </div>
+
+  {% endif %}
+
+</div>
+
+<script>
+/* =========================
+   Helpers
+   ========================= */
+
+// Require JSON {ok:true}; prevents login HTML/redirect being treated as success
+function postJSON(url, data){
+  return fetch(url, {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify(data || {}),
+    credentials: "same-origin"
+  }).then(async (r) => {
+    const text = await r.text();
+    let j = null;
+    try { j = text ? JSON.parse(text) : null; } catch(e){ j = null; }
+
+    if (!j || typeof j.ok === "undefined"){
+      console.error("Non-JSON response:", r.status, text.slice(0, 200));
+      throw { msg: "Session expired or server returned non-JSON. Please refresh & login again." };
+    }
+    if (!r.ok || j.ok !== true) throw (j || {msg:"Request failed"});
+    return j;
+  });
+}
+
+function getCardFromButton(btn){
+  return btn.closest(".connection-card");
+}
+
+function setBtnBusy(btn, busy=true){
+  if (!btn) return;
+  btn.disabled = busy;
+  btn.dataset.busy = busy ? "1" : "";
+}
+
+/* Update ONLY the header badges */
+function incCount(key, delta){
+  const map = {
+    "current": "badge-current",
+    "incoming": "badge-incoming",
+    "outgoing": "badge-outgoing",
+    "count-current": "badge-current",
+    "count-incoming": "badge-incoming",
+    "count-outgoing": "badge-outgoing"
+  };
+  const id = map[key] || key;
+  const el = document.getElementById(id);
+  if (!el) return;
+  const n = parseInt(el.textContent || "0", 10);
+  el.textContent = Math.max(0, n + delta);
+}
+
+function ensureEmptyState(listId, emptyId){
+  const list = document.getElementById(listId);
+  const empty = document.getElementById(emptyId);
+  if (!list || !empty) return;
+  const hasCards = list.querySelector(".connection-card") !== null;
+  empty.style.display = hasCards ? "none" : "block";
+}
+
+function animateMove(card, toListId, onDone){
+  const toList = document.getElementById(toListId);
+  if (!card || !toList) return;
+
+  card.classList.add("slide-out");
+  setTimeout(() => {
+    card.classList.remove("slide-out");
+    toList.prepend(card);
+    card.classList.add("slide-in");
+    setTimeout(() => card.classList.remove("slide-in"), 280);
+    if (typeof onDone === "function") onDone();
+  }, 280);
+}
+
+/* =========================
+   Toast
+   ========================= */
+function showToast(message, undoAction){
+  const container = document.getElementById("toast-container");
+  if (!container) return;
+
+  const toast = document.createElement("div");
+  toast.className = "custom-toast";
+
+  const hasUndo = typeof undoAction === "function";
+  toast.innerHTML = `
+    <div class="toast-msg">${message}</div>
+    <div class="toast-actions">
+      ${hasUndo ? `<button type="button" class="btn btn-light btn-sm">Undo</button>` : ``}
+      <button type="button" class="btn btn-light btn-sm" aria-label="Close">Close</button>
+    </div>
+    <div class="toast-progress"><div class="toast-progress-bar"></div></div>
+  `;
+
+  const btns = toast.querySelectorAll("button");
+  const undoBtn = hasUndo ? btns[0] : null;
+  const closeBtn = hasUndo ? btns[1] : btns[0];
+  const bar = toast.querySelector(".toast-progress-bar");
+
+  const duration = 4500;
+  requestAnimationFrame(() => {
+    bar.style.transition = `width ${duration}ms linear`;
+    bar.style.width = "0%";
+  });
+
+  let closed = false;
+  function close(){
+    if (closed) return;
+    closed = true;
+    toast.classList.add("toast-out");
+    setTimeout(() => toast.remove(), 350);
+  }
+  const timer = setTimeout(close, duration);
+
+  if (undoBtn){
+    undoBtn.addEventListener("click", async () => {
+      if (closed) return;
+      clearTimeout(timer);
+      try{ await undoAction(); }catch(e){ console.error(e); }
+      close();
+    });
+  }
+  closeBtn.addEventListener("click", () => {
+    clearTimeout(timer);
+    close();
+  });
+
+  container.prepend(toast);
+}
+
+/* =========================
+   Confirm Modal (Remove Connection)
+   ========================= */
+let confirmState = { onConfirm: null };
+
+function openConfirm({title, text, confirmText="Remove", onConfirm}){
+  const overlay = document.getElementById("confirm-overlay");
+  document.getElementById("confirm-title").textContent = title || "Are you sure?";
+  document.getElementById("confirm-text").textContent = text || "Please confirm.";
+  document.getElementById("confirm-ok").textContent = confirmText;
+
+  confirmState.onConfirm = onConfirm || null;
+
+  overlay.classList.add("show");
+  overlay.setAttribute("aria-hidden", "false");
+}
+function closeConfirm(){
+  const overlay = document.getElementById("confirm-overlay");
+  overlay.classList.remove("show");
+  overlay.setAttribute("aria-hidden", "true");
+  confirmState.onConfirm = null;
+}
+document.getElementById("confirm-cancel").addEventListener("click", closeConfirm);
+document.getElementById("confirm-overlay").addEventListener("click", (e) => {
+  if (e.target.id === "confirm-overlay") closeConfirm();
+});
+document.getElementById("confirm-ok").addEventListener("click", async () => {
+  const okBtn = document.getElementById("confirm-ok");
+  if (!confirmState.onConfirm) return closeConfirm();
+  okBtn.disabled = true;
+  try{ await confirmState.onConfirm(); }
+  finally{ okBtn.disabled = false; closeConfirm(); }
+});
+
+/* =========================
+   Actions
+   ========================= */
+async function sendRequest(btn){
+  if (!btn || btn.dataset.busy === "1") return;
+  setBtnBusy(btn, true);
+
+  const targetId = btn.dataset.id;
+  const card = getCardFromButton(btn);
+
+  try{
+    await postJSON("{{ url_for('connections.send_request') }}", {target_id: targetId});
+
+    const hasOutgoing = document.getElementById("outgoing-list") !== null;
+
+    if (hasOutgoing && card){
+      btn.textContent = "Cancel";
+      btn.className = "btn-theme btn-theme-outline-blue";
+      btn.onclick = function(){ cancelRequest(btn); };
+
+      animateMove(card, "outgoing-list", () => {
+        incCount("outgoing", +1);
+        ensureEmptyState("suggestions-list", "empty-suggestions");
+        ensureEmptyState("outgoing-list", "empty-outgoing");
+      });
+
+      showToast("Request sent", async () => {
+        await postJSON("{{ url_for('connections.cancel_request') }}", {target_id: targetId});
+
+        const hasSug = document.getElementById("suggestions-list") !== null;
+        if (hasSug && card){
+          btn.textContent = "Add";
+          btn.className = "btn-theme btn-theme-orange";
+          btn.onclick = function(){ sendRequest(btn); };
+
+          animateMove(card, "suggestions-list", () => {
+            incCount("outgoing", -1);
+            ensureEmptyState("outgoing-list", "empty-outgoing");
+            ensureEmptyState("suggestions-list", "empty-suggestions");
+          });
+        }else{
+          incCount("outgoing", -1);
+        }
+      });
+
+    }else{
+      btn.textContent = "Requested";
+      btn.className = "btn-theme btn-theme-outline-blue";
+      showToast("Request sent", async () => {
+        await postJSON("{{ url_for('connections.cancel_request') }}", {target_id: targetId});
+        btn.textContent = "Add";
+        btn.className = "btn-theme btn-theme-orange";
+        btn.onclick = function(){ sendRequest(btn); };
+      });
+    }
+
+  }catch(e){
+    showToast((e && e.msg) ? e.msg : "Failed to send request");
+  }finally{
+    setBtnBusy(btn, false);
+  }
+}
+
+async function acceptRequest(btn){
+  if (!btn || btn.dataset.busy === "1") return;
+  setBtnBusy(btn, true);
+
+  const targetId = btn.dataset.id;
+  const card = getCardFromButton(btn);
+
+  try{
+    await postJSON("{{ url_for('connections.accept_request') }}", {target_id: targetId});
+
+    if (card){
+      const actions = card.querySelector(".d-flex.gap-2");
+      if (actions){
+        actions.innerHTML = `
+          <button class="btn-theme btn-theme-outline-red"
+                  data-id="${targetId}"
+                  onclick="confirmRemoveConnection(this)">
+            Remove
+          </button>
+        `;
+      }
+
+      animateMove(card, "current-list", () => {
+        incCount("incoming", -1);
+        incCount("current", +1);
+        ensureEmptyState("incoming-list", "empty-incoming");
+        ensureEmptyState("current-list", "empty-current");
+      });
+
+      showToast("Request accepted");
+    }else{
+      showToast("Request accepted");
+    }
+
+  }catch(e){
+    showToast((e && e.msg) ? e.msg : "Failed to accept request");
+  }finally{
+    setBtnBusy(btn, false);
+  }
+}
+
+async function rejectRequest(btn){
+  if (!btn || btn.dataset.busy === "1") return;
+  setBtnBusy(btn, true);
+
+  const targetId = btn.dataset.id;
+  const card = getCardFromButton(btn);
+
+  try{
+    await postJSON("{{ url_for('connections.reject_request') }}", {target_id: targetId});
+
+    if (card){
+      card.classList.add("slide-out");
+      setTimeout(() => {
+        card.remove();
+        incCount("incoming", -1);
+        ensureEmptyState("incoming-list", "empty-incoming");
+      }, 280);
+
+      showToast("Request rejected");
+    }else{
+      showToast("Request rejected");
+    }
+
+  }catch(e){
+    showToast((e && e.msg) ? e.msg : "Failed to reject request");
+  }finally{
+    setBtnBusy(btn, false);
+  }
+}
+
+async function cancelRequest(btn){
+  if (!btn || btn.dataset.busy === "1") return;
+  setBtnBusy(btn, true);
+
+  const targetId = btn.dataset.id;
+  const card = getCardFromButton(btn);
+
+  try{
+    await postJSON("{{ url_for('connections.cancel_request') }}", {target_id: targetId});
+
+    if (card){
+      const hasSug = document.getElementById("suggestions-list") !== null;
+
+      if (hasSug){
+        btn.textContent = "Add";
+        btn.className = "btn-theme btn-theme-orange";
+        btn.onclick = function(){ sendRequest(btn); };
+
+        animateMove(card, "suggestions-list", () => {
+          incCount("outgoing", -1);
+          ensureEmptyState("outgoing-list", "empty-outgoing");
+          ensureEmptyState("suggestions-list", "empty-suggestions");
+        });
+
+        showToast("Request cancelled");
+      }else{
+        card.classList.add("slide-out");
+        setTimeout(() => {
+          card.remove();
+          incCount("outgoing", -1);
+          ensureEmptyState("outgoing-list", "empty-outgoing");
+        }, 280);
+
+        showToast("Request cancelled");
+      }
+    }else{
+      showToast("Request cancelled");
+    }
+
+  }catch(e){
+    showToast((e && e.msg) ? e.msg : "Failed to cancel request");
+  }finally{
+    setBtnBusy(btn, false);
+  }
+}
+
+function confirmRemoveConnection(btn){
+  const card = getCardFromButton(btn);
+  const name = card ? (card.querySelector("strong")?.textContent || "this user") : "this user";
+
+  openConfirm({
+    title: "Remove connection?",
+    text: `Remove your connection with ${name}?`,
+    confirmText: "Remove",
+    onConfirm: async () => removeConnection(btn)
+  });
+}
+
+async function removeConnection(btn){
+  if (!btn || btn.dataset.busy === "1") return;
+  setBtnBusy(btn, true);
+
+  const targetId = btn.dataset.id;
+  const card = getCardFromButton(btn);
+
+  try{
+    await postJSON("{{ url_for('connections.remove_connection') }}", {target_id: targetId});
+
+    if (card){
+      card.classList.add("slide-out");
+      setTimeout(() => {
+        card.remove();
+        incCount("current", -1);
+        ensureEmptyState("current-list", "empty-current");
+      }, 280);
+    }
+
+    showToast("Connection removed");
+  }catch(e){
+    showToast((e && e.msg) ? e.msg : "Failed to remove connection");
+  }finally{
+    setBtnBusy(btn, false);
+  }
+}
+
+function dismissSuggestion(btn){
+  const card = btn.closest(".connection-card");
+  if (!card) return;
+  card.classList.add("slide-out");
+  setTimeout(() => {
+    card.remove();
+    ensureEmptyState("suggestions-list", "empty-suggestions");
+  }, 280);
+  showToast("Suggestion dismissed");
+}
+</script>
+{% endblock %}
