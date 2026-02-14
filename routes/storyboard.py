@@ -202,3 +202,48 @@ def delete_story(story_id):
 
     flash("Story deleted.", "success")
     return redirect(request.referrer or url_for("main.storyboard"))
+
+@storyboard_bp.route("/comment/<int:comment_id>/delete", methods=["POST"])
+@login_required
+def delete_comment(comment_id):
+    # Get the comment + which story it belongs to
+    comment = execute_query(
+        "SELECT id, story_id, user_id FROM comments WHERE id=%s",
+        (comment_id,),
+        fetch_one=True
+    )
+    if not comment:
+        flash("Comment not found.", "danger")
+        return redirect(request.referrer or url_for("main.storyboard"))
+
+    # Get story owner
+    story = execute_query(
+        "SELECT id, user_id FROM stories WHERE id=%s",
+        (comment["story_id"],),
+        fetch_one=True
+    )
+    if not story:
+        flash("Story not found.", "danger")
+        return redirect(request.referrer or url_for("main.storyboard"))
+
+    # Allowed if:
+    # - comment owner OR
+    # - story owner
+    if current_user.id != comment["user_id"] and current_user.id != story["user_id"]:
+        flash("Not allowed to delete this comment.", "danger")
+        return redirect(request.referrer or url_for("main.storyboard"))
+
+    # Delete likes first, then comment
+    execute_query(
+        "DELETE FROM comment_likes WHERE comment_id=%s",
+        (comment_id,),
+        commit=True
+    )
+    execute_query(
+        "DELETE FROM comments WHERE id=%s",
+        (comment_id,),
+        commit=True
+    )
+
+    flash("Comment deleted.", "success")
+    return redirect(request.referrer or url_for("main.storyboard"))

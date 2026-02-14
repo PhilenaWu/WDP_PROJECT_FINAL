@@ -2,162 +2,216 @@
 {% block title %}Add Story{% endblock %}
 
 {% block content %}
-<div class="container py-4" style="max-width:720px;">
-  <h2 class="mb-3">Add a Story</h2>
-  <div class="text-muted mb-3">Topic: <strong>{{ topic.title }}</strong></div>
+<div class="container py-5" style="max-width:750px;">
 
-  <form method="POST" enctype="multipart/form-data" class="card p-4 rounded-4 shadow-sm">
+  <div class="card border-0 shadow-sm rounded-4 p-4">
 
-    <label class="form-label fw-semibold">Title</label>
-    <input class="form-control mb-3" name="title" required>
+    <h3 class="fw-bold mb-1">Share Your Story</h3>
+    <p class="text-muted mb-4">
+      Topic: <strong>{{ topic.title }}</strong>
+    </p>
 
-    <label class="form-label fw-semibold">Text (optional)</label>
-    <textarea class="form-control mb-3" name="body" rows="5"></textarea>
+    <form method="POST" enctype="multipart/form-data">
 
-    <label class="form-label fw-semibold">Voice Message (record in browser)</label>
+      <!-- Title -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Title</label>
+        <input class="form-control rounded-3" name="title" required>
+      </div>
 
-    <div class="border rounded-3 p-3 mb-3">
-    <div class="d-flex flex-wrap gap-2 align-items-center">
-        <button type="button" id="btnStart" class="btn btn-outline-success btn-sm">● Start</button>
-        <button type="button" id="btnStop" class="btn btn-outline-secondary btn-sm" disabled>■ Stop</button>
-        <button type="button" id="btnDelete" class="btn btn-outline-danger btn-sm" disabled>Delete</button>
-        <span id="recStatus" class="text-muted small">Not recording</span>
-    </div>
+      <!-- Text -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Story Text</label>
+        <textarea class="form-control rounded-3"
+                  name="body"
+                  rows="5"
+                  placeholder="Write your story..."></textarea>
+      </div>
 
-    <div class="mt-3">
-        <audio id="audioPreview" controls class="w-100 d-none"></audio>
-    </div>
+      <!-- ================= VOICE RECORDING ================= -->
+      <div class="mb-4">
+        <label class="form-label fw-semibold">Record Voice Message</label>
 
-    <!-- This hidden file input will be filled programmatically -->
-    <input type="file" id="audioFile" name="audio" accept="audio/*" class="d-none">
-    <div class="text-muted small mt-2">
-        Tip: If your mic doesn’t work, allow microphone permission in your browser.
-    </div>
-    </div>
+        <div class="border rounded-4 p-3">
 
+          <div class="d-flex gap-2 mb-3">
+            <button type="button" id="startBtn"
+                    class="btn btn-success rounded-pill px-3">
+              ● Start
+            </button>
 
-    <label class="form-label fw-semibold">Images / Videos (optional)</label>
-    <input class="form-control mb-4" type="file" name="media" multiple accept="image/*,video/*">
+            <button type="button" id="stopBtn"
+                    class="btn btn-secondary rounded-pill px-3"
+                    disabled>
+              ■ Stop
+            </button>
 
-    <div class="d-flex gap-2">
-      <button class="btn btn-warning">Post Story</button>
-      <a class="btn btn-light border" href="{{ url_for('storyboard.topic_detail', slug=topic.slug) }}">Cancel</a>
-    </div>
+            <button type="button" id="deleteBtn"
+                    class="btn btn-outline-danger rounded-pill px-3"
+                    disabled>
+              Delete
+            </button>
+          </div>
 
-  </form>
+          <audio id="audioPreview"
+                 controls
+                 class="w-100 d-none rounded-3"></audio>
+
+          <!-- Hidden file input -->
+          <input type="file"
+                 name="audio"
+                 id="audioFile"
+                 class="d-none">
+        </div>
+      </div>
+
+      <!-- ================= MEDIA UPLOAD ================= -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Upload Images / Videos</label>
+
+        <input type="file"
+               name="media"
+               id="mediaInput"
+               class="form-control rounded-3"
+               multiple
+               accept="image/*,video/*">
+
+        <div class="form-text text-muted">
+          Maximum 10 images or videos allowed per story.
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div id="mediaPreview" class="row g-2 mb-3"></div>
+
+      <!-- Buttons -->
+      <div class="d-flex justify-content-end gap-2 mt-4">
+        <a href="{{ url_for('storyboard.topic_detail', slug=topic.slug) }}"
+           class="btn btn-outline-secondary rounded-pill px-4">
+          Cancel
+        </a>
+
+        <button class="btn btn-warning rounded-pill px-4 shadow-sm">
+          Post Story
+        </button>
+      </div>
+
+    </form>
+
+  </div>
 </div>
 
 <script>
-  let mediaRecorder;
-  let audioChunks = [];
-  let audioBlob = null;
+/* ================= VOICE RECORDING ================= */
 
-  const btnStart = document.getElementById("btnStart");
-  const btnStop = document.getElementById("btnStop");
-  const btnDelete = document.getElementById("btnDelete");
-  const recStatus = document.getElementById("recStatus");
-  const audioPreview = document.getElementById("audioPreview");
-  const audioFileInput = document.getElementById("audioFile");
+let mediaRecorder;
+let audioChunks = [];
+let audioBlob = null;
 
-  function setUI(state) {
-    if (state === "idle") {
-      btnStart.disabled = false;
-      btnStop.disabled = true;
-      btnDelete.disabled = !audioBlob;
-      recStatus.textContent = audioBlob ? "Ready to upload" : "Not recording";
-    }
-    if (state === "recording") {
-      btnStart.disabled = true;
-      btnStop.disabled = false;
-      btnDelete.disabled = true;
-      recStatus.textContent = "Recording...";
-    }
-    if (state === "stopped") {
-      btnStart.disabled = false;
-      btnStop.disabled = true;
-      btnDelete.disabled = false;
-      recStatus.textContent = "Recorded. You can play, delete, then submit.";
-    }
+const startBtn = document.getElementById("startBtn");
+const stopBtn = document.getElementById("stopBtn");
+const deleteBtn = document.getElementById("deleteBtn");
+const audioPreview = document.getElementById("audioPreview");
+const audioFile = document.getElementById("audioFile");
+
+startBtn.onclick = async () => {
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+  mediaRecorder = new MediaRecorder(stream);
+  audioChunks = [];
+
+  mediaRecorder.ondataavailable = e => {
+    audioChunks.push(e.data);
+  };
+
+  mediaRecorder.onstop = () => {
+    audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+    const url = URL.createObjectURL(audioBlob);
+
+    audioPreview.src = url;
+    audioPreview.classList.remove("d-none");
+
+    const file = new File([audioBlob], "recording.webm", { type: "audio/webm" });
+
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    audioFile.files = dt.files;
+
+    deleteBtn.disabled = false;
+  };
+
+  mediaRecorder.start();
+  startBtn.disabled = true;
+  stopBtn.disabled = false;
+};
+
+stopBtn.onclick = () => {
+  mediaRecorder.stop();
+  startBtn.disabled = false;
+  stopBtn.disabled = true;
+};
+
+deleteBtn.onclick = () => {
+  audioBlob = null;
+  audioPreview.src = "";
+  audioPreview.classList.add("d-none");
+  audioFile.value = "";
+  deleteBtn.disabled = true;
+};
+
+/* ================= MEDIA PREVIEW + 10 FILE LIMIT ================= */
+
+const mediaInput = document.getElementById("mediaInput");
+const preview = document.getElementById("mediaPreview");
+const MAX_FILES = 10;
+
+mediaInput.addEventListener("change", function() {
+
+  if (this.files.length > MAX_FILES) {
+    alert("You can upload a maximum of 10 files per story.");
+    this.value = "";
+    preview.innerHTML = "";
+    return;
   }
 
-  async function startRecording() {
-    if (!navigator.mediaDevices || !window.MediaRecorder) {
-      alert("Your browser does not support audio recording. Try Chrome/Edge.");
-      return;
+  preview.innerHTML = "";
+
+  Array.from(this.files).forEach(file => {
+
+    const col = document.createElement("div");
+    col.className = "col-6 col-md-4";
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "border rounded-4 overflow-hidden shadow-sm";
+    wrapper.style.height = "160px";
+
+    const url = URL.createObjectURL(file);
+
+    if (file.type.startsWith("image/")) {
+      const img = document.createElement("img");
+      img.src = url;
+      img.style.width = "100%";
+      img.style.height = "160px";
+      img.style.objectFit = "cover";
+      wrapper.appendChild(img);
+    } else if (file.type.startsWith("video/")) {
+      const video = document.createElement("video");
+      video.src = url;
+      video.controls = true;
+      video.muted = true;
+      video.style.width = "100%";
+      video.style.height = "160px";
+      video.style.objectFit = "cover";
+      wrapper.appendChild(video);
     }
 
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      audioChunks = [];
-
-      // Pick a supported mime type
-      let mimeType = "";
-      const candidates = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus", "audio/ogg"];
-      for (const c of candidates) {
-        if (MediaRecorder.isTypeSupported(c)) { mimeType = c; break; }
-      }
-
-      mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
-
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data && e.data.size > 0) audioChunks.push(e.data);
-      };
-
-      mediaRecorder.onstop = () => {
-        // Stop mic
-        stream.getTracks().forEach(t => t.stop());
-
-        audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || "audio/webm" });
-        const url = URL.createObjectURL(audioBlob);
-
-        audioPreview.src = url;
-        audioPreview.classList.remove("d-none");
-
-        // Put blob into hidden <input type="file"> so Flask receives it like a normal upload
-        const ext = (audioBlob.type.includes("ogg")) ? "ogg" : "webm";
-        const file = new File([audioBlob], `recording.${ext}`, { type: audioBlob.type });
-
-        const dt = new DataTransfer();
-        dt.items.add(file);
-        audioFileInput.files = dt.files;
-
-        setUI("stopped");
-      };
-
-      mediaRecorder.start();
-      setUI("recording");
-
-    } catch (err) {
-      console.error(err);
-      alert("Microphone permission denied or not available.");
-      setUI("idle");
-    }
-  }
-
-  function stopRecording() {
-    if (mediaRecorder && mediaRecorder.state === "recording") {
-      mediaRecorder.stop();
-    }
-  }
-
-  function deleteRecording() {
-    audioBlob = null;
-    audioChunks = [];
-    audioPreview.src = "";
-    audioPreview.classList.add("d-none");
-    audioFileInput.value = ""; // clears input
-    setUI("idle");
-  }
-
-  btnStart.addEventListener("click", startRecording);
-  btnStop.addEventListener("click", stopRecording);
-  btnDelete.addEventListener("click", deleteRecording);
-
-  setUI("idle");
+    col.appendChild(wrapper);
+    preview.appendChild(col);
+  });
+});
 </script>
 
-
-
-
-
 {% endblock %}
+
+
+

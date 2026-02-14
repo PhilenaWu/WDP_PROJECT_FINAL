@@ -1,71 +1,85 @@
 {% extends "base.html" %}
-{% block title %}Main Topics{% endblock %}
+{% block title %}Explore Topics{% endblock %}
 
 {% block content %}
-<div class="container py-4">
+<div class="container py-5">
 
-  <h3 class="text-center fw-semibold mb-4">Topics of the Month</h3>
+<div class="card border-0 shadow-sm rounded-4 p-4 mb-5">
 
-  <!-- ✅ Featured topics: now clickable to unique topic page -->
-  <div class="d-flex flex-wrap justify-content-center gap-4 mb-5">
+  <div class="text-center mb-4">
+    <h2 class="fw-bold mb-1"> Topics of the Month</h2>
+    <p class="text-muted mb-0">Curated themes trending in the community</p>
+  </div>
+
+  <div class="row g-4 justify-content-center">
     {% for t in featured %}
-      <a href="{{ url_for('storyboard.topic_detail', slug=t.slug) }}"
-         class="topic-card text-decoration-none text-dark bg-white border rounded-4 shadow-sm p-3"
-         style="width:190px">
-        <img class="topic-img w-100 rounded-4 mb-2"
-             src="{{ url_for('static', filename='uploads/main_topics_images/' ~ t.image) }}"
-             alt="{{ t.title }}">
-        <div class="fw-semibold small">{{ t.title }}</div>
-      </a>
+      <div class="col-12 col-md-4 {% if loop.index > 3 %}col-lg-4{% else %}col-lg-4{% endif %}">
+        <a href="{{ url_for('storyboard.topic_detail', slug=t.slug) }}"
+           class="featured-card text-decoration-none d-block">
+
+          <div class="position-relative overflow-hidden rounded-4 shadow-sm featured-wrap">
+            <img src="{{ url_for('static', filename='uploads/main_topics_images/' ~ t.image) }}"
+                 class="w-100 featured-img"
+                 alt="{{ t.title }}">
+
+            <div class="featured-overlay">
+              <div class="featured-title">{{ t.title }}</div>
+            </div>
+          </div>
+
+        </a>
+      </div>
     {% endfor %}
 
     {% if featured|length == 0 %}
-      <div class="text-muted">No featured topics yet.</div>
+      <div class="text-center text-muted">No featured topics yet.</div>
     {% endif %}
   </div>
 
-  <div class="d-flex align-items-center justify-content-between gap-3 mb-4">
-    <h3 class="fw-semibold mb-0">Topics</h3>
+</div>
 
-    <form class="d-flex align-items-center gap-3" method="GET" action="{{ url_for('main.storyboard') }}">
+  <!-- ================= TOOLBAR ================= -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
 
-      <div class="input-group" style="width:360px">
-        <span class="input-group-text bg-white border-end-0 rounded-start-pill">🔍</span>
-        <input type="text" name="q" class="form-control border-start-0 rounded-end-pill"
-               placeholder="Search topics"
-               value="{{ q }}">
-      </div>
+    <h3 class="fw-semibold mb-0">All Topics</h3>
 
+    <form class="d-flex align-items-center gap-2 flex-wrap"
+          method="GET"
+          action="{{ url_for('main.storyboard') }}">
+
+      <!-- Search -->
+    <input type="text"
+       name="q"
+       class="form-control rounded-pill px-4 shadow-sm transition-search"
+       placeholder="Search topics..."
+       value="{{ q }}"
+       style="width: 220px;">
+
+
+      <!-- Sort Dropdown -->
       <div class="dropdown">
-        <button class="btn btn-light border rounded-3 shadow-sm d-flex align-items-center justify-content-center dropdown-toggle"
-                style="width:44px;height:44px"
+        <button class="btn btn-light border dropdown-toggle"
                 type="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-                aria-label="Sort topics">
-          <img src="{{ url_for('static', filename='images/filter.png') }}" style="width:18px;height:18px" alt="">
+                data-bs-toggle="dropdown">
+          Sort
         </button>
 
-        <ul class="dropdown-menu dropdown-menu-end shadow">
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
           <li>
-            <button class="dropdown-item" type="submit" name="sort" value="az">Sort A → Z</button>
+            <button class="dropdown-item" type="submit" name="sort" value="az">
+              A → Z
+            </button>
           </li>
           <li>
-            <button class="dropdown-item" type="submit" name="sort" value="za">Sort Z → A</button>
+            <button class="dropdown-item" type="submit" name="sort" value="za">
+              Z → A
+            </button>
           </li>
           <li><hr class="dropdown-divider"></li>
-
-          <li>
-            <a class="dropdown-item text-muted"
-               href="{{ url_for('main.storyboard', q=q) }}">
-              Clear sorting
-            </a>
-          </li>
-
           <li>
             <a class="dropdown-item text-muted"
                href="{{ url_for('main.storyboard') }}">
-              Clear search + sorting
+              Reset
             </a>
           </li>
         </ul>
@@ -74,41 +88,52 @@
     </form>
   </div>
 
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <div class="text-muted small">
-      Showing {{ result_count }} topic{% if result_count != 1 %}s{% endif %}
-      {% if q %}
-        for "<strong>{{ q }}</strong>"
-      {% endif %}
-    </div>
+  <!-- Result Count -->
+  <div class="text-muted small mb-4">
+    Showing <strong>{{ result_count }}</strong> topic{% if result_count != 1 %}s{% endif %}
+    {% if q %} for "<strong>{{ q }}</strong>"{% endif %}
   </div>
 
-  <!-- ✅ All topics: now clickable to unique topic page -->
+  <!-- ================= TOPICS GRID ================= -->
   <div class="row g-4">
     {% for t in topics %}
-      <div class="col-12 col-sm-6 col-lg-4">
-        <a class="topic-card text-decoration-none text-dark bg-white border rounded-4 shadow-sm p-3 d-block"
-           href="{{ url_for('storyboard.topic_detail', slug=t.slug) }}">
-          <img class="topic-img w-100 rounded-4 mb-2"
-               src="{{ url_for('static', filename='uploads/main_topics_images/' ~ t.image) }}"
-               alt="{{ t.title }}">
-          <div class="fw-semibold small">{{ t.title }}</div>
+      <div class="col-6 col-md-4 col-lg-3">
+        <a href="{{ url_for('storyboard.topic_detail', slug=t.slug) }}"
+           class="topic-card-modern text-decoration-none d-block">
+
+          <div class="card border-0 shadow-sm rounded-4 h-100 topic-hover">
+
+            <img src="{{ url_for('static', filename='uploads/main_topics_images/' ~ t.image) }}"
+                 class="card-img-top topic-img-modern"
+                 alt="{{ t.title }}">
+
+            <div class="card-body text-center">
+              <h6 class="fw-semibold mb-2">{{ t.title }}</h6>
+
+              {% if t.category %}
+                <span class="badge bg-light text-dark border">
+                  {{ t.category }}
+                </span>
+              {% endif %}
+            </div>
+
+          </div>
         </a>
       </div>
     {% endfor %}
   </div>
 
   {% if topics|length == 0 %}
-    <div class="text-center text-muted mt-4">
-      No topics found{% if q %} for “{{ q }}”{% endif %}.
+    <div class="text-center text-muted mt-5">
+      No topics found{% if q %} for "{{ q }}"{% endif %}.
     </div>
   {% endif %}
 
 </div>
 
-<style>
-  .topic-card:hover { transform: translateY(-2px); transition: 0.15s; }
-  .topic-img { height: 120px; object-fit: cover; }
-</style>
+
+
+
+
 
 {% endblock %}
