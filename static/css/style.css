@@ -499,3 +499,116 @@ html[data-theme='dark'] body.editprofile-page .badge-elderly {
   border: 1px solid var(--app-border) !important;
   color: var(--app-global-fg) !important;
 }
+
+/* ===== Events Page Dark-Mode Exceptions (Keep Light-Mode Styling) ===== */
+html[data-theme='dark'] .event-card,
+html[data-theme='dark'] .event-card-body,
+html[data-theme='dark'] .event-list-item,
+html[data-theme='dark'] .event-list-media,
+html[data-theme='dark'] .navigation-section,
+html[data-theme='dark'] .navigation-section .bg-white {
+  background-color: #ffffff !important;
+}
+
+html[data-theme='dark'] .event-card-title {
+  color: #333333 !important;
+}
+
+html[data-theme='dark'] .event-card-date,
+html[data-theme='dark'] .event-card-time,
+html[data-theme='dark'] .event-card-description,
+html[data-theme='dark'] .event-list-date,
+html[data-theme='dark'] .event-list-title,
+html[data-theme='dark'] .event-list-content,
+html[data-theme='dark'] .event-list-placeholder {
+  color: #666666 !important;
+}
+
+html[data-theme='dark'] .navigation-section,
+html[data-theme='dark'] .navigation-section h3,
+html[data-theme='dark'] .navigation-section .form-label,
+html[data-theme='dark'] .navigation-section p,
+html[data-theme='dark'] .navigation-section span,
+html[data-theme='dark'] .navigation-section strong {
+  color: #222222 !important;
+}
+
+html[data-theme='dark'] .navigation-section .form-control,
+html[data-theme='dark'] .navigation-section .form-select,
+html[data-theme='dark'] .navigation-section input,
+html[data-theme='dark'] .navigation-section select {
+  background-color: #ffffff !important;
+  color: #212529 !important;
+  border-color: #ced4da !important;
+}
+
+html[data-theme='dark'] .navigation-section :is(input,textarea,.form-control,.form-select)::placeholder {
+  color: #6c757d !important;
+}
+
+/* ===== Messaging Dark-Mode Exceptions (Keep Light-Mode Styling) ===== */
+html[data-theme='dark'] .messaging-container,
+html[data-theme='dark'] .messaging-container h1,
+html[data-theme='dark'] .messaging-container h2,
+html[data-theme='dark'] .messaging-container h3,
+html[data-theme='dark'] .messaging-container p,
+html[data-theme='dark'] .messaging-container span,
+html[data-theme='dark'] .messaging-container a,
+html[data-theme='dark'] .chat-container,
+html[data-theme='dark'] .chat-container h1,
+html[data-theme='dark'] .chat-container h2,
+html[data-theme='dark'] .chat-container h3,
+html[data-theme='dark'] .chat-container p,
+html[data-theme='dark'] .chat-container span,
+html[data-theme='dark'] .chat-container a {
+  color: #212529 !important;
+}
+
+html[data-theme='dark'] .messaging-container .sidebar,
+html[data-theme='dark'] .messaging-container .main-content,
+html[data-theme='dark'] .messaging-container .add-contact-form,
+html[data-theme='dark'] .chat-container,
+html[data-theme='dark'] .chat-input-area,
+html[data-theme='dark'] .message-received,
+html[data-theme='dark'] .file-upload-modal {
+  background-color: #ffffff !important;
+}
+
+html[data-theme='dark'] #chatContainer .chat-messages {
+  background: #ffe8d8 !important;
+}
+
+html[data-theme='dark'] .chat-container:not(#chatContainer) .chat-messages {
+  background: linear-gradient(135deg, #fff5f0 0%, #ffe8d8 100%) !important;
+}
+
+html[data-theme='dark'] .message-received {
+  color: #2c2c2c !important;
+}
+
+html[data-theme='dark'] .messaging-container .contact-name,
+html[data-theme='dark'] .messaging-container .sidebar h3,
+html[data-theme='dark'] .messaging-container .main-content h2,
+html[data-theme='dark'] .messaging-container .main-content h3 {
+  color: #2c2c2c !important;
+}
+
+html[data-theme='dark'] .messaging-container .contact-status,
+html[data-theme='dark'] .chat-container .message-time {
+  color: #999999 !important;
+}
+
+html[data-theme='dark'] .chat-container .message-input,
+html[data-theme='dark'] .chat-container .form-control,
+html[data-theme='dark'] .chat-container .form-select,
+html[data-theme='dark'] .messaging-container .form-control,
+html[data-theme='dark'] .messaging-container .form-select {
+  background-color: #ffffff !important;
+  color: #212529 !important;
+  border-color: #ced4da !important;
+}
+
+html[data-theme='dark'] .chat-container :is(input,textarea,.form-control,.form-select)::placeholder,
+html[data-theme='dark'] .messaging-container :is(input,textarea,.form-control,.form-select)::placeholder {
+  color: #6c757d !important;
+}
