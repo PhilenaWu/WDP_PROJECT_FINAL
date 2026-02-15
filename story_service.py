@@ -55,12 +55,13 @@ def get_media(story_id: int):
     ) or []
 
 def get_comments(story_id: int, current_user_id: int):
-    sql = """
-    SELECT c.id, c.body, c.created_at, c.user_id,
-           (SELECT COUNT(*) FROM comment_likes cl WHERE cl.comment_id=c.id) AS like_count,
-           EXISTS(SELECT 1 FROM comment_likes cl2 WHERE cl2.comment_id=c.id AND cl2.user_id=%s) AS liked_by_me
-    FROM comments c
-    WHERE c.story_id=%s
-    ORDER BY c.created_at ASC
-    """
-    return execute_query(sql, (current_user_id, story_id), fetch_all=True) or []
+        sql = """
+        SELECT c.id, c.body, c.created_at, c.user_id, u.username,
+            (SELECT COUNT(*) FROM comment_likes cl WHERE cl.comment_id=c.id) AS like_count,
+            EXISTS(SELECT 1 FROM comment_likes cl2 WHERE cl2.comment_id=c.id AND cl2.user_id=%s) AS liked_by_me
+        FROM comments c
+        JOIN users u ON u.id = c.user_id
+        WHERE c.story_id=%s
+        ORDER BY c.created_at ASC
+        """
+        return execute_query(sql, (current_user_id, story_id), fetch_all=True) or []

@@ -56,7 +56,11 @@ def topic_detail(slug):
     # Attach media + comments for each story (simple approach for demo)
     for s in stories:
         s["media"] = get_media(s["id"])
-        s["comments"] = get_comments(s["id"], current_user.id)
+        comments = get_comments(s["id"], current_user.id)
+        for c in comments:
+            # Allow delete if current user is comment owner or story owner
+            c["can_delete"] = (c["user_id"] == current_user.id) or (s["user_id"] == current_user.id)
+        s["comments"] = comments
 
     return render_template(
         "storyboard/topic_detail.html",

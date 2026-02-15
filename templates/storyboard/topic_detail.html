@@ -180,22 +180,26 @@
           <div class="collapse" id="comments_{{ s.id }}">
 
             {% for c in s.comments %}
-              <div class="d-flex gap-3 mb-3">
-
+              <div class="d-flex align-items-start gap-3 mb-3">
                 <img
                   src="{% if c.profile_pic %}{{ url_for('static', filename=c.profile_pic) }}{% else %}{{ url_for('static', filename='uploads/main_topics_images/default_pfp.png') }}{% endif %}"
                   class="rounded-circle"
                   style="width:32px;height:32px;object-fit:cover;"
                   alt="avatar">
-
-                <div class="flex-grow-1 bg-light rounded-3 p-2">
-                  <div class="small fw-semibold">{{ c.username }}</div>
-                  <div class="small text-muted mb-1">
-                    {% if c.created_at.strftime %}{{ c.created_at.strftime('%d %b %Y, %I:%M %p') }}{% else %}{{ c.created_at }}{% endif %}
+                <div class="flex-grow-1 bg-light rounded-3 p-2 d-flex align-items-center justify-content-between">
+                  <div>
+                    <div class="small fw-semibold">{{ c.username }}</div>
+                    <div class="small text-muted mb-1">
+                      {% if c.created_at.strftime %}{{ c.created_at.strftime('%d %b %Y') }}{% else %}{{ c.created_at.split(',')[0] if ',' in c.created_at else c.created_at }}{% endif %}
+                    </div>
+                    <div class="small">{{ c.body }}</div>
                   </div>
-                  <div class="small">{{ c.body }}</div>
+                  {% if c.can_delete %}
+                  <form method="POST" action="{{ url_for('storyboard.delete_comment', comment_id=c.id) }}" style="margin-left:16px;">
+                    <button class="btn btn-sm btn-outline-danger rounded-pill">Delete</button>
+                  </form>
+                  {% endif %}
                 </div>
-
               </div>
             {% endfor %}
 
