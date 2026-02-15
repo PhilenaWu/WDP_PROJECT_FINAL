@@ -3,5 +3,7 @@ Flask-Login==0.6.3
 Flask-Session==0.5.0
 mysql-connector-python==8.2.0
 python-dotenv==1.0.0
-Werkzeug==3.0.1
-google-genai
+flask-socketio==5.3.5
+pillow==10.1.0
+google-genai==0.3.0
+itsdangerous==2.1.2
