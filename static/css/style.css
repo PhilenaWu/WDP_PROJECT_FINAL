@@ -107,6 +107,18 @@ html[data-theme='dark'] body :is(input,textarea,.form-control,.form-select)::pla
   opacity: 1;
 }
 
+html[data-theme='dark'] body :is(input[name='title'],textarea[name='body'],#mediaInput).form-control{
+  background-color: var(--app-surface-2) !important;
+  border-color: #3a4b6a !important;
+  color: var(--app-text) !important;
+  -webkit-text-fill-color: var(--app-text) !important;
+}
+
+html[data-theme='dark'] body :is(input[name='title'],textarea[name='body'],#mediaInput).form-control::placeholder{
+  color: var(--app-muted) !important;
+  opacity: 1;
+}
+
 img,video,canvas,svg{max-width:100%;height:auto;}
 
 .card,
@@ -315,11 +327,26 @@ body.feedback-history-page > footer{margin-top:auto !important;}
   background: rgba(255,255,255,.14) !important;
 }
 
+/* ===== Events Home: Keep My Events Details Readable In Dark Mode ===== */
+html[data-theme='dark'] :is(.my-events-section .event-list-item,#eventModal .event-modal-content,#eventModal .event-modal-body,#eventModal .event-modal-close){
+  background:#ffffff !important;
+}
+html[data-theme='dark'] :is(.my-events-section .event-list-title,.my-events-section .event-list-date,#eventModal .event-modal-body h3,#eventModal .event-modal-body p,#eventModal .event-modal-body strong,#eventModal .event-modal-close){
+  color:#333333 !important;
+}
+
 /* ===== Home Page ===== */
 .navbar-brand-text { color: #f39a1f; font-weight: bold; }
 .banner-gradient { 
   background: linear-gradient(135deg, #f39a1f 0%, #ff8c61 100%); 
   color: #fbf8f5; 
+}
+html[data-theme='dark'] body.home-page .banner-gradient .btn.btn-light,
+html[data-theme='dark'] body.home-page .banner-gradient .btn.btn-light:disabled {
+  background: #ffffff !important;
+  color: #222222 !important;
+  border: 2px solid #d7d7d7 !important;
+  opacity: 1 !important;
 }
 .navbar-nav .nav-link { font-size: 20px; padding: 16px 30px; font-weight: 500; }
 .navbar-nav .nav-link i { font-size: 22px; margin-right: 8px; }
@@ -839,6 +866,56 @@ html[data-theme='dark'] [data-surface-tone='dark'] :is(input,textarea,.form-cont
   font-weight: 700;
   font-size: 1.05rem;
   text-shadow: 0 2px 10px rgba(0,0,0,0.35);
+}
+
+/* ===== Storyboard Controls (Dark Mode, Bootstrap-Aligned) ===== */
+html[data-theme='dark'] .transition-search.form-control,
+html[data-theme='dark'] .transition-search.form-control:focus {
+  background:#ffffff !important;
+  color:#222222 !important;
+  border:1px solid #d7d7d7 !important;
+  caret-color:#222222;
+  -webkit-text-fill-color:#222222 !important;
+}
+
+html[data-theme='dark'] .transition-search.form-control::placeholder {
+  color:#666666 !important;
+  opacity:1;
+}
+
+html[data-theme='dark'] .transition-search.form-control + .dropdown :is(.btn,.btn-light,.dropdown-toggle) {
+  background:#ffffff !important;
+  color:#222222 !important;
+  border:1px solid #d7d7d7 !important;
+}
+
+html[data-theme='dark'] .transition-search.form-control + .dropdown .dropdown-menu {
+  background:#ffffff !important;
+  border:1px solid #d7d7d7 !important;
+}
+
+html[data-theme='dark'] .transition-search.form-control + .dropdown .dropdown-item,
+html[data-theme='dark'] .transition-search.form-control + .dropdown .dropdown-item.text-muted {
+  color:#222222 !important;
+}
+
+html[data-theme='dark'] .transition-search.form-control + .dropdown .dropdown-item:hover,
+html[data-theme='dark'] .transition-search.form-control + .dropdown .dropdown-item:focus {
+  background:#f5f5f5 !important;
+  color:#222222 !important;
+}
+
+html[data-theme='dark'] :is(input.form-control[name='title'],textarea.form-control[name='body'],input#mediaInput.form-control),
+html[data-theme='dark'] :is(input.form-control[name='title'],textarea.form-control[name='body'],input#mediaInput.form-control):focus {
+  background-color: var(--app-surface-2) !important;
+  border-color: #3a4b6a !important;
+  color: var(--app-text) !important;
+  -webkit-text-fill-color: var(--app-text) !important;
+}
+
+html[data-theme='dark'] :is(input.form-control[name='title'],textarea.form-control[name='body'],input#mediaInput.form-control)::placeholder {
+  color: var(--app-muted) !important;
+  opacity: 1;
 }
 
 /* ================= All topics grid ================= */
