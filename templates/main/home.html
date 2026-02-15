@@ -35,13 +35,13 @@
         <div class="card-body p-4">
             <div class="row align-items-center">
                 <div class="col-md-8">
-                    <h3><i class="bi bi-mic-fill"></i> Voice Story Upload</h3>
+                    <h3><i class="bi bi-mic-fill"></i> Story Upload</h3>
                     <p class="mb-0">Share your stories with the community through voice recordings</p>
                 </div>
                 <div class="col-md-4 text-end">
-                    <button class="btn btn-light" disabled>
+                    <a href="{{ url_for('main.storyboard') }}" class="btn btn-light">
                         <i class="bi bi-upload"></i> Upload Story
-                    </button>
+                    </a>
                 </div>
             </div>
         </div>
@@ -59,12 +59,11 @@
                         <div class="card bg-light border-1">
                             <div class="card-body p-4">
                                 <div class="text-center">
-                                    <h5 class="card-title mb-2">New Community Event This Weekend!</h5>
+                                    <h5 class="card-title mb-2">New Topic Uploaded!</h5>
                                     <p class="card-text text-muted mb-3">
-                                        Join us for an exciting intergenerational storytelling session with special guests.
-                                        Limited spots available!
+                                        In light of Racial Harmony Day, we have uploaded a new "Culture and Traditions" topic. Find out more in Storyboard and share you experiences today!
                                     </p>
-                                    <button class="btn btn-sm btn-primary">Learn More</button>
+                                    <a href="{{ url_for('main.storyboard') }}" class="btn btn-sm btn-primary">Learn More</a>
                                 </div>
                             </div>
                         </div>
@@ -75,12 +74,11 @@
                         <div class="card bg-light border-1">
                             <div class="card-body p-4">
                                 <div class="text-center">
-                                    <h5 class="card-title mb-2">Platform Updates - New Features Released</h5>
+                                    <h5 class="card-title mb-2">Profile Settings Updates - Edit Profile Details</h5>
                                     <p class="card-text text-muted mb-3">
-                                        Check out our latest features including improved connections, better search,
-                                        and voice story enhancements!
+                                        Check out our latest feature that will allow you to edit your profile details. Update your profile now to let others know more about you!
                                     </p>
-                                    <button class="btn btn-sm btn-primary">Explore</button>
+                                    <a href="{{ url_for('profile.profile') }}" class="btn btn-sm btn-primary">Explore</a>
                                 </div>
                             </div>
                         </div>
@@ -91,11 +89,11 @@
                         <div class="card bg-light border-1">
                             <div class="card-body p-4">
                                 <div class="text-center">
-                                    <h5 class="card-title mb-2">Community Recognition Program</h5>
+                                    <h5 class="card-title mb-2">New Event - Clean the Beach</h5>
                                     <p class="card-text text-muted mb-3">
-                                        Help us celebrate outstanding members! Nominate someone who's made an impact in our community.
+                                        Join the latest event to help clean up our beaches and make a positive impact on the environment!
                                     </p>
-                                    <button class="btn btn-sm btn-primary">Nominate</button>
+                                    <a href="{{ url_for('events.signup_event', event_id=6) }}" class="btn btn-sm btn-primary">Join</a>
                                 </div>
                             </div>
                         </div>
@@ -104,14 +102,14 @@
                 </div>
 
                 <!-- arrows -->
-                <div class="carousel-arrows d-flex justify-content-center align-items-center mt-3">
-                    <button class="carousel-control-prev announcement-carousel-control mx-3" type="button"
+                <div class="carousel-arrows d-flex justify-content-between align-items-center mt-4 pt-3 px-3">
+                    <button class="carousel-control-prev announcement-carousel-control" type="button"
                             data-bs-target="#announcementsCarousel" data-bs-slide="prev">
                         <span class="carousel-arrow-icon" aria-hidden="true"><i class="bi bi-chevron-left"></i></span>
                         <span class="visually-hidden">Previous</span>
                     </button>
 
-                    <button class="carousel-control-next announcement-carousel-control mx-3" type="button"
+                    <button class="carousel-control-next announcement-carousel-control" type="button"
                             data-bs-target="#announcementsCarousel" data-bs-slide="next">
                         <span class="carousel-arrow-icon" aria-hidden="true"><i class="bi bi-chevron-right"></i></span>
                         <span class="visually-hidden">Next</span>
@@ -119,7 +117,7 @@
                 </div>
 
                 <!-- dots -->
-                <div class="carousel-indicators mt-3">
+                <div class="carousel-indicators mt-1">
                     <button type="button" data-bs-target="#announcementsCarousel" data-bs-slide-to="0"
                             class="active" aria-current="true" aria-label="Slide 1"></button>
                     <button type="button" data-bs-target="#announcementsCarousel" data-bs-slide-to="1"
@@ -132,54 +130,12 @@
         </div>
     </div>
 
-    <!-- Upcoming Events Section -->
-    <h3 class="mb-2 fw-bold mt-2" style="color: black;">Upcoming Events</h3>
-    <div class="row g-3">
-
-        <!-- Event Card 1 -->
-        <div class="col-md-6">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex mb-2">
-                        <span class="badge bg-info">Intergenerational Storytelling</span>
-                    </div>
-                    <h5 class="card-title">Community Storytelling Session</h5>
-                    <p class="card-text text-muted">
-                        Join us for an engaging storytelling session where different generations share their experiences.
-                    </p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <small class="text-muted"><i class="bi bi-calendar"></i> Coming Soon</small>
-                        <button class="btn btn-sm btn-outline-primary">View Details</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Event Card 2 -->
-        <div class="col-md-6">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex mb-2">
-                        <span class="badge bg-success">Digital Skills Workshop</span>
-                    </div>
-                    <h5 class="card-title">Technology Learning Session</h5>
-                    <p class="card-text text-muted">
-                        Learn new digital skills in a friendly, supportive environment with peers.
-                    </p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <small class="text-muted"><i class="bi bi-calendar"></i> Coming Soon</small>
-                        <button class="btn btn-sm btn-outline-primary">View Details</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </div>
 
     <!-- Connections Section -->
-    <div class="row g-4 mt-4">
-
+    <div class="row g-4 mt-3">
+    
         <!-- Your Connections -->
+         <h3 class="mb-2 fw-bold">Connections</h3>
         <div class="col-lg-6">
             <div class="card h-100 shadow-sm d-flex flex-column">
                 <div class="card-header bg-light border-bottom">

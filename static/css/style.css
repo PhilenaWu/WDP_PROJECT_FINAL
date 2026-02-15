@@ -437,6 +437,11 @@ html[data-theme='dark'] body.home-page .banner-gradient .btn.btn-light:disabled 
 .carousel-wrapper .carousel-control-prev-icon,
 .carousel-wrapper .carousel-control-next-icon { background-color: #f39a1f; border-radius: 50%; width: 40px; height: 40px; }
 
+/* ===== Announcement Carousel Controls ===== */
+.carousel-arrows .announcement-carousel-control { margin-top: -15px; }
+.carousel-arrows .carousel-control-prev { margin-left: -30px; }
+.carousel-arrows .carousel-control-next { margin-right: -30px; }
+
 /* ===== Footer Logo ===== */
 .footer-logo { height: 30px; width: auto; max-width: 30px; vertical-align: middle; }
 
