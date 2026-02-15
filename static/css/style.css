@@ -736,6 +736,25 @@ html[data-theme='dark'] body.appearance-page .bold-btn--active{background:#f39a1
   background: #e58a0d !important;
 }
 
+html[data-theme='dark'] .messaging-container .add-contact-form {
+  background: #f9f9f9 !important;
+}
+
+html[data-theme='dark'] .messaging-container .add-contact-form :is(h3,.form-label) {
+  color: #212529 !important;
+}
+
+html[data-theme='dark'] .messaging-container .add-contact-form :is(.form-control,.form-select,input,select) {
+  background: #ffffff !important;
+  color: #212529 !important;
+  border-color: #ced4da !important;
+  -webkit-text-fill-color: #212529 !important;
+}
+
+html[data-theme='dark'] .messaging-container .add-contact-form :is(.form-control,.form-select,input,select)::placeholder {
+  color: #6c757d !important;
+}
+
 .btn-connection-action {
   background: #ff8c61;
   color: #fff;
