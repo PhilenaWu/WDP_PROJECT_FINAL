@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()  # Load environment variables from .env file
+
 from flask import Flask, redirect, url_for, render_template
 from flask_socketio import SocketIO
 from flask_login import LoginManager, current_user
