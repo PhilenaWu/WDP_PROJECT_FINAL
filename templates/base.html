@@ -220,7 +220,7 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body {% block body_class %}{% endblock %}>
-    {% block navbar %}{% endblock %}
+    {% block navbar %}
     
     <!-- Navigation -->
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
@@ -284,7 +284,9 @@
         </ul>
     </div>
 </nav>
+{% endblock %}
 
+{% block banner %}
 <!-- Flash messages -->
 {% if request.endpoint != 'main.home' %}
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -300,9 +302,11 @@
         {% endif %}
     {% endwith %}
 {% endif %}
+{% endblock %}
 
 {% block content %}{% endblock %}
 
+{% block footer %}
 <!-- Footer -->
 <footer class="bg-dark text-white py-4 mt-5">
     <div class="container">
@@ -332,6 +336,7 @@
         <p class="text-center text-white-50 mb-0">© 2025 GenLink. All Rights Reserved.</p>
     </div>
 </footer>
+{% endblock %}
 
     <!--Google Translate Element-->
 
