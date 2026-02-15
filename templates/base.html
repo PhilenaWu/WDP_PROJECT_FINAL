@@ -322,7 +322,7 @@
 
 {% block banner %}
 <!-- Flash messages -->
-{% if request.endpoint != 'main.home' %}
+{% if request.endpoint != 'main.home' and request.endpoint != 'auth.login' %}
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             <div class="container-fluid mt-3 px-3">

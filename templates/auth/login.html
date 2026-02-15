@@ -1,6 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Genlink | Login{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 {% endblock %}
+
+{% block body_class %}class="login-page"{% endblock %}
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
 
 {% block content %}
 <div class="container-fluid vh-100">
@@ -11,7 +19,7 @@
                 <img src="{{ url_for('static', filename='uploads/profile_pics/logo.png') }}" alt="Genlink Logo" class="auth-logo-large">
             </div>
         </div>
-        
+
         <!-- Right side - Login Form -->
         <div class="col-md-8 d-flex align-items-center justify-content-center">
             <div class="w-100 auth-form-container">
@@ -30,19 +38,19 @@
                         {% endfor %}
                     {% endif %}
                 {% endwith %}
-                
+
                 <form method="POST">
                     <!-- Error Message with Countdown -->
                     {% if error %}
                         <p class="auth-error-message" id="errorMessage">
                             {{ error }}
-                            {% if lockout_seconds %} 
+                            {% if lockout_seconds %}
                                 <span id="countdown"></span>
                                 <input type="hidden" id="lockout-seconds" value="{{ lockout_seconds }}">
                             {% endif %}
                         </p>
                     {% endif %}
-                    
+
                     <!-- Username -->
                     <div class="mb-3">
                         <label for="username" class="form-label">
@@ -50,7 +58,7 @@
                         </label>
                         <input type="text" class="form-control" id="username" name="username" required>
                     </div>
-                    
+
                     <!-- Password -->
                     <div class="mb-3">
                         <label for="password" class="form-label">
@@ -66,12 +74,12 @@
                             ></button>
                         </div>
                     </div>
-                    
+
                     <!-- Login Button -->
                     <button type="submit" class="btn btn-primary w-100 py-2 mb-3 signin-login">
                         Login
                     </button>
-                    
+
                     <!-- Signup Link -->
                     <div class="text-center">
                         <p class="mb-0">Don't have an account?
@@ -86,7 +94,9 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
     // Toggle password visibility
     const eyeBtn = document.getElementById('signin-eye');

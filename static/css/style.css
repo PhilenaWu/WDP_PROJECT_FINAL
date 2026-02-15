@@ -200,7 +200,12 @@ body.logout-page .delete-text {
 .auth-form-container { max-width: 470px; }
 .auth-form-container-large { max-width: 550px; }
 .auth-search { max-width: 400px; }
+.auth-logo-large { max-width: min(300px, 78%); width: 100%; height: auto; }
 .login-banner { background-color: rgba(var(--bs-primary-rgb), .08) !important; }
+body.login-page { background: var(--app-bg); }
+body.login-page .container-fluid.vh-100 { padding-left: 0; padding-right: 0; }
+body.login-page .container-fluid.vh-100 { min-height: 100vh; height: 100vh; }
+body.login-page .auth-form-container { padding: 0 14px; }
 .auth-error-message,
 #errorMessage,
 .auth-error-message *,
@@ -487,6 +492,7 @@ body.aboutyou-page .location-check input[type="checkbox"]{width:20px;height:20px
 
 @media (max-width: 768px) {
   .vh-100{min-height:100dvh !important;height:auto !important;}
+  body.login-page .auth-form-container{padding:18px 14px;}
   .navbar-brand-text{font-size:1rem;}
   .banner-gradient .card-body{padding:1rem !important;}
   .banner-gradient .row{row-gap:12px;}
@@ -1022,6 +1028,7 @@ html[data-theme='dark'] :is(input.form-control[name='title'],textarea.form-contr
 .btn-icon {
     width: 40px;
     height: 40px;
+  padding: 0 !important;
     border-radius: 50%;
     background: #f4f4f4;
     display: flex;
@@ -1041,6 +1048,37 @@ html[data-theme='dark'] :is(input.form-control[name='title'],textarea.form-contr
     transform: translateY(-1px);
 }
 
+html[data-theme='dark'] .navbar .btn-icon {
+  background: #f4f4f4 !important;
+}
+
+html[data-theme='dark'] .navbar .btn-icon i {
+  color: #333 !important;
+}
+
+html[data-theme='dark'] .navbar .btn-icon:hover {
+  background: #f4f4f4 !important;
+  transform: none !important;
+}
+
+html[data-theme='dark'] .navbar .btn-icon:focus,
+html[data-theme='dark'] .navbar .btn-icon:active,
+html[data-theme='dark'] .navbar .btn-icon.show,
+html[data-theme='dark'] .navbar .btn.show.btn-icon,
+html[data-theme='dark'] .navbar .btn-icon:focus-visible {
+  background: #f4f4f4 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+html[data-theme='dark'] .navbar .btn-icon:focus i,
+html[data-theme='dark'] .navbar .btn-icon:active i,
+html[data-theme='dark'] .navbar .btn-icon.show i,
+html[data-theme='dark'] .navbar .btn.show.btn-icon i,
+html[data-theme='dark'] .navbar .btn-icon:focus-visible i {
+  color: #333 !important;
+}
+
 /* Subtle navbar shadow polish */
 .navbar {
     box-shadow: 0 3px 15px rgba(0,0,0,0.05);
@@ -1053,6 +1091,7 @@ html[data-theme='dark'] :is(input.form-control[name='title'],textarea.form-contr
 /* Right icon buttons */
 .btn-icon{
   width:40px;height:40px;border-radius:50%;
+  padding:0 !important;
   background:#f4f4f4;border:none;
   display:flex;align-items:center;justify-content:center;
 }
