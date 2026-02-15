@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 body, html {
-  font-family: 'Poppins', Arial, sans-serif !important;
+  font-family: var(--app-font-family, 'Poppins', Arial, sans-serif) !important;
 }
 /* Larger and more visible footer logo */
 .footer-logo.footer-logo-large {
@@ -69,7 +69,7 @@ body, html {
   --app-global-fg: #222222;
   --app-global-muted-fg: #666666;
     --app-font-weight: 500;
-    --app-font-family: "Open Sans", Arial, sans-serif;
+    --app-font-family: "Poppins", Arial, sans-serif;
 
     --bs-body-bg: var(--app-bg);
     --bs-body-color: var(--app-text);
@@ -122,7 +122,7 @@ body, html {
   background-color: var(--app-bg) !important;
   color: var(--app-text);
   font-weight: var(--app-font-weight);
-  font-family: 'Poppins', Arial, sans-serif !important;
+  font-family: var(--app-font-family, 'Poppins', Arial, sans-serif) !important;
   margin: 0;
   overflow-x: hidden;
 }

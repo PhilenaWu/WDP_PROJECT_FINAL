@@ -20,7 +20,7 @@
                 theme: 'light',
                 textSize: 16,
                 fontWeight: '500',
-                fontStyle: 'arial'
+                fontStyle: 'poppins'
             };
 
             const appearanceStorageKey = currentUserId
@@ -28,6 +28,7 @@
                 : 'genlink:appearance:guest';
 
             const fontFamilies = {
+                poppins: 'Poppins, Arial, sans-serif',
                 arial: 'Arial, sans-serif',
                 verdana: 'Verdana, Geneva, sans-serif',
                 tahoma: 'Tahoma, Geneva, sans-serif',
@@ -116,6 +117,7 @@
                         }
 
                         element.style.fontWeight = next.fontWeight;
+                        element.style.fontFamily = fontFamilies[next.fontStyle];
                     });
 
                     if (window.genlinkAppearance && typeof window.genlinkAppearance.updateSurfaceTones === 'function') {

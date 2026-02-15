@@ -633,8 +633,9 @@ def update_appearance():
             text_size = 16
         text_size = max(12, min(48, text_size))
 
-        font_style_raw = (data.get('font_style') or 'arial').strip().lower()
+        font_style_raw = (data.get('font_style') or 'poppins').strip().lower()
         font_db_map = {
+            'poppins': 'Poppins',
             'arial': 'Arial',
             'verdana': 'Verdana',
             'tahoma': 'Tahoma',
@@ -643,7 +644,7 @@ def update_appearance():
             'times': 'Times New Roman',
             'courier': 'Courier New'
         }
-        font_style = font_db_map.get(font_style_raw, 'Arial')
+        font_style = font_db_map.get(font_style_raw, 'Poppins')
 
         font_weight_raw = str(data.get('font_weight', '500')).strip()
         boldness_map = {

@@ -61,7 +61,7 @@ def create_app():
         default_pref = {
             'theme': 'light',
             'textSize': 16,
-            'fontStyle': 'arial',
+            'fontStyle': 'poppins',
             'fontWeight': '500'
         }
 
@@ -79,6 +79,7 @@ def create_app():
                 return {'appearance_pref': default_pref}
 
             font_key_map = {
+                'poppins': 'poppins',
                 'arial': 'arial',
                 'verdana': 'verdana',
                 'tahoma': 'tahoma',
@@ -88,7 +89,7 @@ def create_app():
                 'courier new': 'courier'
             }
 
-            font_style = (appearance.get('font_style') or 'Arial').strip().lower()
+            font_style = (appearance.get('font_style') or 'Poppins').strip().lower()
             boldness = (appearance.get('boldness') or 'medium').strip().lower()
             boldness_map = {
                 'light': '300',
@@ -99,7 +100,7 @@ def create_app():
             pref = {
                 'theme': 'dark' if appearance.get('theme') == 'darkmode' else 'light',
                 'textSize': int(appearance.get('text_size') or 16),
-                'fontStyle': font_key_map.get(font_style, 'arial'),
+                'fontStyle': font_key_map.get(font_style, 'poppins'),
                 'fontWeight': boldness_map.get(boldness, '500')
             }
 
