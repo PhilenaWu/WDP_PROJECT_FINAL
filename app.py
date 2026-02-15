@@ -1,5 +1,4 @@
 from flask import Flask, redirect, url_for, render_template
-from flask_socketio import SocketIO
 from flask_login import LoginManager, current_user
 from flask_session import Session
 from config import Config
@@ -7,7 +6,6 @@ from database import execute_query, init_db
 from models import User
 import os
 
-socketio = SocketIO()
 
 def create_app():
     app = Flask(__name__)
@@ -114,7 +112,6 @@ def create_app():
     
     # Ensure upload folder exists
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-    os.makedirs('static/uploads', exist_ok=True)
 
     # Quick DNS check for DB host to provide early feedback in logs
     try:
@@ -142,18 +139,13 @@ def create_app():
                 return value
         return (value + timedelta(hours=offset_hours)).strftime('%I:%M %p')
     
-    # Initialize Socket.IO with app
-    socketio.init_app(app)
-
-    # Register Socket.IO events
-    from routes.socketio_events import register_socketio_events
-    register_socketio_events(socketio, app)
-
     return app
 
 
 
+    
+
 
 if __name__ == '__main__':
     app = create_app()
-    socketio.run(app, debug=True)
+    app.run(debug=True)
