@@ -45,7 +45,10 @@
         {% endif %}
     </div>
     <div class="main-content">
-        <h2>Manage Contacts</h2>
+        <div style="display: flex; align-items: center; gap: 18rem;">
+            <h2>Manage Contacts</h2>
+            <a href="{{ url_for('messaging.view_groups') }}" class="btn btn-primary">Manage Group</a>
+        </div>
         <div class="add-contact-form">
             <h3>Add New Contact</h3>
             <form method="POST" action="{{ url_for('messaging.add_contact') }}">

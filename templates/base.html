@@ -219,7 +219,7 @@
     
     {% block extra_css %}{% endblock %}
 </head>
-<body {% block body_class %}{% endblock %}>
+<body class="d-flex flex-column min-vh-100" {% block body_class %}{% endblock %}>
     {% block navbar %}
     
     <!-- Navigation -->
@@ -340,7 +340,9 @@
 {% endif %}
 {% endblock %}
 
-{% block content %}{% endblock %}
+<main class="flex-fill">
+    {% block content %}{% endblock %}
+</main>
 
 {% block footer %}
 <!-- Footer -->
