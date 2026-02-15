@@ -222,67 +222,100 @@
 <body {% block body_class %}{% endblock %}>
     {% block navbar %}
     <!-- Navigation -->
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+<nav class="navbar navbar-expand-lg bg-white shadow-sm sticky-top py-2">
     <div class="container-fluid px-4">
+
+        <!-- Logo Left -->
         <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.home') }}">
-            <img src="{{ url_for('static', filename='uploads/profile_pics/logo.png') }}" alt="Logo" class="navbar-logo me-2">
-            <span class="navbar-brand-text"></span>
+            <img src="{{ url_for('static', filename='uploads/profile_pics/logo.png') }}"
+         alt="GenLink Logo" class="navbar-logo">
         </a>
-        <!-- Nav items -->
-        <ul class="navbar-nav w-100 justify-content-center">
-            <li class="nav-item">
-                <a class="nav-link active" href="{{ url_for('main.home') }}">
-                    <i class="bi bi-house-door"></i>Home
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('main.storyboard') }}">
-                    <i class="bi bi-book"></i>Storyboard
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('events.events_home') }}">
-                    <i class="bi bi-calendar-event"></i>Events
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('events.submit_event') }}">
-                    <i class="bi bi-envelope-paper"></i>Proposal
-                </a>
-            </li>
-            {% if current_user.is_authenticated and current_user.user_type == 'admin' %}
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('events.admin_create_event') }}">
-                    <i class="bi bi-plus-circle"></i>Create Event
-                </a>
-            </li>
-            {% endif %}
-        </ul>
-        <ul class="navbar-nav">
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('messaging.view_contacts') }}">
-                    <i class="bi bi-chat-dots navbar-icon-large"></i>
-                </a>
-            </li>
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="" role="button" data-bs-toggle="dropdown">
-                    <i class="bi bi-person-circle navbar-icon-large"></i>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="{{ url_for('profile.profile') }}">My Profile</a></li>
-                    <li><a class="dropdown-item" href="{{ url_for('auth.settings') }}">Settings</a></li>
-                    {% if current_user.is_authenticated and current_user.user_type == 'admin' %}
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="{{ url_for('events.admin_submissions') }}"><i class="bi bi-shield-check"></i> Admin Panel</a></li>
-                    {% endif %}
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="{{ url_for('auth.feedback') }}">Send Feedback</a></li>
-                    <li><a class="dropdown-item" href="{{ url_for('auth.logout_now') }}">Logout</a></li>
-                </ul>
-            </li>
-        </ul>
+
+
+        <!-- Mobile Toggle -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse postion-relative" id="mainNavbar">
+
+            <!-- Center Menu -->
+            <ul class="navbar-nav align-items-center mx-auto navbar-center" >
+
+                <li class="nav-item">
+                    <a class="nav-link nav-modern {% if request.endpoint == 'main.home' %}active{% endif %}" href="{{ url_for('main.home') }}">
+                        <i class="bi bi-house-door me-1"></i> Home
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link nav-modern {% if request.endpoint in ['main.storyboard', 'main.add_story'] %}active{% endif %}" href="{{ url_for('main.storyboard') }}">
+                        <i class="bi bi-book me-1"></i> Storyboard
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link nav-modern {% if request.endpoint == 'events.events_home' %}active{% endif %}" href="{{ url_for('events.events_home') }}">
+                        <i class="bi bi-calendar-event me-1"></i> Events
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link nav-modern {% if request.endpoint == 'events.submit_event' %}active{% endif %}" href="{{ url_for('events.submit_event') }}">
+                        <i class="bi bi-envelope-paper me-1"></i> Proposal
+                    </a>
+                </li>
+
+                {% if current_user.is_authenticated and current_user.user_type == 'admin' %}
+                <li class="nav-item">
+                    <a class="nav-link nav-modern" href="{{ url_for('events.admin_create_event') }}">
+                        <i class="bi bi-plus-circle me-1"></i> Create Event
+                    </a>
+                </li>
+                {% endif %}
+
+            </ul>
+
+            <!-- Right Side -->
+            <ul class="navbar-nav ms-auto align-items-center gap-2">
+
+                <li class="nav-item">
+                    <a class="btn btn-icon" href="{{ url_for('messaging.view_contacts') }}">
+                        <i class="bi bi-chat-dots"></i>
+                    </a>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a class="btn btn-icon"
+                       href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle"></i>
+                    </a>
+
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3">
+
+                        <li><a class="dropdown-item" href="{{ url_for('profile.profile') }}">My Profile</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('auth.settings') }}">Settings</a></li>
+
+                        {% if current_user.is_authenticated and current_user.user_type == 'admin' %}
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url_for('events.admin_submissions') }}">
+                            <i class="bi bi-shield-check me-1"></i> Admin Panel
+                        </a></li>
+                        {% endif %}
+
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url_for('auth.feedback') }}">Send Feedback</a></li>
+                        <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout_now') }}">Logout</a></li>
+
+                    </ul>
+                </li>
+
+            </ul>
+
+        </div>
     </div>
 </nav>
+
     {% endblock %}
 
 <!-- Flash messages -->
@@ -311,15 +344,16 @@
     <div class="container">
         <div class="row">
             <div class="col-md-4">
-                <h5><img src="{{ url_for('static', filename='uploads/profile_pics/logo.png') }}" alt="Logo" class="footer-logo me-2"></h5>
+                <h5><img src="{{ url_for('static', filename='uploads/profile_pics/logo.png') }}" alt="Logo" class="footer-logo footer-logo-large me-2"></h5>
                 <p class="text-white-50">Bringing Generations Storytelling Hub</p>
             </div>
             <div class="col-md-4">
                 <h6>Platform</h6>
                 <ul class="list-unstyled">
                     <li><a href="{{ url_for('main.home') }}" class="text-white-50">Home</a></li>
-                    <li><a href="{{ url_for('storyboard') }}" class="text-white-50">Storyboard</a></li>
+                    <li><a href="{{ url_for('main.storyboard') }}" class="text-white-50">Storyboard</a></li>
                     <li><a href="{{ url_for('events.events_home') }}" class="text-white-50">Events</a></li>
+                    <li><a href="{{ url_for('events.submit_event') }}" class="text-white-50">Proposal</a></li>
                 </ul>
             </div>
             <div class="col-md-4">

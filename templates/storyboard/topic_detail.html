@@ -12,7 +12,7 @@
         <div class="text-muted">Explore stories shared by the community.</div>
       </div>
 
-      <a class="btn btn-warning rounded-pill px-4 shadow-sm"
+      <a class="btn btn-orange rounded-pill px-4 shadow-sm"
          href="{{ url_for('storyboard.add_story', slug=topic.slug) }}">
         + Add Story
       </a>
@@ -22,15 +22,15 @@
   <!-- Tabs -->
   <div class="mb-4">
     <div class="btn-group w-100">
-      <a class="btn {% if feed=='for_you' %}btn-warning{% else %}btn-outline-warning{% endif %}"
+      <a class="btn {% if feed=='for_you' %}btn-orange{% else %}btn-outline-orange{% endif %}"
          href="{{ url_for('storyboard.topic_detail', slug=topic.slug, feed='for_you') }}">
         For You
       </a>
-      <a class="btn {% if feed=='connections' %}btn-warning{% else %}btn-outline-warning{% endif %}"
+      <a class="btn {% if feed=='connections' %}btn-orange{% else %}btn-outline-orange{% endif %}"
          href="{{ url_for('storyboard.topic_detail', slug=topic.slug, feed='connections') }}">
         Connections
       </a>
-      <a class="btn {% if feed=='mine' %}btn-warning{% else %}btn-outline-warning{% endif %}"
+      <a class="btn {% if feed=='mine' %}btn-orange{% else %}btn-outline-orange{% endif %}"
          href="{{ url_for('storyboard.topic_detail', slug=topic.slug, feed='mine') }}">
         Your Stories
       </a>
@@ -206,7 +206,7 @@
                      name="comment"
                      placeholder="Write a comment..."
                      required>
-              <button class="btn btn-warning rounded-pill px-3">Post</button>
+              <button class="btn btn-orange rounded-pill px-3">Post</button>
             </form>
 
           </div>

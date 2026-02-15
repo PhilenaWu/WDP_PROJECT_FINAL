@@ -1,3 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+body, html {
+  font-family: 'Poppins', Arial, sans-serif !important;
+}
+/* Larger and more visible footer logo */
+.footer-logo.footer-logo-large {
+  height: 70px !important;
+  max-width: 120px !important;
+  width: auto;
+}
+/* Remove orange box from navbar tabs on focus/active */
+.navbar-nav .nav-link:focus,
+.navbar-nav .nav-link:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+/* Dynamic orange underline for active navbar tab */
+.navbar-nav .nav-link {
+  position: relative;
+}
+.navbar-nav .nav-link.active::after {
+  content: "";
+  display: block;
+  margin: 0 auto;
+  width: 60%;
+  height: 4px;
+  background: #ff8400;
+  border-radius: 2px;
+  position: absolute;
+  left: 20%;
+  bottom: 0;
+  transition: left 0.3s, width 0.3s;
+}
+/* ===== Import Poppins Font ===== */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+/* ===== Center Navbar Tabs ===== */
+.navbar-center {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
 /* ===== Bootstrap Import ===== */
 @import url('https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css');
 
@@ -77,11 +118,11 @@ html[data-theme='dark'] {
   box-sizing: border-box;
 }
 
-body {
+body, html {
   background-color: var(--app-bg) !important;
   color: var(--app-text);
   font-weight: var(--app-font-weight);
-  font-family: var(--app-font-family);
+  font-family: 'Poppins', Arial, sans-serif !important;
   margin: 0;
   overflow-x: hidden;
 }
@@ -961,6 +1002,122 @@ html[data-theme='dark'] :is(input.form-control[name='title'],textarea.form-contr
 }
 
 
+/* Modern nav links */
+.nav-modern {
+    position: relative;
+    padding: 0.6rem 0.9rem;
+    font-weight: 500;
+    color: #222;
+    border-radius: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.nav-modern:hover {
+    background: rgba(255, 132, 0, 0.08);
+    color: #ff8400;
+}
+
+
+/* Right icon buttons */
+.btn-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #f4f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.btn-icon i {
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.btn-icon:hover {
+    background: rgba(255, 132, 0, 0.15);
+    transform: translateY(-1px);
+}
+
+/* Subtle navbar shadow polish */
+.navbar {
+    box-shadow: 0 3px 15px rgba(0,0,0,0.05);
+}
+
+
+/* Logo size */
+.navbar-logo { height: 60px; width: auto; }
+
+/* Right icon buttons */
+.btn-icon{
+  width:40px;height:40px;border-radius:50%;
+  background:#f4f4f4;border:none;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* TRUE centered nav */
+/* Perfect center positioning */
+/* override old big navbar styles */
+.navbar-nav .nav-link {
+  font-size: inherit !important;
+  padding: inherit !important;
+}
+
+.navbar .nav-link.nav-modern {
+  font-size: 0.9rem !important;
+  padding: 0.5rem 0.6rem !important;
+}
+
+/* true center + shift right */
+.nav-center {
+  position: absolute;
+  left: calc(50% + 30px); /* shift right */
+  transform: translateX(-50%);
+  display: flex;
+  gap: 32px;
+}
+
+/* logo size */
+.navbar-logo { height: 80px !important; width: auto;  ;}
+
+
+/* Tab typography */
+.nav-tab{
+  position:relative;
+  font-size:0.55rem;
+  font-weight:700;
+  padding:.55rem .4rem;
+  color:#222;
+}
+
+/* Orange underline only for active tab */
+.nav-tab.active{
+  color:#ff8400;
+  font-weight:600;
+}
+
+.navbar {
+    font-family: 'Poppins', sans-serif;
+}
+
+
+
+
+/* Mobile: stop absolute centering so it stacks nicely */
+@media (max-width: 991.98px){
+  .nav-center{
+    position:static;
+    transform:none;
+    flex-direction:column;
+    gap:10px;
+    margin-top:10px;
+  }
+  .nav-tab.active::after{
+    bottom:-6px;
+  }
+}
 
 
 

@@ -39,8 +39,8 @@
     </div>
 
     <!-- Announcements Carousel -->
-    <div class="mb-5">
-        <h3 class="mb-3">Latest Announcements</h3>
+    <div class="mb-3">
+        <h3 class="mb-2 fw-bold">Latest Announcements</h3>
         <div class="carousel-wrapper position-relative">
             <div id="announcementsCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
                 <div class="carousel-inner">
@@ -124,7 +124,7 @@
     </div>
 
     <!-- Upcoming Events Section -->
-    <h3 class="mb-3">Upcoming Events</h3>
+    <h3 class="mb-2 fw-bold mt-2" style="color: black;">Upcoming Events</h3>
     <div class="row g-3">
 
         <!-- Event Card 1 -->
@@ -196,7 +196,7 @@
                             {% for u in current %}
                                 <div class="d-flex align-items-center">
                                     <img
-                                        src="{{ u.profile_picture or url_for('static', filename='images/default-avatar.png') }}"
+                                        src="{% if u.profile_picture and u.profile_picture != 'None' and u.profile_picture != '' %}{{ url_for('static', filename=u.profile_picture) }}{% else %}{{ url_for('static', filename='uploads/main_topics_images/default_pfp.png') }}{% endif %}"
                                         alt="User"
                                         class="rounded-circle me-3"
                                         style="width: 50px; height: 50px; object-fit: cover;"
@@ -238,7 +238,7 @@
                         {% for u in suggestions %}
                             <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
                                 <img
-                                    src="{{ u.profile_picture or url_for('static', filename='images/default-avatar.png') }}"
+                                    src="{% if u.profile_picture and u.profile_picture != 'None' and u.profile_picture != '' %}{{ url_for('static', filename=u.profile_picture) }}{% else %}{{ url_for('static', filename='uploads/main_topics_images/default_pfp.png') }}{% endif %}"
                                     alt="User"
                                     class="rounded-circle me-3"
                                     style="width: 50px; height: 50px; object-fit: cover;"
