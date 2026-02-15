@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from database import execute_query
 from datetime import datetime, timedelta
@@ -521,6 +521,21 @@ def delete_message(message_id):
         return redirect(url_for('messaging.view_contacts'))
 
     execute_query("UPDATE messages SET is_deleted = TRUE WHERE id = %s", (message_id,), commit=True)
+    socketio = current_app.extensions.get('socketio')
+    socketio = current_app.extensions.get('socketio')
+    if socketio:
+        payload = {'message_id': message_id}
+        if message['receiver_id']:
+            socketio.emit('message_deleted', payload, room=f'user_{user_id}')
+            socketio.emit('message_deleted', payload, room=f'user_{int(message["receiver_id"])}')
+        elif message['group_id']:
+            members = execute_query(
+                "SELECT user_id FROM group_members WHERE group_id = %s",
+                (message['group_id'],), fetch_all=True
+            ) or []
+            for member in members:
+                socketio.emit('message_deleted', payload, room=f'user_{member["user_id"]}')
+
     flash('Message deleted successfully!', 'success')
 
     if message['receiver_id']:
