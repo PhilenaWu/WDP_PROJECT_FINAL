@@ -3,7 +3,6 @@
 
 {% block extra_css %}
 <style>
-    /* Alert Styles for Flash Messages */
     .alert { padding: 1rem; border-radius: 8px; margin-bottom: 1rem; font-weight: 500; animation: slideDown 0.3s ease-out; }
     .alert-error { background: #ffebee; color: #c62828; border: 2px solid #ef5350; }
     .alert-success { background: #e8f5e9; color: white; border: 2px solid #66bb6a; }
@@ -14,10 +13,8 @@
     .chat-avatar { width: 50px; height: 50px; border-radius: 50%; background: white; color: #ff6b35; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; }
     .chat-info h3 { margin: 0; font-size: 1.2rem; }
     .chat-info p { margin: 0.3rem 0 0 0; opacity: 0.9; font-size: 0.9rem; }
-    /* Online Status */
     .online-status { width: 10px; height: 10px; background: #4caf50; border-radius: 50%; display: inline-block; margin-right: 5px; }
     .online-status.offline { background: #999; }
-    /* Hidden scrollbar */
     .chat-messages::-webkit-scrollbar { display: none; }
     .chat-messages { flex: 1; overflow-y: auto; padding: 2rem; background: #ffe8d8; -ms-overflow-style: none; scrollbar-width: none; }
     .message-group { margin-bottom: 1.5rem; }
@@ -31,11 +28,8 @@
     .message-media img, .message-media video { width: 100%; border-radius: 12px; }
     .message-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
     .btn-message-action { font-size: 0.75rem; padding: 0.3rem 0.6rem; background: rgba(255,255,255,0.3); border: none; border-radius: 4px; cursor: pointer; color: inherit; }
-
-    /* Typing Indicator */
     .typing-indicator { padding: 0.5rem 2rem; color: #888; font-style: italic; font-size: 0.85rem; background: linear-gradient(135deg, #fff5f0 0%, #ffe8d8 100%); display: none; }
     .typing-indicator.active { display: block; }
-
     .chat-input-area { padding: 1.5rem; background: white; border-top: 1px solid #e0e0e0; }
     .chat-input-form { display: flex; gap: 1rem; align-items: center; }
     .message-input { flex: 1; padding: 1rem; border: 2px solid #e0e0e0; border-radius: 25px; font-size: 1rem; resize: none; max-height: 100px; }
@@ -54,19 +48,14 @@
     .recording-time { font-size: 1rem; color: #ff4444; font-weight: 500; }
     .message-input-wrapper { display: flex; flex: 1; align-items: center; }
     .message-input-wrapper.hidden { display: none; }
-
-    /* Voice message player */
     .voice-message { display: flex; align-items: center; gap: 0.8rem; min-width: 200px; padding: 0.5rem; }
     .voice-play-btn { width: 40px; height: 40px; border-radius: 50%; border: none; background: rgba(255,255,255,0.3); cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
     .voice-waveform { flex: 1; height: 30px; display: flex; align-items: center; gap: 2px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='30'%3E%3Crect x='2' y='8' width='3' height='14' fill='rgba(255,255,255,0.6)' rx='1'/%3E%3Crect x='7' y='5' width='3' height='20' fill='rgba(255,255,255,0.6)' rx='1'/%3E%3Crect x='12' y='10' width='3' height='10' fill='rgba(255,255,255,0.6)' rx='1'/%3E%3Crect x='17' y='3' width='3' height='24' fill='rgba(255,255,255,0.6)' rx='1'/%3E%3Crect x='22' y='8' width='3' height='14' fill='rgba(255,255,255,0.6)' rx='1'/%3E%3Crect x='27' y='6' width='3' height='18' fill='rgba(255,255,255,0.6)' rx='1'/%3E%3Crect x='32' y='11' width='3' height='8' fill='rgba(255,255,255,0.6)' rx='1'/%3E%3Crect x='37' y='4' width='3' height='22' fill='rgba(255,255,255,0.6)' rx='1'/%3E%3Crect x='42' y='9' width='3' height='12' fill='rgba(255,255,255,0.6)' rx='1'/%3E%3Crect x='47' y='7' width='3' height='16' fill='rgba(255,255,255,0.6)' rx='1'/%3E%3C/svg%3E"); background-repeat: repeat-x; background-position: center; min-width: 100px; }
-    .voice-waveform .bar { width: 3px; background: rgba(255, 255, 255, 0.6); border-radius: 2px; }
+    .voice-waveform .bar { width: 3px; background: rgba(255,255,255,0.6); border-radius: 2px; }
     .voice-duration { font-size: 0.85rem; opacity: 0.8; }
     .play-button { width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.3); border: none; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; }
-
     .file-upload-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 1000; min-width: 400px; }
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; }
-
-    /* Video bubble styles */
     .video-preview-wrapper { display: none; position: fixed; bottom: 120px; right: 30px; width: 160px; height: 160px; border-radius: 50%; overflow: hidden; background: black; box-shadow: 0 8px 25px rgba(0,0,0,0.3); z-index: 2000; }
     .video-preview-wrapper.active { display: block; }
     .video-preview-wrapper video { width: 100%; height: 100%; object-fit: cover; }
@@ -78,14 +67,14 @@
 {% endblock %}
 
 {% block content %}
-<div class="chat-container" id="chatContainer" data-contact-id="{{ contact.id }}">
+<div class="chat-container" id="chatContainer" data-contact-id="{{ contact.id }}" data-current-user-id="{{ current_user.id }}">
     <div class="chat-header">
         <div class="chat-avatar">{{ (contact.display_name or contact.username)[0].upper() }}</div>
         <div class="chat-info">
             <h3>{{ contact.display_name or contact.username }}</h3>
             <p>
                 <span class="online-status offline" id="onlineStatus"></span>
-                <span id="statusText">@{{ contact.username }} • {{ contact.age_group or '' }}</span>
+                <span id="statusText">@{{ contact.username }} &bull; {{ contact.age_group or '' }}</span>
             </p>
         </div>
         <div style="margin-left: auto;">
@@ -93,14 +82,11 @@
         </div>
     </div>
 
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <div style="padding: 1rem; background: #ffe8d8;">
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}" id="flashAlert" style="margin: 0;">
-                        {{ message }}
-                    </div>
+    {% with flash_msgs = get_flashed_messages(with_categories=true) %}
+        {% if flash_msgs %}
+            <div id="flashContainer" style="padding: 1rem; background: #ffe8d8;">
+                {% for category, msg in flash_msgs %}
+                    <div class="alert alert-{{ category }}" style="margin: 0;">{{ msg }}</div>
                 {% endfor %}
             </div>
         {% endif %}
@@ -117,14 +103,12 @@
                         <div class="message-media"><img src="{{ url_for('static', filename=message.file_path.replace('static/', '').replace('\\', '/')) }}" alt="Image"></div>
                     {% elif message.message_type == 'video' %}
                         <div class="video-bubble-wrapper">
-                            <video class="video-bubble" playsinline preload="metadata"
-                                src="{{ url_for('static', filename=message.file_path.replace('static/', '').replace('\\', '/')) }}">
-                            </video>
-                            <div class="video-play-overlay">▶</div>
+                            <video class="video-bubble" playsinline preload="metadata" src="{{ url_for('static', filename=message.file_path.replace('static/', '').replace('\\', '/')) }}"></video>
+                            <div class="video-play-overlay">&#9654;</div>
                         </div>
                     {% elif message.message_type == 'voice' %}
                         <div class="voice-message">
-                            <button class="voice-play-btn" onclick="toggleAudio(this)">▶</button>
+                            <button class="voice-play-btn" onclick="toggleAudio(this)">&#9654;</button>
                             <div class="voice-waveform"></div>
                             <audio src="{{ url_for('static', filename=message.file_path.replace('static/', '').replace('\\', '/')) }}" style="display:none;"></audio>
                             <span class="voice-duration">0:00</span>
@@ -133,7 +117,7 @@
                     <div class="message-time">
                         {{ message.created_at|format_time }}
                         {% if message.sender_id == current_user.id %}
-                            <span class="message-status {% if message.is_read %}read{% endif %}">{% if message.is_read %}✓✓{% else %}✓{% endif %}</span>
+                            <span class="message-status {% if message.is_read %}read{% endif %}">{% if message.is_read %}&check;&check;{% else %}&check;{% endif %}</span>
                         {% endif %}
                     </div>
                     {% if message.sender_id == current_user.id %}
@@ -146,11 +130,10 @@
             </div>
             {% endfor %}
         {% else %}
-            <p style="text-align: center; color: #999;">No messages yet. Start the conversation!</p>
+            <p id="noMessages" style="text-align: center; color: #999;">No messages yet. Start the conversation!</p>
         {% endif %}
     </div>
 
-    <!-- Typing Indicator -->
     <div class="typing-indicator" id="typingIndicator">
         {{ contact.display_name or contact.username }} is typing...
     </div>
@@ -163,96 +146,241 @@
             <div class="recording-indicator" id="recordingIndicator">
                 <div class="recording-dot"></div>
                 <span class="recording-time" id="recordingTime">0:00</span>
-                <span style="color: #888; margin-left: 1rem;">Click 🎤 to stop</span>
+                <span style="color: #888; margin-left: 1rem;">Click to stop</span>
             </div>
             <div class="video-preview-wrapper" id="videoPreviewWrapper">
                 <video id="videoPreview" autoplay muted playsinline></video>
                 <div class="video-timer" id="videoTimer">0:00</div>
             </div>
             <div class="input-actions">
-                <button type="button" class="btn-attachment" onclick="showFileUpload()" title="Send image/video">📎</button>
-                <button type="button" class="btn-voice" id="voiceBtn" title="Record voice">🎤</button>
-                <button type="button" class="btn-voice" id="videoBtn" title="Record video">📹</button>
-                <button type="submit" class="btn-send" id="sendBtn">➤</button>
+                <button type="button" class="btn-attachment" onclick="showFileUpload()" title="Send image/video">&#128206;</button>
+                <button type="button" class="btn-voice" id="voiceBtn" title="Record voice">&#127908;</button>
+                <button type="button" class="btn-voice" id="videoBtn" title="Record video">&#128249;</button>
+                <button type="button" class="btn-send" id="sendBtn">&#10148;</button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- File Upload Modal -->
 <div class="modal-overlay" id="modalOverlay" onclick="hideFileUpload()"></div>
 <div class="file-upload-modal" id="fileUploadModal">
     <h3>Send Media</h3>
     <form method="POST" action="{{ url_for('messaging.send_message') }}" enctype="multipart/form-data">
         <input type="hidden" name="receiver_id" value="{{ contact.id }}">
-        <div class="mb-3">
-            <label class="form-label">Media Type *</label>
-            <select name="message_type" class="form-select" required>
-                <option value="">-- Select type --</option>
-                <option value="image">Image (JPG, PNG, GIF)</option>
-                <option value="video">Video (MP4, MOV)</option>
-            </select>
+        <div class="mb-3"><label class="form-label">Media Type *</label>
+            <select name="message_type" class="form-select" required><option value="">-- Select type --</option><option value="image">Image (JPG, PNG, GIF)</option><option value="video">Video (MP4, MOV)</option></select>
         </div>
-        <div class="mb-3">
-            <label class="form-label">Upload File *</label>
-            <input type="file" name="file" class="form-control" required accept="image/*,video/*">
-            <div class="form-text">Max file size: 10MB</div>
-        </div>
-        <div style="display: flex; gap: 1rem;">
-            <button type="submit" class="btn btn-primary">Send</button>
-            <button type="button" class="btn btn-secondary" onclick="hideFileUpload()">Cancel</button>
-        </div>
+        <div class="mb-3"><label class="form-label">Upload File *</label><input type="file" name="file" class="form-control" required accept="image/*,video/*"><div class="form-text">Max file size: 10MB</div></div>
+        <div style="display: flex; gap: 1rem;"><button type="submit" class="btn btn-primary">Send</button><button type="button" class="btn btn-secondary" onclick="hideFileUpload()">Cancel</button></div>
     </form>
 </div>
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.min.js"></script>
 <script>
-    // ==================== DOM ELEMENTS ====================
-    const chatMessages = document.getElementById('chatMessages');
-    const messageInput = document.getElementById('messageInput');
-    const voiceBtn = document.getElementById('voiceBtn');
-    const sendBtn = document.getElementById('sendBtn');
-    const textInputWrapper = document.getElementById('textInputWrapper');
-    const recordingIndicator = document.getElementById('recordingIndicator');
-    const recordingTime = document.getElementById('recordingTime');
-    const typingIndicator = document.getElementById('typingIndicator');
-    const contactId = parseInt(document.getElementById('chatContainer').dataset.contactId);
+(function() {
+    // ==================== SETUP ====================
+    var container = document.getElementById('chatContainer');
+    var currentUserId = parseInt(container.dataset.currentUserId);
+    var contactId = parseInt(container.dataset.contactId);
+    var chatMessages = document.getElementById('chatMessages');
+    var messageInput = document.getElementById('messageInput');
+    var voiceBtn = document.getElementById('voiceBtn');
+    var sendBtn = document.getElementById('sendBtn');
+    var textInputWrapper = document.getElementById('textInputWrapper');
+    var recordingIndicator = document.getElementById('recordingIndicator');
+    var recordingTimeEl = document.getElementById('recordingTime');
+    var typingIndicator = document.getElementById('typingIndicator');
+    var onlineStatus = document.getElementById('onlineStatus');
+    var statusText = document.getElementById('statusText');
+    var noMessages = document.getElementById('noMessages');
+    var messageForm = document.getElementById('messageForm');
 
-    let mediaRecorder, audioChunks = [], recordingInterval, recordingSeconds = 0, isRecording = false;
+    var mediaRecorder = null;
+    var audioChunks = [];
+    var recordingInterval = null;
+    var recordingSeconds = 0;
+    var isRecording = false;
+    var typingTimeout = null;
 
-    
-    // ==================== VIDEO RECORDING ====================
-    const videoBtn = document.getElementById('videoBtn');
-    const videoPreviewWrapper = document.getElementById('videoPreviewWrapper');
-    const videoPreview = document.getElementById('videoPreview');
-    const videoTimer = document.getElementById('videoTimer');
+    // ==================== SOCKET.IO CONNECTION ====================
+    var socket = io();
 
-    let videoRecorder;
-    let videoChunks = [];
-    let videoStream;
-    let videoSeconds = 0;
-    let videoInterval;
-    let isVideoRecording = false;
+    socket.on('connect', function() {
+        console.log('Socket.IO connected');
+        socket.emit('check_online', { user_id: contactId });
+    });
 
-    videoBtn.addEventListener('click', function() {
-        if (isVideoRecording) {
-            stopVideoRecording();
-        } else {
-            startVideoRecording();
+    socket.on('connect_error', function(err) {
+        console.error('Socket.IO connection error:', err);
+    });
+
+    // ==================== SEND TEXT MESSAGE ====================
+    function sendTextMessage() {
+        var content = messageInput.value.trim();
+        if (!content) return;
+
+        socket.emit('send_message', {
+            receiver_id: contactId,
+            message: content,
+            message_type: 'text'
+        });
+
+        messageInput.value = '';
+        socket.emit('stop_typing', { receiver_id: contactId });
+    }
+
+    // Send button click
+    sendBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        sendTextMessage();
+    });
+
+    // Form submit (backup)
+    messageForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        sendTextMessage();
+    });
+
+    // Enter key to send (Shift+Enter for line break)
+    messageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            e.stopPropagation();
+            sendTextMessage();
+            return false;
         }
     });
 
-    async function startVideoRecording() {
+    // ==================== RECEIVE MESSAGE ====================
+    socket.on('new_message', function(data) {
+        if ((data.sender_id == contactId && data.receiver_id == currentUserId) ||
+            (data.sender_id == currentUserId && data.receiver_id == contactId)) {
+
+            if (noMessages) { noMessages.remove(); noMessages = null; }
+            appendMessage(data);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            if (data.sender_id == contactId) {
+                socket.emit('message_read', { message_id: data.id, sender_id: data.sender_id });
+            }
+        }
+    });
+
+    socket.on('message_error', function(data) {
+        alert(data.message);
+    });
+
+    function appendMessage(data) {
+        var isSent = (data.sender_id == currentUserId);
+        var group = document.createElement('div');
+        group.className = 'message-group';
+        group.id = 'message-' + data.id;
+        group.style.display = 'flex';
+        group.style.justifyContent = isSent ? 'flex-end' : 'flex-start';
+
+        var bubble = document.createElement('div');
+        bubble.className = 'message-bubble ' + (isSent ? 'message-sent' : 'message-received');
+
+        var html = '';
+        if (data.message_type === 'text') {
+            html = escapeHtml(data.message);
+        } else if (data.message_type === 'image' && data.file_path) {
+            html = '<div class="message-media"><img src="' + data.file_path + '" alt="Image"></div>';
+        } else if (data.message_type === 'voice' && data.file_path) {
+            html = '<div class="voice-message"><button class="voice-play-btn" onclick="toggleAudio(this)">&#9654;</button><div class="voice-waveform"></div><audio src="' + data.file_path + '" style="display:none;"></audio><span class="voice-duration">0:00</span></div>';
+        } else if (data.message_type === 'video' && data.file_path) {
+            html = '<div class="video-bubble-wrapper"><video class="video-bubble" playsinline preload="metadata" src="' + data.file_path + '"></video><div class="video-play-overlay">&#9654;</div></div>';
+        }
+
+        var actions = '';
+        if (isSent) {
+            actions = '<div class="message-actions">';
+            if (data.message_type === 'text') {
+                actions += '<a href="/message/edit/' + data.id + '" class="btn-message-action">Edit</a>';
+            }
+            actions += '<form method="POST" action="/message/delete/' + data.id + '" style="display:inline;" onsubmit="return confirm(\'Delete this message?\');"><button type="submit" class="btn-message-action">Delete</button></form>';
+            actions += '</div>';
+        }
+        bubble.innerHTML = html + '<div class="message-time">' + data.timestamp + (isSent ? ' <span class="message-status">&#10003;</span>' : '') + '</div>' + actions;
+        group.appendChild(bubble);
+        chatMessages.appendChild(group);
+    }
+
+    function escapeHtml(text) {
+        var d = document.createElement('div');
+        d.textContent = text;
+        return d.innerHTML;
+    }
+
+    // ==================== TYPING INDICATOR ====================
+    messageInput.addEventListener('input', function() {
+        socket.emit('typing', { receiver_id: contactId });
+        if (typingTimeout) clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(function() {
+            socket.emit('stop_typing', { receiver_id: contactId });
+        }, 2000);
+    });
+
+    socket.on('typing', function(data) {
+        if (data.sender_id == contactId) {
+            typingIndicator.classList.add('active');
+        }
+    });
+
+    socket.on('stop_typing', function(data) {
+        if (data.sender_id == contactId) {
+            typingIndicator.classList.remove('active');
+        }
+    });
+
+    // ==================== ONLINE STATUS ====================
+    socket.on('user_status', function(data) {
+        if (data.user_id == contactId) {
+            if (data.status === 'online') {
+                onlineStatus.classList.remove('offline');
+                statusText.textContent = 'Online';
+            } else {
+                onlineStatus.classList.add('offline');
+                statusText.innerHTML = '@{{ contact.username }} &bull; {{ contact.age_group or "" }}';
+            }
+        }
+    });
+
+    // ==================== READ RECEIPTS ====================
+    socket.on('message_read', function(data) {
+        var el = document.getElementById('message-' + data.message_id);
+        if (el) {
+            var s = el.querySelector('.message-status');
+            if (s) { s.innerHTML = '&#10003;&#10003;'; s.classList.add('read'); }
+        }
+    });
+
+    // ==================== VIDEO RECORDING ====================
+    var videoBtn = document.getElementById('videoBtn');
+    var videoPreviewWrapper = document.getElementById('videoPreviewWrapper');
+    var videoPreview = document.getElementById('videoPreview');
+    var videoTimer = document.getElementById('videoTimer');
+    var videoRecorder = null;
+    var videoChunks = [];
+    var videoStream = null;
+    var videoSeconds = 0;
+    var videoInterval = null;
+    var isVideoRecording = false;
+
+    videoBtn.addEventListener('click', function() {
+        if (isVideoRecording) stopVideoRecording();
+        else startVideoRecording();
+    });
+
+    function startVideoRecording() {
         if (isVideoRecording) return;
-        try {
-            videoStream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: "user" },
-                audio: true
-            });
-            videoPreview.srcObject = videoStream;
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true }).then(function(stream) {
+            videoStream = stream;
+            videoPreview.srcObject = stream;
             videoPreviewWrapper.classList.add('active');
-            videoRecorder = new MediaRecorder(videoStream);
+            videoRecorder = new MediaRecorder(stream);
             videoChunks = [];
             videoRecorder.ondataavailable = function(e) { if (e.data.size > 0) videoChunks.push(e.data); };
             videoRecorder.onstop = sendVideoMessage;
@@ -262,11 +390,9 @@
             videoTimer.textContent = "0:00";
             videoInterval = setInterval(function() {
                 videoSeconds++;
-                videoTimer.textContent = Math.floor(videoSeconds / 60) + ":" + String(videoSeconds % 60).padStart(2, '0');
+                videoTimer.textContent = Math.floor(videoSeconds/60) + ":" + String(videoSeconds%60).padStart(2,'0');
             }, 1000);
-        } catch (err) {
-            alert("Camera access denied.");
-        }
+        }).catch(function() { alert("Camera access denied."); });
     }
 
     function stopVideoRecording() {
@@ -275,7 +401,7 @@
         clearInterval(videoInterval);
         videoPreviewWrapper.classList.remove('active');
         if (videoRecorder && videoRecorder.state !== "inactive") videoRecorder.stop();
-        if (videoStream) videoStream.getTracks().forEach(function(track) { track.stop(); });
+        if (videoStream) videoStream.getTracks().forEach(function(t) { t.stop(); });
     }
 
     function sendVideoMessage() {
@@ -295,258 +421,125 @@
 
     // Video bubble click to play
     document.addEventListener("click", function(e) {
-        var wrapper = e.target.closest(".video-bubble-wrapper");
-        if (!wrapper) return;
-        var video = wrapper.querySelector("video");
-        var overlay = wrapper.querySelector(".video-play-overlay");
-        if (video.paused) {
-            video.play();
-            overlay.style.display = "none";
-        } else {
-            video.pause();
-            overlay.style.display = "block";
-        }
-        video.onended = function() { overlay.style.display = "block"; };
-    });
-
-    // ==================== TEXT MESSAGING ====================
-
-    function sendTextMessage() {
-        var content = messageInput.value.trim();
-        if (!content) return;
-
-        var form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '{{ url_for("messaging.send_message") }}';
-        form.style.display = 'none';
-
-        var fields = { 'receiver_id': contactId, 'message_type': 'text', 'content': content };
-        for (var key in fields) {
-            var input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = key;
-            input.value = fields[key];
-            form.appendChild(input);
-        }
-
-        document.body.appendChild(form);
-        form.submit();
-    }
-
-    // Enter to send
-    messageInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendTextMessage();
-        }
-    });
-
-    // Send button
-    document.querySelector("form").addEventListener("submit", async function(e){
-        e.preventDefault();
-
-        const formData = new FormData(this);
-
-        const res = await fetch(this.action, {
-            method: "POST",
-            body: formData
-        });
-
-        const data = await res.json();
-
-        if (data.status === "success") {
-            window.location.href = data.redirect;
-        }
+        var w = e.target.closest(".video-bubble-wrapper");
+        if (!w) return;
+        var v = w.querySelector("video");
+        var o = w.querySelector(".video-play-overlay");
+        if (v.paused) { v.play(); o.style.display = "none"; }
+        else { v.pause(); o.style.display = "block"; }
+        v.onended = function() { o.style.display = "block"; };
     });
 
     // ==================== FILE UPLOAD MODAL ====================
-
-    function showFileUpload() {
+    window.showFileUpload = function() {
         document.getElementById('modalOverlay').style.display = 'block';
         document.getElementById('fileUploadModal').style.display = 'block';
-    }
-
-    function hideFileUpload() {
+    };
+    window.hideFileUpload = function() {
         document.getElementById('modalOverlay').style.display = 'none';
         document.getElementById('fileUploadModal').style.display = 'none';
-    }
+    };
 
     // ==================== SCROLL TO BOTTOM ====================
-
     chatMessages.scrollTop = chatMessages.scrollHeight;
     window.addEventListener('load', function() {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     });
 
-    // ==================== FLASH MESSAGE AUTO-DISMISS ====================
-
-    var flashAlert = document.getElementById('flashAlert');
-    if (flashAlert) {
+    // ==================== FLASH AUTO-DISMISS ====================
+    var flashContainer = document.getElementById('flashContainer');
+    if (flashContainer) {
         setTimeout(function() {
-            flashAlert.style.animation = 'fadeOut 0.3s ease-out';
-            setTimeout(function() { flashAlert.remove(); }, 300);
-        }, 5000);
+            flashContainer.style.animation = 'fadeOut 0.3s ease-out';
+            setTimeout(function() { flashContainer.remove(); }, 300);
+        }, 3000);
     }
 
     // ==================== VOICE RECORDING ====================
-
     voiceBtn.addEventListener('click', function() {
-        if (isRecording) {
-            stopVoiceRecording();
-        } else {
-            startVoiceRecording();
-        }
+        if (isRecording) stopVoiceRecording();
+        else startVoiceRecording();
     });
 
-    async function startVoiceRecording() {
-        try {
-            var stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
+    function startVoiceRecording() {
+        navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream) {
             mediaRecorder = new MediaRecorder(stream);
             audioChunks = [];
-
-            mediaRecorder.ondataavailable = function(event) {
-                if (event.data.size > 0) {
-                    audioChunks.push(event.data);
-                }
-            };
-
+            mediaRecorder.ondataavailable = function(e) { if (e.data.size > 0) audioChunks.push(e.data); };
             mediaRecorder.onstop = function() {
-                stream.getTracks().forEach(function(track) { track.stop(); });
-                if (audioChunks.length > 0 && recordingSeconds >= 1) {
-                    sendVoiceMessage();
-                }
+                stream.getTracks().forEach(function(t) { t.stop(); });
+                if (audioChunks.length > 0 && recordingSeconds >= 1) sendVoiceMessage();
             };
-
             mediaRecorder.start();
             isRecording = true;
-
-            // Update UI
             voiceBtn.classList.add('recording');
-            voiceBtn.textContent = '⏹';
             textInputWrapper.classList.add('hidden');
             recordingIndicator.classList.add('active');
             sendBtn.style.display = 'none';
-
-            // Start timer
             recordingSeconds = 0;
-            recordingTime.textContent = '0:00';
+            recordingTimeEl.textContent = '0:00';
             if (recordingInterval) clearInterval(recordingInterval);
             recordingInterval = setInterval(function() {
                 recordingSeconds++;
-                var mins = Math.floor(recordingSeconds / 60);
-                var secs = recordingSeconds % 60;
-                recordingTime.textContent = mins + ':' + String(secs).padStart(2, '0');
+                recordingTimeEl.textContent = Math.floor(recordingSeconds/60) + ':' + String(recordingSeconds%60).padStart(2,'0');
             }, 1000);
-
-        } catch (err) {
-            console.error('Error accessing microphone:', err);
-            alert('Could not access microphone. Please allow microphone permission.');
-        }
+        }).catch(function(err) {
+            console.error('Microphone error:', err);
+            alert('Could not access microphone.');
+        });
     }
 
     function stopVoiceRecording() {
         if (!isRecording || !mediaRecorder) return;
-
         isRecording = false;
-
-        if (recordingInterval) {
-            clearInterval(recordingInterval);
-            recordingInterval = null;
-        }
-
+        if (recordingInterval) { clearInterval(recordingInterval); recordingInterval = null; }
         voiceBtn.classList.remove('recording');
-        voiceBtn.textContent = '🎤';
         textInputWrapper.classList.remove('hidden');
         recordingIndicator.classList.remove('active');
         sendBtn.style.display = 'block';
-
-        if (mediaRecorder.state !== 'inactive') {
-            mediaRecorder.stop();
-        }
+        if (mediaRecorder.state !== 'inactive') mediaRecorder.stop();
     }
 
     function sendVoiceMessage() {
-        if (audioChunks.length === 0) return;
-
-        var audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-        var file = new File([audioBlob], 'voice_' + Date.now() + '.webm', { type: 'audio/webm' });
-
-        var formData = new FormData();
-        formData.append('receiver_id', contactId);
-        formData.append('message_type', 'voice');
-        formData.append('file', file);
-        formData.append('content', 'Voice message');
-
+        if (!audioChunks.length) return;
+        var blob = new Blob(audioChunks, { type: 'audio/webm' });
+        var file = new File([blob], 'voice_' + Date.now() + '.webm', { type: 'audio/webm' });
+        var fd = new FormData();
+        fd.append('receiver_id', contactId);
+        fd.append('message_type', 'voice');
+        fd.append('file', file);
+        fd.append('content', 'Voice message');
         var xhr = new XMLHttpRequest();
         xhr.open('POST', '{{ url_for("messaging.send_message") }}', true);
         xhr.onload = function() { window.location.reload(); };
         xhr.onerror = function() { alert('Failed to send voice message'); };
-        xhr.send(formData);
-
+        xhr.send(fd);
         audioChunks = [];
     }
 
     // ==================== AUDIO PLAYBACK ====================
-
-    function toggleAudio(btn) {
+    window.toggleAudio = function(btn) {
         var audio = btn.parentElement.querySelector('audio');
-        var durationEl = btn.parentElement.querySelector('.voice-duration');
-
+        var dur = btn.parentElement.querySelector('.voice-duration');
         if (audio.paused) {
-            // Stop all other playing audios
-            document.querySelectorAll('.voice-message audio').forEach(function(a) {
-                a.pause();
-                a.currentTime = 0;
-            });
-            document.querySelectorAll('.voice-play-btn').forEach(function(b) {
-                b.textContent = '▶';
-            });
-
+            document.querySelectorAll('.voice-message audio').forEach(function(a) { a.pause(); a.currentTime = 0; });
+            document.querySelectorAll('.voice-play-btn').forEach(function(b) { b.innerHTML = '&#9654;'; });
             audio.play();
-            btn.textContent = '⏸';
+            btn.innerHTML = '&#9208;';
+            audio.ontimeupdate = function() { dur.textContent = Math.floor(audio.currentTime/60) + ':' + String(Math.floor(audio.currentTime%60)).padStart(2,'0'); };
+            audio.onended = function() { btn.innerHTML = '&#9654;'; dur.textContent = Math.floor(audio.duration/60) + ':' + String(Math.floor(audio.duration%60)).padStart(2,'0'); };
+        } else { audio.pause(); btn.innerHTML = '&#9654;'; }
+    };
 
-            audio.ontimeupdate = function() {
-                var mins = Math.floor(audio.currentTime / 60);
-                var secs = Math.floor(audio.currentTime % 60);
-                durationEl.textContent = mins + ':' + String(secs).padStart(2, '0');
-            };
-
-            audio.onended = function() {
-                btn.textContent = '▶';
-                var mins = Math.floor(audio.duration / 60);
-                var secs = Math.floor(audio.duration % 60);
-                durationEl.textContent = mins + ':' + String(secs).padStart(2, '0');
-            };
-        } else {
-            audio.pause();
-            btn.textContent = '▶';
-        }
-    }
-
-    // Load duration for all voice messages on page load
+    // Load voice durations
     document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.voice-message audio').forEach(function(audio) {
-            audio.addEventListener('loadedmetadata', function() {
-                var durationEl = audio.parentElement.querySelector('.voice-duration');
-                var mins = Math.floor(audio.duration / 60);
-                var secs = Math.floor(audio.duration % 60);
-                durationEl.textContent = mins + ':' + String(secs).padStart(2, '0');
+        document.querySelectorAll('.voice-message audio').forEach(function(a) {
+            a.addEventListener('loadedmetadata', function() {
+                var d = a.parentElement.querySelector('.voice-duration');
+                d.textContent = Math.floor(a.duration/60) + ':' + String(Math.floor(a.duration%60)).padStart(2,'0');
             });
         });
     });
-
-    // Generate waveform bars dynamically
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.voice-waveform[data-generate="true"]').forEach(function(waveform) {
-            for (var i = 0; i < 20; i++) {
-                var bar = document.createElement('div');
-                bar.className = 'bar';
-                bar.style.height = (Math.random() * 15 + 10) + 'px';
-                waveform.appendChild(bar);
-            }
-            waveform.removeAttribute('data-generate');
-        });
-    });
+})();
 </script>
 {% endblock %}
