@@ -220,8 +220,7 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body {% block body_class %}{% endblock %}>
-    {% block navbar %}{% endblock %}
-    
+    {% block navbar %}
     <!-- Navigation -->
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
     <div class="container-fluid px-4">
@@ -284,6 +283,7 @@
         </ul>
     </div>
 </nav>
+    {% endblock %}
 
 <!-- Flash messages -->
 {% if request.endpoint != 'main.home' %}
@@ -291,10 +291,12 @@
         {% if messages %}
             <div class="container-fluid mt-3 px-3">
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show {% if message == 'Please log in to access this page.' %}login-required-alert{% endif %}" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
+                    {% if message != 'Please log in to access this page.' or request.endpoint == 'auth.login' %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show {% if message == 'Please log in to access this page.' %}login-required-alert{% endif %}" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endif %}
                 {% endfor %}
             </div>
         {% endif %}
