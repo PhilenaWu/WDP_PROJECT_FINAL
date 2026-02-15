@@ -5,7 +5,7 @@
 <style>
     .alert { padding: 1rem; border-radius: 8px; margin-bottom: 1rem; font-weight: 500; animation: slideDown 0.3s ease-out; }
     .alert-error { background: #ffebee; color: #c62828; border: 2px solid #ef5350; }
-    .alert-success { background: #e8f5e9; color: white; border: 2px solid #176c1b; }
+    .alert-success { background: #178220; color: white; border: 2px solid #cbffcd; }
     @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes fadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-10px); } }
     .chat-container { max-width: 100vw; background: white; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
@@ -276,6 +276,23 @@
     socket.on('message_error', function(data) {
         alert(data.message);
     });
+
+    socket.on('message_deleted', function(data) {
+        if (!data || !data.message_id) return;
+        var msgEl = document.getElementById('message-' + data.message_id);
+        if (!msgEl) return;
+        msgEl.remove();
+
+        if (!chatMessages.querySelector('.message-group') && !document.getElementById('noMessages')) {
+            var p = document.createElement('p');
+            p.id = 'noMessages';
+            p.style.textAlign = 'center';
+            p.style.color = '#999';
+            p.textContent = 'No messages yet. Start the conversation!';
+            chatMessages.appendChild(p);
+        }
+    });
+
 
     function appendMessage(data) {
         var isSent = (data.sender_id == currentUserId);
