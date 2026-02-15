@@ -20,6 +20,15 @@
 
 <!-- Main Content -->
 <div class="container py-4">
+    <!-- Welcome Message -->
+    <div class="alert alert-success mt-4" role="alert">
+        <h4 class="alert-heading">Welcome, {{ user.username }}! 🎉</h4>
+        <p>Your profile is complete. Start exploring events and connecting with others!</p>
+        <hr>
+        <p class="mb-0">
+            <strong>Age Group:</strong> {{ user.age_group.capitalize() if user.age_group else 'N/A' }}
+        </p>
+    </div>
 
     <!-- Voice Story Upload Banner -->
     <div class="card mb-4 banner-gradient">
@@ -167,15 +176,6 @@
 
     </div>
 
-    <!-- Welcome Message -->
-    <div class="alert alert-success mt-4" role="alert">
-        <h4 class="alert-heading">Welcome, {{ user.username }}! 🎉</h4>
-        <p>Your profile is complete. Start exploring events and connecting with others!</p>
-        <hr>
-        <p class="mb-0">
-            <strong>Age Group:</strong> {{ user.age_group.capitalize() if user.age_group else 'N/A' }}
-        </p>
-    </div>
     <!-- Connections Section -->
     <div class="row g-4 mt-4">
 
