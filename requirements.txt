@@ -3,7 +3,7 @@ Flask-Login==0.6.3
 Flask-Session==0.5.0
 mysql-connector-python==8.2.0
 python-dotenv==1.0.0
-flask-socketio==5.3.5
+flask-socketio
 python-socketio==5.10.0
 python-engineio==4.8.0
 pillow==10.1.0
