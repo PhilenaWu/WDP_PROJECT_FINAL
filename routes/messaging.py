@@ -447,7 +447,7 @@ def send_message():
             flash('You are not a member of this group', 'error')
             return redirect(url_for('messaging.view_groups'))
 
-    execute_query("""
+    message_id = execute_query("""
         INSERT INTO messages (sender_id, receiver_id, group_id, message_type, content, file_path)
         VALUES (%s, %s, %s, %s, %s, %s)
     """, (
@@ -456,6 +456,47 @@ def send_message():
         int(group_id) if group_id else None,
         message_type, content, file_path
     ), commit=True)
+
+    # Emit realtime update for media messages sent through HTTP upload path.
+    socketio = current_app.extensions.get('socketio')
+    if socketio:
+        sender = execute_query(
+            "SELECT display_name, username FROM users WHERE id = %s",
+            (user_id,), fetch_one=True
+        )
+        sender_name = (sender['display_name'] or sender['username']) if sender else 'Unknown'
+        timestamp = (datetime.utcnow() + timedelta(hours=8)).strftime('%I:%M %p')
+        file_url = None
+        if file_path:
+            file_url = url_for(
+                'static',
+                filename=file_path.replace('static/', '').replace('\\', '/')
+            )
+
+        message_data = {
+            'id': message_id,
+            'sender_id': user_id,
+            'receiver_id': int(receiver_id) if receiver_id else None,
+            'group_id': int(group_id) if group_id else None,
+            'message': content,
+            'message_type': message_type,
+            'timestamp': timestamp,
+            'sender_display_name': sender_name,
+            'is_read': False,
+            'file_path': file_url
+        }
+
+        if receiver_id:
+            socketio.emit('new_message', message_data, room=f'user_{user_id}')
+            socketio.emit('new_message', message_data, room=f'user_{int(receiver_id)}')
+        elif group_id:
+            members = execute_query(
+                "SELECT user_id FROM group_members WHERE group_id = %s",
+                (int(group_id),), fetch_all=True
+            ) or []
+            for member in members:
+                socketio.emit('new_message', message_data, room=f'user_{member["user_id"]}')
+
 
     if receiver_id:
         return redirect(url_for('messaging.chat_direct', contact_id=receiver_id))

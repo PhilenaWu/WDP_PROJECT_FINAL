@@ -24,7 +24,7 @@
             {% if error %}
                 <p class="auth-error-message">{{ error }}</p>
             {% endif %}
-
+            <!--full name-->
             <div class="feedback-group">
                 <label for="full_name" class="form-label">Full Name</label>
                 <input
@@ -36,7 +36,7 @@
                     required
                 >
             </div>
-
+            <!--email with retrieve button-->
             <div class="feedback-group">
                 <label for="email" class="form-label">Email</label>
                 <div class="d-flex gap-2 flex-wrap">
@@ -53,7 +53,7 @@
                     <button type="button" class="btn btn-primary" id="retrieveEmailBtn">Retrieve Email</button>
                 </div>
             </div>
-
+            <!--feedback type-->
             <div class="feedback-group">
                 <label for="feedback_type" class="form-label">Feedback Type</label>
                 <select class="form-select" id="feedback_type" name="feedback_type" required>
