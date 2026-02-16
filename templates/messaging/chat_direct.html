@@ -118,7 +118,7 @@
                         </div>
                     {% endif %}
                     <div class="message-time">
-                        {{ message.created_at }}
+                        {{ message.created_at|format_time }}
                         {% if message.sender_id == current_user.id %}
                             <span class="message-status {% if message.is_read %}read{% endif %}">{% if message.is_read %}&check;&check;{% else %}&check;{% endif %}</span>
                         {% endif %}

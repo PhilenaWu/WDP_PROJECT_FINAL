@@ -114,7 +114,7 @@
                             <span class="voice-duration">0:00</span>
                         </div>
                     {% endif %}
-                    <div class="message-time">{{ message.created_at }}</div>
+                    <div class="message-time">{{ message.created_at|format_time }}</div>
                     {% if message.sender_id == current_user.id %}
                     <div class="message-actions">
                         {% if message.message_type == 'text' %}<a href="{{ url_for('messaging.edit_message', message_id=message.id) }}" class="btn-message-action">Edit</a>{% endif %}
