@@ -122,6 +122,18 @@ def create_app():
     os.makedirs(app.config.get("UPLOAD_FOLDER", "static/uploads"), exist_ok=True)
     os.makedirs("static/uploads", exist_ok=True)
 
+    @app.template_filter('format_time')
+    def format_time(value, offset_hours=8):
+        from datetime import datetime, timedelta
+        if value is None:
+            return ''
+        if isinstance(value, str):
+            try:
+                value = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+            except ValueError:
+                return value
+        return (value + timedelta(hours=offset_hours)).strftime('%I:%M %p')
+    
     # Init Socket.IO
     socketio.init_app(app)
 
