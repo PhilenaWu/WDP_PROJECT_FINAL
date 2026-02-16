@@ -94,7 +94,7 @@
     <div class="chat-messages" id="chatMessages">
         {% if messages %}
             {% for message in messages %}
-            <div class="message-group" id="message-{{ message.id }}" style="display: flex; justify-content: {% if message.sender_id == current_user.id %}flex-end{% else %}flex-start{% endif %}">
+            <div class="message-group" id="message-{{ message.id }}" style="display: flex; justify-content: {% if message.sender_id == current_user.id %}flex-end{% else %}flex-start{% endif %}"><!--this line is a valid syntax according to copilot-->
                 <div class="message-bubble {% if message.sender_id == current_user.id %}message-sent{% else %}message-received{% endif %}">
                     <div class="message-sender">{{ message.sender_display_name }}</div>
                     {% if message.message_type == 'text' %}
