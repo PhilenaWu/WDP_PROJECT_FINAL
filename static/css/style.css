@@ -2,19 +2,19 @@
 body, html {
   font-family: var(--app-font-family, 'Poppins', Arial, sans-serif) !important;
 }
-/* Larger and more visible footer logo */
+
 .footer-logo.footer-logo-large {
   height: 70px !important;
   max-width: 120px !important;
   width: auto;
 }
-/* Remove orange box from navbar tabs on focus/active */
+
 .navbar-nav .nav-link:focus,
 .navbar-nav .nav-link:active {
   outline: none !important;
   box-shadow: none !important;
 }
-/* Dynamic orange underline for active navbar tab */
+
 .navbar-nav .nav-link {
   position: relative;
 }
@@ -31,18 +31,17 @@ body, html {
   bottom: 0;
   transition: left 0.3s, width 0.3s;
 }
-/* ===== Import Poppins Font ===== */
+/* Import Poppins Font */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
-/* ===== Center Navbar Tabs ===== */
+
 .navbar-center {
   display: flex;
   justify-content: center;
   width: 100%;
 }
-/* ===== Bootstrap Import ===== */
+/* Bootstrap */
 @import url('https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css');
 
-/* ===== Bootstrap Color Overrides ===== */
 :root {
     --bs-primary: #f39a1f;
     --bs-primary-rgb: 243, 154, 31;
@@ -113,7 +112,6 @@ html[data-theme='dark'] {
   --bs-emphasis-color: var(--app-text);
 }
 
-/* ===== Global Styles ===== */
 * {
   box-sizing: border-box;
 }
@@ -127,7 +125,6 @@ body, html {
   overflow-x: hidden;
 }
 
-/* ===== Global Text System ===== */
 html[data-theme='dark'] body,
 html[data-theme='dark'] body :is(h1,h2,h3,h4,h5,h6,p,span,small,strong,em,label,legend,a,li,td,th,caption,figcaption),
 html[data-theme='dark'] body :is(.text-muted,.card-title,.card-text,.form-label,.dropdown-item,.menu-item,.sidebar-home-text,.section-subtitle,.main-title,.signout-text,.delete-text,.modal-text,.modal-confirm-text,.language-name,.theme-label,.setting-label,.slider-value) {
@@ -190,13 +187,13 @@ body.logout-page .delete-text {
 }
 
 
-/* ===== Buttons - All use Bootstrap btn-primary ===== */
+/* Buttons */
 .btn-primary, .btn-primary:hover, .btn-primary:focus, .btn-primary:active, 
 #nextBtn, .btn-orange { background-color: #f39a1f !important; border: none !important; }
 .btn-primary:disabled { opacity: 0.65; }
 .btn-orange:hover { background: #e58a0d !important; }
 
-/* ===== Auth Pages ===== */
+/* Auth Pages */
 .auth-form-container { max-width: 470px; }
 .auth-form-container-large { max-width: 550px; }
 .auth-search { max-width: 400px; }
@@ -237,12 +234,12 @@ body.login-page .auth-form-container { padding: 0 14px; }
   text-decoration: underline;
 }
 
-/* ===== Icons ===== */
+/* Icons */
 .auth-icon-large, .banner-icon { font-size: 80px; color: #f39a1f; }
 .auth-icon-medium { font-size: 60px; color: #f39a1f; }
 .icon-small, .navbar-brand-icon { font-size: 24px; color: #f39a1f; }
 
-/* ===== Navbar Colors ===== */
+/* Navbar Colors */
 .navbar {
   background: var(--app-navbar-bg) !important;
   border-bottom: 1px solid rgba(255,255,255,.08);
@@ -277,7 +274,7 @@ body.login-page .auth-form-container { padding: 0 14px; }
   background: var(--app-navbar-hover-bg);
 }
 
-/* ===== Edit Profile Page ===== */
+/* Edit Profile Page */
 body.editprofile-page{background:var(--app-bg) !important;}
 body.editprofile-page .profile-card{max-width:900px;margin:0 auto;background:var(--app-surface-1);border-radius:16px;padding:32px 40px 40px;box-shadow:var(--app-shadow-1);border:1px solid var(--app-border);position:relative;}
 body.editprofile-page .main-title{margin:0 0 24px;font-size:26px;font-weight:600;}
@@ -346,12 +343,12 @@ body.editprofile-page .feedback-entry-actions{display:flex;justify-content:flex-
 body.editprofile-page .feedback-entry-actions form{margin:0;}
 body.editprofile-page .feedback-empty-state{border:1px dashed var(--app-border);border-radius:12px;padding:28px;text-align:center;background:var(--app-surface-1);}
 
-/* ===== Past Feedback Sticky Footer ===== */
+/* Past Feedback Sticky Footer */
 body.feedback-history-page{min-height:100vh;display:flex;flex-direction:column;}
 body.feedback-history-page > .container.py-5{flex:1 0 auto;}
 body.feedback-history-page > footer{margin-top:auto !important;}
 
-/* ===== Events Calendar (Restore Original Styling) ===== */
+/* Events Calendar (Restore Original Styling) */
 .calendar-container,
 .calendar-container :is(h1,h2,h3,h4,h5,h6,p,span,strong,small,div,button,i) {
   color: #ffffff !important;
@@ -373,7 +370,7 @@ body.feedback-history-page > footer{margin-top:auto !important;}
   background: rgba(255,255,255,.14) !important;
 }
 
-/* ===== Events Home: Keep My Events Details Readable In Dark Mode ===== */
+/* Manual dark mode patches for events page */
 html[data-theme='dark'] :is(.my-events-section .event-list-item,#eventModal .event-modal-content,#eventModal .event-modal-body,#eventModal .event-modal-close){
   background:#ffffff !important;
 }
@@ -381,7 +378,7 @@ html[data-theme='dark'] :is(.my-events-section .event-list-title,.my-events-sect
   color:#333333 !important;
 }
 
-/* ===== Home Page ===== */
+/* Manual dark mode patches for homepage */
 .navbar-brand-text { color: #f39a1f; font-weight: bold; }
 .banner-gradient { 
   background: linear-gradient(135deg, #f39a1f 0%, #ff8c61 100%); 
@@ -398,7 +395,7 @@ html[data-theme='dark'] body.home-page .banner-gradient .btn.btn-light:disabled 
 .navbar-nav .nav-link i { font-size: 22px; margin-right: 8px; }
 .navbar-icon-large { font-size: 40px !important; }
 
-/* ===== Navbar Logo ===== */
+/* Navbar Logo */
 .navbar-logo { height: 90px; width: auto; max-width: 90px; }
 
 .carousel-arrows {
@@ -424,7 +421,7 @@ html[data-theme='dark'] body.home-page .banner-gradient .btn.btn-light:disabled 
   background: #e58a0d;
 }
 
-/* ===== Carousel Styles ===== */
+/* Carousel Styles */
 .carousel-wrapper { position: relative; padding-bottom: 60px; }
 .carousel-wrapper .carousel-inner { width: 100%; }
 .carousel-indicators { position: absolute; bottom: -50px; left: 50%; transform: translateX(-50%); background: none; margin: 0; }
@@ -437,15 +434,15 @@ html[data-theme='dark'] body.home-page .banner-gradient .btn.btn-light:disabled 
 .carousel-wrapper .carousel-control-prev-icon,
 .carousel-wrapper .carousel-control-next-icon { background-color: #f39a1f; border-radius: 50%; width: 40px; height: 40px; }
 
-/* ===== Announcement Carousel Controls ===== */
+/* Announcement Carousel Controls */
 .carousel-arrows .announcement-carousel-control { margin-top: -15px; }
 .carousel-arrows .carousel-control-prev { margin-left: -30px; }
 .carousel-arrows .carousel-control-next { margin-right: -30px; }
 
-/* ===== Footer Logo ===== */
+/* Footer Logo */
 .footer-logo { height: 30px; width: auto; max-width: 30px; vertical-align: middle; }
 
-/* ===== Password Visibility Toggle (Universal) ===== */
+/* Password Visibility Toggle - Universal */
 .password-input-wrapper{position:relative;display:flex;align-items:center;}
 .password-input-wrapper .form-control{padding-right:45px;}
 .eye-icon,.eye-btn,body.editprofile-page .eye-icon,body.aboutyou-page .eye-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);width:22px;height:22px;padding:0;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;}
@@ -456,7 +453,7 @@ body.aboutyou-page .eye-btn{right:44px;}
 body.aboutyou-page .eye-btn::before{background-image:url("/static/images/close_eye.png");}
 body.aboutyou-page .eye-btn.open::before{background-image:url("/static/images/open_eye.png");}
 
-/* ===== About You Page ===== */
+/* About You Page */
 body.aboutyou-page .card{max-width:580px;border:2px solid #f39a1f !important;border-radius:16px !important;}
 body.aboutyou-page .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
 body.aboutyou-page .input-field{padding:14px 16px;border-radius:8px;border:2px solid #f39a1f;}
@@ -466,12 +463,10 @@ body.aboutyou-page .lock{position:absolute;right:44px;top:50%;transform:translat
 body.aboutyou-page .lock::before{content:"";display:block;width:18px;height:18px;background-image:url("/static/images/lock\ \(1\).png");background-size:contain;background-repeat:no-repeat;background-position:center;}
 body.aboutyou-page .location-check input[type="checkbox"]{width:20px;height:20px;margin-right:12px;accent-color:#f39a1f;}
 
-/* ===== Bootstrap Overrides ===== */
 .form-control:focus,.form-check-input:focus{border-color:#f39a1f;box-shadow:0 0 0 0.25rem var(--app-focus-ring);} 
 .form-check-input:checked { background-color: #f39a1f; border-color: #f39a1f; }
 .spinner-border, .loading-spinner { color: #f39a1f !important; }
 
-/* ===== Responsive ===== */
 @media (max-width: 768px) {
   body.editprofile-page .profile-card{padding:28px 24px 32px;}
   body.editprofile-page .profile-row{--bs-gutter-x:0;}
@@ -479,7 +474,6 @@ body.aboutyou-page .location-check input[type="checkbox"]{width:20px;height:20px
   body.aboutyou-page .two-col{grid-template-columns:1fr;}
 }
 
-/* ===== Global Responsive Layout ===== */
 @media (max-width: 1200px) {
   .navbar .container-fluid{gap:12px;}
   .auth-search{max-width:320px;}
@@ -512,7 +506,7 @@ body.aboutyou-page .location-check input[type="checkbox"]{width:20px;height:20px
   .auth-icon-medium{font-size:44px;}
 }
 
-/* ===== Settings Pages (Shared) ===== */
+/* Settings Pages */
 body:is(.logout-page,.language-page,.appearance-page){background:var(--app-bg) !important;}
 body:is(.logout-page,.language-page,.appearance-page) .settings-layout{display:grid;grid-template-columns:300px 2px minmax(0,1fr);min-height:100vh;}
 body:is(.logout-page,.language-page,.appearance-page) .settings-sidebar{background:var(--app-bg);padding:32px 32px 24px;display:flex;flex-direction:column;}
@@ -535,7 +529,7 @@ body:is(.logout-page,.language-page,.appearance-page) .btn-orange:hover{backgrou
 body:is(.logout-page,.language-page,.appearance-page) .btn-light{background:#fff;border:2px solid #d7d7d7;color:#222;}
 body:is(.logout-page,.language-page,.appearance-page) .btn-light:hover{background:#f5f5f5;}
 
-/* ===== Logout Settings Page ===== */
+/* Logout Settings Page */
 body.logout-page .signout-content{max-width:800px;}
 body.logout-page .signout-text{margin:0 0 24px;font-size:16px;color:#222;}
 body.logout-page .signout-buttons{display:flex;gap:16px;margin-bottom:48px;}
@@ -558,7 +552,7 @@ body.logout-page .modal-buttons{display:flex;gap:16px;justify-content:flex-end;}
 @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
 @keyframes slideIn{from{transform:translateY(-30px);opacity:0;}to{transform:translateY(0);opacity:1;}}
 
-/* ===== Language Page ===== */
+/* Language Page */
 body.language-page .language-content{max-width:960px;}
 body.language-page .section-subtitle{margin:0 0 24px;font-size:18px;font-weight:600;color:#222;}
 body.language-page .language-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-bottom:40px;}
@@ -577,7 +571,7 @@ body.language-page .language-card--active .check-indicator,body.appearance-page 
 body.language-page .language-actions,body.appearance-page .appearance-actions{display:flex;justify-content:center;gap:16px;}
 body.language-page .language-actions{margin-top:40px;}
 
-/* ===== Appearance Page ===== */
+/* Appearance Page */
 body.appearance-page .appearance-content{max-width:900px;}
 body.appearance-page .theme-section{margin-bottom:40px;}
 body.appearance-page .theme-cards{display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:32px;border:2px solid #f39a1f;border-radius:16px;background:#fff;}
@@ -608,7 +602,7 @@ body.appearance-page .font-select{padding:14px 20px;font-size:16px;border-radius
 body.appearance-page .font-select:focus{outline:none;border-color:#f39a1f;}
 body.appearance-page .appearance-actions{margin-top:48px;padding-right:40px;}
 
-/* ===== Settings Pages (Dark Theme Fixes) ===== */
+/* Manual dark mode patches for settings page */
 html[data-theme='dark'] body:is(.logout-page,.language-page,.appearance-page) .sidebar-home-icon{background:var(--app-surface-1);box-shadow:var(--app-shadow-1);}
 html[data-theme='dark'] body:is(.logout-page,.language-page,.appearance-page) .sidebar-home-text{color:var(--app-text);}
 html[data-theme='dark'] body:is(.logout-page,.language-page,.appearance-page) .menu-item{color:var(--app-text);}
@@ -657,7 +651,7 @@ html[data-theme='dark'] body.appearance-page .bold-btn--active{background:#f39a1
   body.appearance-page .appearance-actions{padding-right:0;}
 }
 
-/* ===== Connections Page ===== */
+/* Connections Page */
 .connection-card {
   border: 1px solid #ffe0b2;
   border-radius: 14px;
@@ -838,7 +832,7 @@ html[data-theme='dark'] body.editprofile-page .badge-elderly {
   color: var(--app-global-fg) !important;
 }
 
-/* ===== Auto Surface Tone Rules (Dark Mode) ===== */
+/* Manual dark mode patches */
 html[data-theme='dark'] [data-surface-tone='light'] {
   color: #212529 !important;
 }
@@ -902,7 +896,7 @@ html[data-theme='dark'] :is(.form-control,.form-select,input,textarea,select,but
 html[data-theme='dark'] [data-surface-tone='dark'] :is(input,textarea,.form-control,.form-select)::placeholder {
   color: rgba(248,251,255,.74) !important;
 }
-/* ================= Featured section ================= */
+
 .featured-wrap{
   border-radius: 1.25rem;
   transition: transform .25s ease, box-shadow .25s ease;
@@ -939,7 +933,7 @@ html[data-theme='dark'] [data-surface-tone='dark'] :is(input,textarea,.form-cont
   text-shadow: 0 2px 10px rgba(0,0,0,0.35);
 }
 
-/* ===== Storyboard Controls (Dark Mode, Bootstrap-Aligned) ===== */
+/*Manual dark mode patches in storyboard page*/
 html[data-theme='dark'] .transition-search.form-control,
 html[data-theme='dark'] .transition-search.form-control:focus {
   background:#ffffff !important;
@@ -989,7 +983,6 @@ html[data-theme='dark'] :is(input.form-control[name='title'],textarea.form-contr
   opacity: 1;
 }
 
-/* ================= All topics grid ================= */
 .topic-img-modern{
   height: 160px;
   object-fit: cover;
@@ -1015,12 +1008,10 @@ html[data-theme='dark'] :is(input.form-control[name='title'],textarea.form-contr
   transform: scale(1.05);
 }
 
-/* Optional: title turns warm orange */
 .topic-hover:hover h6{
   color: #ff8c00;
 }
 
-/* Search width */
 .topic-search{
   width: 260px;
 }.transition-search {
@@ -1031,8 +1022,6 @@ html[data-theme='dark'] :is(input.form-control[name='title'],textarea.form-contr
   width: 320px !important;
 }
 
-
-/* Modern nav links */
 .nav-modern {
     position: relative;
     padding: 0.6rem 0.9rem;
@@ -1047,8 +1036,6 @@ html[data-theme='dark'] :is(input.form-control[name='title'],textarea.form-contr
     color: #ff8400;
 }
 
-
-/* Right icon buttons */
 .btn-icon {
     width: 40px;
     height: 40px;
@@ -1103,16 +1090,12 @@ html[data-theme='dark'] .navbar .btn-icon:focus-visible i {
   color: #333 !important;
 }
 
-/* Subtle navbar shadow polish */
 .navbar {
     box-shadow: 0 3px 15px rgba(0,0,0,0.05);
 }
 
-
-/* Logo size */
 .navbar-logo { height: 60px; width: auto; }
 
-/* Right icon buttons */
 .btn-icon{
   width:40px;height:40px;border-radius:50%;
   padding:0 !important;
@@ -1120,9 +1103,7 @@ html[data-theme='dark'] .navbar .btn-icon:focus-visible i {
   display:flex;align-items:center;justify-content:center;
 }
 
-/* TRUE centered nav */
-/* Perfect center positioning */
-/* override old big navbar styles */
+
 .navbar-nav .nav-link {
   font-size: inherit !important;
   padding: inherit !important;
@@ -1133,20 +1114,17 @@ html[data-theme='dark'] .navbar .btn-icon:focus-visible i {
   padding: 0.5rem 0.6rem !important;
 }
 
-/* true center + shift right */
 .nav-center {
   position: absolute;
-  left: calc(50% + 30px); /* shift right */
+  left: calc(50% + 30px); 
   transform: translateX(-50%);
   display: flex;
   gap: 32px;
 }
 
-/* logo size */
 .navbar-logo { height: 80px !important; width: auto;  ;}
 
 
-/* Tab typography */
 .nav-tab{
   position:relative;
   font-size:0.55rem;
@@ -1155,7 +1133,6 @@ html[data-theme='dark'] .navbar .btn-icon:focus-visible i {
   color:#222;
 }
 
-/* Orange underline only for active tab */
 .nav-tab.active{
   color:#ff8400;
   font-weight:600;

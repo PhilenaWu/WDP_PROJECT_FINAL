@@ -11,12 +11,13 @@ auth_bp = Blueprint('auth', __name__)
 
 GMAIL_EMAIL_PATTERN = r'^[a-zA-Z0-9._%+-]+@gmail\.com$'
 
-
+# Gmail's SMTP server with TLS encryption on port 587.
 def is_valid_gmail(email):
     normalized = (email or '').strip().lower()
     return bool(re.match(GMAIL_EMAIL_PATTERN, normalized))
 
-
+#system generates a unique, time-sensitive token and 
+#sends a secure reset link to their registered email 
 def generate_reset_token(email):
     serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
     return serializer.dumps(email, salt='password-reset-salt')
@@ -347,7 +348,7 @@ def signup():
     if request.method == 'POST':
         from database import get_db
 
-        # get birthday + calculate age
+
         birthday_str = request.form.get('birthday', '').strip()
         username = request.form.get('username', '').strip()
         email = request.form.get('email', '').strip().lower()
@@ -368,7 +369,6 @@ def signup():
             'birthday': birthday_str
         }
 
-        # Validate required fields
         if not all([first_name, last_name, username, email, password, phone, birthday_str]):
             return render_template('auth/signup.html',
                 user=user_data,
@@ -376,7 +376,6 @@ def signup():
                 location_enabled=location_enabled
             )
 
-        # Validate email format
         if not is_valid_gmail(email):
             return render_template('auth/signup.html',
                 user=user_data,
@@ -384,7 +383,6 @@ def signup():
                 location_enabled=location_enabled
             )
 
-        # Calculate age from birthday
         age_category = None
         age = None
         if birthday_str:
@@ -411,9 +409,7 @@ def signup():
                     location_enabled=location_enabled
                 )
 
-        # Try to check existing users and insert into database
         try:
-            # Check if email already exists
             if User.get_by_email(email):
                 return render_template('auth/signup.html',
                     user=user_data,
@@ -421,7 +417,6 @@ def signup():
                     location_enabled=location_enabled
                 )
 
-            # Check if username already exists
             if User.get_by_username(username):
                 return render_template('auth/signup.html',
                     user=user_data,
@@ -429,7 +424,6 @@ def signup():
                     location_enabled=location_enabled
                 )
 
-            # Insert into database
             conn = get_db()
             cur = conn.cursor(dictionary=True)
 
@@ -456,7 +450,6 @@ def signup():
             cur.close()
             conn.close()
 
-            # Store user ID in session and log the user in
             session['user_id'] = user_id
             session['signup_email'] = email
 
@@ -467,13 +460,11 @@ def signup():
             except Exception:
                 pass
 
-            # Redirect to homepage after completing About You
             return redirect(url_for('main.home'))
 
         except Exception as e:
             error_msg = str(e)
             print(f"Signup error: {error_msg}")
-            # If host resolution fails, provide clearer guidance
             if 'Unknown MySQL server host' in error_msg or 'getaddrinfo failed' in error_msg:
                 guidance = (
                     "Could not reach MySQL host.\n"
@@ -488,7 +479,6 @@ def signup():
                 location_enabled=location_enabled
             )
 
-    # GET: render the About You / signup form
     return render_template('auth/signup.html', user={})
 
 @auth_bp.route('/signup2', methods=['GET', 'POST'])
@@ -497,7 +487,6 @@ def signup_step2():
     if 'user_id' not in session:
         return redirect(url_for('auth.signup'))
     
-    # Placeholder for step 2 - redirect to home
     return redirect(url_for('main.home'))
 
 
@@ -510,7 +499,6 @@ def login():
         if not username or not password:
             return render_template('auth/login.html', error="Username and password required.")
 
-        # Session recording the number of failed attempts
         failed_attempts = session.get('failed_attempts', 0)
         lockout_time = session.get('lockout_time')
 
@@ -526,28 +514,25 @@ def login():
                 session.pop('lockout_time', None)
                 failed_attempts = 0
 
-        # Check credentials
         user = User.get_by_username(username)
 
         if user and user.check_password(password):
-            # Successful login - clear attempts
             session.pop('failed_attempts', None)
             session.pop('lockout_time', None)
             login_user(user)
             
             return redirect(url_for('main.home'))
         else:
-            # Failed login - increment counter
             failed_attempts += 1
             session['failed_attempts'] = failed_attempts
             
             if failed_attempts >= 3:
-                # Lock out for 10 seconds
-                lockout_time = datetime.now() + timedelta(seconds=10)
+                # Lock out for 5 minutes after 3 failed attempts
+                lockout_time = datetime.now() + timedelta(minutes=5)
                 session['lockout_time'] = lockout_time.isoformat()  # datetime to string
                 return render_template('auth/login.html', 
                     error="Too many failed attempts.", 
-                    lockout_seconds=10)
+                    lockout_seconds=300)
             else:
                 remaining_attempts = 3 - failed_attempts
                 return render_template('auth/login.html', 
