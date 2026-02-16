@@ -185,7 +185,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.min.js"></script>
 <script>
 (function() {
-    // ==================== SETUP ====================
+    // setup
     var container = document.getElementById('chatContainer');
     var currentUserId = parseInt(container.dataset.currentUserId);
     var contactId = parseInt(container.dataset.contactId);
@@ -209,7 +209,7 @@
     var isRecording = false;
     var typingTimeout = null;
 
-    // ==================== SOCKET.IO CONNECTION ====================
+    // socket.io connection
     var socket = io();
 
     socket.on('connect', function() {
@@ -221,7 +221,7 @@
         console.error('Socket.IO connection error:', err);
     });
 
-    // ==================== SEND TEXT MESSAGE ====================
+    // send text
     function sendTextMessage() {
         var content = messageInput.value.trim();
         if (!content) return;
@@ -258,7 +258,7 @@
         }
     });
 
-    // ==================== RECEIVE MESSAGE ====================
+    // receive message
     socket.on('new_message', function(data) {
         if ((data.sender_id == contactId && data.receiver_id == currentUserId) ||
             (data.sender_id == currentUserId && data.receiver_id == contactId)) {
@@ -336,7 +336,7 @@
         return d.innerHTML;
     }
 
-    // ==================== TYPING INDICATOR ====================
+    // typing indicator
     messageInput.addEventListener('input', function() {
         socket.emit('typing', { receiver_id: contactId });
         if (typingTimeout) clearTimeout(typingTimeout);
@@ -357,7 +357,7 @@
         }
     });
 
-    // ==================== ONLINE STATUS ====================
+    // online status
     socket.on('user_status', function(data) {
         if (data.user_id == contactId) {
             if (data.status === 'online') {
@@ -370,7 +370,7 @@
         }
     });
 
-    // ==================== READ RECEIPTS ====================
+    // read receipts (user can check if other user has read the message)
     socket.on('message_read', function(data) {
         var el = document.getElementById('message-' + data.message_id);
         if (el) {
@@ -379,7 +379,7 @@
         }
     });
 
-    // ==================== VIDEO RECORDING ====================
+    // video bubble record
     var videoBtn = document.getElementById('videoBtn');
     var videoPreviewWrapper = document.getElementById('videoPreviewWrapper');
     var videoPreview = document.getElementById('videoPreview');
@@ -452,7 +452,7 @@
         v.onended = function() { o.style.display = "block"; };
     });
 
-    // ==================== FILE UPLOAD MODAL ====================
+    // file upload
     window.showFileUpload = function() {
         document.getElementById('modalOverlay').style.display = 'block';
         document.getElementById('fileUploadModal').style.display = 'block';
@@ -462,13 +462,13 @@
         document.getElementById('fileUploadModal').style.display = 'none';
     };
 
-    // ==================== SCROLL TO BOTTOM ====================
+    // make the chat load from bottom
     chatMessages.scrollTop = chatMessages.scrollHeight;
     window.addEventListener('load', function() {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     });
 
-    // ==================== FLASH AUTO-DISMISS ====================
+    // auto hide pop message
     var flashContainer = document.getElementById('flashContainer');
     if (flashContainer) {
         setTimeout(function() {
@@ -477,7 +477,7 @@
         }, 3000);
     }
 
-    // ==================== VOICE RECORDING ====================
+    // record voice
     voiceBtn.addEventListener('click', function() {
         if (isRecording) stopVoiceRecording();
         else startVoiceRecording();
@@ -539,7 +539,7 @@
         audioChunks = [];
     }
 
-    // ==================== AUDIO PLAYBACK ====================
+    // audio playback
     window.toggleAudio = function(btn) {
         var audio = btn.parentElement.querySelector('audio');
         var dur = btn.parentElement.querySelector('.voice-duration');

@@ -3,7 +3,6 @@
 
 {% block extra_css %}
 <style>
-    /* Alert Styles for Flash Messages */
     .alert { padding: 1rem; border-radius: 8px; margin-bottom: 1rem; font-weight: 500; animation: slideDown 0.3s ease-out; }
     .alert-error { background: #ffebee; color: #c62828; border: 2px solid #ef5350; }
     .alert-success { background: #178220; color: white; border: 2px solid #cbffcd; }
@@ -27,7 +26,6 @@
     .message-media img, .message-media video { width: 100%; border-radius: 12px; }
     .message-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
     .btn-message-action { font-size: 0.75rem; padding: 0.3rem 0.6rem; background: rgba(255,255,255,0.3); border: none; border-radius: 4px; cursor: pointer; color: inherit; }
-    /* Typing Indicator */
     .typing-indicator { padding: 0.5rem 2rem; color: #888; font-style: italic; font-size: 0.85rem; background: linear-gradient(135deg, #fff5f0 0%, #ffe8d8 100%); display: none; }
     .typing-indicator.active { display: block; }
     .chat-input-area { padding: 1.5rem; background: white; border-top: 1px solid #e0e0e0; }
@@ -56,7 +54,6 @@
     .play-button { width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.3); border: none; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; }
     .file-upload-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 1000; min-width: 400px; }
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; }
-    /* Video bubble styles */
     .video-preview-wrapper { display: none; position: fixed; bottom: 120px; right: 30px; width: 160px; height: 160px; border-radius: 50%; overflow: hidden; background: black; box-shadow: 0 8px 25px rgba(0,0,0,0.3); z-index: 2000; }
     .video-preview-wrapper.active { display: block; }
     .video-preview-wrapper video { width: 100%; height: 100%; object-fit: cover; }
@@ -132,7 +129,6 @@
         {% endif %}
     </div>
 
-    <!-- Typing Indicator -->
     <div class="typing-indicator" id="typingIndicator"></div>
 
     <div class="chat-input-area">
@@ -179,7 +175,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.min.js"></script>
 <script>
 (function() {
-    // ==================== SETUP ====================
+    // setup
     var container = document.getElementById('chatContainer');
     var currentUserId = parseInt(container.dataset.currentUserId);
     var groupId = parseInt(container.dataset.groupId);
@@ -204,7 +200,7 @@
     // Track who is typing in the group
     var typingUsers = {};
 
-    // ==================== SOCKET.IO CONNECTION ====================
+    // socket.io connection
     var socket = io();
 
     socket.on('connect', function() {
@@ -215,7 +211,7 @@
         console.error('Socket.IO connection error:', err);
     });
 
-    // ==================== SEND TEXT MESSAGE ====================
+    // send text
     function sendTextMessage() {
         var content = messageInput.value.trim();
         if (!content) return;
@@ -252,7 +248,7 @@
         }
     });
 
-    // ==================== RECEIVE MESSAGE ====================
+    // receive messages
     socket.on('new_message', function(data) {
         if (data.group_id == groupId) {
             if (noMessages) { noMessages.remove(); noMessages = null; }
@@ -327,7 +323,7 @@
         return d.innerHTML;
     }
 
-    // ==================== TYPING INDICATOR (GROUP) ====================
+    // typing indicator group ver
     messageInput.addEventListener('input', function() {
         socket.emit('typing', { group_id: groupId });
         if (typingTimeout) clearTimeout(typingTimeout);
@@ -367,7 +363,7 @@
         }
     }
 
-    // ==================== VIDEO RECORDING ====================
+    // record video bubble
     var videoBtn = document.getElementById('videoBtn');
     var videoPreviewWrapper = document.getElementById('videoPreviewWrapper');
     var videoPreview = document.getElementById('videoPreview');
@@ -440,7 +436,7 @@
         v.onended = function() { o.style.display = "block"; };
     });
 
-    // ==================== FILE UPLOAD MODAL ====================
+    // file upload
     window.showFileUpload = function() {
         document.getElementById('modalOverlay').style.display = 'block';
         document.getElementById('fileUploadModal').style.display = 'block';
@@ -450,13 +446,13 @@
         document.getElementById('fileUploadModal').style.display = 'none';
     };
 
-    // ==================== SCROLL TO BOTTOM ====================
+    // loads the chat from the bottom
     chatMessages.scrollTop = chatMessages.scrollHeight;
     window.addEventListener('load', function() {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     });
 
-    // ==================== FLASH AUTO-DISMISS ====================
+    // auto hide pop message
     var flashContainer = document.getElementById('flashContainer');
     if (flashContainer) {
         setTimeout(function() {
@@ -465,7 +461,7 @@
         }, 3000);
     }
 
-    // ==================== VOICE RECORDING ====================
+    // record voice
     voiceBtn.addEventListener('click', function() {
         if (isRecording) stopVoiceRecording();
         else startVoiceRecording();
@@ -527,7 +523,7 @@
         audioChunks = [];
     }
 
-    // ==================== AUDIO PLAYBACK ====================
+    // audio playback
     window.toggleAudio = function(btn) {
         var audio = btn.parentElement.querySelector('audio');
         var dur = btn.parentElement.querySelector('.voice-duration');
