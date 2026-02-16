@@ -13,7 +13,7 @@ class Config:
     MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD', '')
     MYSQL_DATABASE = os.environ.get('MYSQL_DATABASE', 'railway') 
 
-    MYSQL_PORT = int(os.environ.get('MYSQL_PORT', 3306))
+    MYSQL_PORT = int(os.environ.get('MYSQL_PORT', 27748))
     
     # Session
     SESSION_TYPE = 'filesystem'
