@@ -8,6 +8,19 @@ import os
 
 messaging_bp = Blueprint('messaging', __name__)
 
+# helper filter used in chat templates for displaying message timestamps
+@messaging_bp.app_template_filter('format_time')
+def format_time(value, offset_hours=8):
+    from datetime import datetime, timedelta
+    if value is None:
+        return ''
+    if isinstance(value, str):
+        try:
+            value = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+        except ValueError:
+            return value
+    return (value + timedelta(hours=offset_hours)).strftime('%I:%M %p')
+
 UPLOAD_FOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'mp3', 'wav', 'mp4', 'mov', 'webm'}
 
