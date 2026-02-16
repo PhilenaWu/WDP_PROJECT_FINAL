@@ -1,5 +1,9 @@
 from eventlet import monkey_patch
-monkey_patch()  # Patch standard library for compatibility with eventlet
+import sys
+
+# Only apply monkey_patch on non-Windows systems (Windows doesn't support non-blocking pipes)
+if sys.platform != 'win32':
+    monkey_patch()
 
 from dotenv import load_dotenv
 load_dotenv()  # Load environment variables from .env file
