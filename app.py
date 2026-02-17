@@ -1,8 +1,8 @@
-from eventlet import monkey_patch
 import sys
 
-# Only apply monkey_patch on non-Windows systems (Windows doesn't support non-blocking pipes)
+# Only apply eventlet monkey_patch on non-Windows systems.
 if sys.platform != 'win32':
+    from eventlet import monkey_patch
     monkey_patch()
 
 import os
@@ -18,7 +18,10 @@ from config import Config
 from database import execute_query, init_db
 from models import User
 
-socketio = SocketIO()  # init later with app
+if sys.platform == 'win32':
+    socketio = SocketIO(async_mode="threading")  # Windows-safe backend
+else:
+    socketio = SocketIO(async_mode="eventlet")
 
 
 def create_app():

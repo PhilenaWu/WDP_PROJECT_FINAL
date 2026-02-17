@@ -64,8 +64,22 @@ If you did not request this, you can ignore this email.
         if use_tls:
             server.starttls()
             server.ehlo()
-        server.login(mail_username, mail_password)
-        server.send_message(msg)
+
+        try:
+            server.login(mail_username, mail_password)
+            server.send_message(msg)
+            return
+        except smtplib.SMTPNotSupportedError:
+            pass
+
+    if str(mail_server).strip().lower() == 'smtp.gmail.com':
+        with smtplib.SMTP_SSL(mail_server, 465, timeout=30) as ssl_server:
+            ssl_server.ehlo()
+            ssl_server.login(mail_username, mail_password)
+            ssl_server.send_message(msg)
+        return
+
+    raise ValueError('SMTP server does not advertise AUTH. Check MAIL_SERVER/MAIL_PORT or enable SMTP AUTH on the provider.')
 
 
 @auth_bp.route('/feedback', methods=['GET', 'POST'])
