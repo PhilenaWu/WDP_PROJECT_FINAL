@@ -66,6 +66,19 @@ def create_app():
     def index():
         return redirect(url_for("main.home"))
 
+    # Template filters
+    @app.template_filter('format_time')
+    def format_time(value, offset_hours=8):
+        from datetime import datetime, timedelta
+        if value is None:
+            return ''
+        if isinstance(value, str):
+            try:
+                value = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+            except ValueError:
+                return value
+        return (value + timedelta(hours=offset_hours)).strftime('%I:%M %p')
+
     @app.context_processor
     def inject_appearance_pref():
         default_pref = {
