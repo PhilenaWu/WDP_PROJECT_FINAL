@@ -267,10 +267,10 @@
                             Full Name<span class="text-danger">*</span>
                         </label>
                         <div class="speech-controls">
-                            <button type="button" class="speech-btn speak-btn" data-text="Full Name" title="Read question aloud">
+                            <button type="button" class="speech-btn speak-btn" data-text="Full Name" title="Click to hear question read aloud">
                                 <i class="bi bi-volume-up-fill"></i>
                             </button>
-                            <button type="button" class="speech-btn listen-btn" data-target="organizer_name" title="Speak your answer">
+                            <button type="button" class="speech-btn listen-btn" data-target="organizer_name" title="Click to speak your answer (auto-stops when done)">
                                 <i class="bi bi-mic-fill"></i>
                             </button>
                         </div>
@@ -550,6 +550,18 @@
 
 {% block extra_js %}
 <script>
+    // ===== SYNC LANGUAGE FROM BACKEND TO LOCALSTORAGE =====
+    (function() {
+        const userLanguage = "{{ user_language or 'en' }}";
+        if (userLanguage && userLanguage !== 'en') {
+            localStorage.setItem('siteLanguage', userLanguage);
+            // Trigger the translation function from base.html if it exists
+            if (typeof setSiteLanguage === 'function') {
+                setSiteLanguage(userLanguage);
+            }
+        }
+    })();
+
     // List of known email domains
     const knownEmailDomains = [
         'gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'aol.com',
@@ -773,13 +785,88 @@
         
         const speechLang = languageMap[userLanguage] || 'en-US';
         
+        // Translation dictionary for form labels
+        const translations = {
+            'Full Name': {
+                'en': 'Full Name',
+                'zh-CN': '全名',
+                'ta': 'முழு பெயர்',
+                'ms': 'Nama Penuh'
+            },
+            'Date of Birth': {
+                'en': 'Date of Birth',
+                'zh-CN': '出生日期',
+                'ta': 'பிறந்த தேதி',
+                'ms': 'Tarikh Lahir'
+            },
+            'Email': {
+                'en': 'Email',
+                'zh-CN': '电子邮件',
+                'ta': 'மின்னஞ்சல்',
+                'ms': 'Emel'
+            },
+            'Phone Number': {
+                'en': 'Phone Number',
+                'zh-CN': '电话号码',
+                'ta': 'தொலைபேசி எண்',
+                'ms': 'Nombor Telefon'
+            },
+            'Location': {
+                'en': 'Location',
+                'zh-CN': '地点',
+                'ta': 'இடம்',
+                'ms': 'Lokasi'
+            },
+            'Event Title': {
+                'en': 'Event Title',
+                'zh-CN': '活动标题',
+                'ta': 'நிகழ்வு தலைப்பு',
+                'ms': 'Tajuk Acara'
+            },
+            'Event Summary': {
+                'en': 'Event Summary',
+                'zh-CN': '活动摘要',
+                'ta': 'நிகழ்வு சுருக்கம்',
+                'ms': 'Ringkasan Acara'
+            },
+            'Why is this event meaningful to you?': {
+                'en': 'Why is this event meaningful to you?',
+                'zh-CN': '为什么这个活动对你有意义？',
+                'ta': 'இந்த நிகழ்வு உங்களுக்கு ஏன் அர்த்தமுள்ளதாக இருக்கிறது?',
+                'ms': 'Mengapa acara ini bermakna kepada anda?'
+            },
+            'Previous Experience': {
+                'en': 'Previous Experience',
+                'zh-CN': '以往经验',
+                'ta': 'முந்தைய அனுபவம்',
+                'ms': 'Pengalaman Terdahulu'
+            },
+            'Accessibility Considerations': {
+                'en': 'Accessibility Considerations',
+                'zh-CN': '无障碍考虑',
+                'ta': 'அணுகல் கருத்தில் கொள்ளல்கள்',
+                'ms': 'Pertimbangan Kebolehcapaian'
+            }
+        };
+        
+        // Function to translate text
+        function translateText(text) {
+            if (translations[text] && translations[text][userLanguage]) {
+                return translations[text][userLanguage];
+            }
+            return text; // Return original if no translation found
+        }
+        
         // Text-to-Speech function
         function speakText(text, button) {
             if ('speechSynthesis' in window) {
                 // Cancel any ongoing speech
                 window.speechSynthesis.cancel();
                 
-                const utterance = new SpeechSynthesisUtterance(text);
+                // Translate the text to user's language
+                const translatedText = translateText(text);
+                
+                const utterance = new SpeechSynthesisUtterance(translatedText);
                 utterance.lang = speechLang;
                 utterance.rate = 0.9;
                 utterance.pitch = 1;
@@ -816,16 +903,19 @@
             recognition.interimResults = false;
             
             button.classList.add('listening');
+            button.title = 'Listening... (will stop automatically when you finish speaking)';
             
             recognition.onresult = function(event) {
                 const transcript = event.results[0][0].transcript;
                 inputElement.value = transcript;
                 inputElement.dispatchEvent(new Event('input', { bubbles: true }));
                 button.classList.remove('listening');
+                button.title = 'Click to speak your answer (auto-stops when done)';
             };
             
             recognition.onerror = function(event) {
                 button.classList.remove('listening');
+                button.title = 'Click to speak your answer (auto-stops when done)';
                 if (event.error !== 'no-speech' && event.error !== 'aborted') {
                     console.error('Speech recognition error:', event.error);
                     alert('Speech recognition error: ' + event.error);
@@ -834,6 +924,7 @@
             
             recognition.onend = function() {
                 button.classList.remove('listening');
+                button.title = 'Click to speak your answer (auto-stops when done)';
             };
             
             recognition.start();
@@ -843,6 +934,7 @@
         function initSpeechButtons() {
             // Get all speak buttons
             document.querySelectorAll('.speak-btn').forEach(button => {
+                button.title = 'Click to hear question read aloud';
                 button.addEventListener('click', function(e) {
                     e.preventDefault();
                     const labelText = this.getAttribute('data-text');
@@ -852,6 +944,7 @@
             
             // Get all listen buttons
             document.querySelectorAll('.listen-btn').forEach(button => {
+                button.title = 'Click to speak your answer (auto-stops when done)';
                 button.addEventListener('click', function(e) {
                     e.preventDefault();
                     const targetId = this.getAttribute('data-target');

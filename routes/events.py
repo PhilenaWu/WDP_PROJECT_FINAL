@@ -542,6 +542,11 @@ def admin_review_submission(submission_id):
             EventSubmission.update_status(submission_id, 'rejected', current_user.id, admin_notes)
             flash('Submission rejected', 'success')
         
+        elif action == 'revoke':
+            # Revoke the approval, changing status back to pending
+            EventSubmission.update_status(submission_id, 'pending', current_user.id, 'Approval revoked by admin')
+            flash('Submission approval revoked and returned to pending', 'info')
+        
         return redirect(url_for('events.admin_submissions'))
     
     return render_template('events/admin_review.html', submission=submission)
@@ -558,15 +563,38 @@ def generate_ai_image():
         data = request.get_json()
         title = data.get('title', '').strip()
         event_type = data.get('event_type', '').strip()
+        event_date = data.get('event_date', '').strip()
+        start_time = data.get('start_time', '').strip()
+        end_time = data.get('end_time', '').strip()
+        location = data.get('location', '').strip()
         
         if not title:
             return jsonify({'success': False, 'error': 'Event title is required'}), 400
         
-        # Build structured prompt: "A [EVENT_TYPE] event for [TITLE]"
+        # Build detailed prompt with event information
+        prompt_parts = []
+        
+        # Main event description
         if event_type:
-            prompt = f"A {event_type} event for {title}, professional event poster style, vibrant colors, inviting atmosphere"
+            prompt_parts.append(f"A {event_type} event for {title}")
         else:
-            prompt = f"An event for {title}, professional event poster style, vibrant colors, inviting atmosphere"
+            prompt_parts.append(f"An event for {title}")
+        
+        # Add timing details if provided
+        if event_date:
+            prompt_parts.append(f"scheduled for {event_date}")
+        
+        if start_time and end_time:
+            prompt_parts.append(f"from {start_time} to {end_time}")
+        elif start_time:
+            prompt_parts.append(f"starting at {start_time}")
+        
+        # Add location if provided
+        if location:
+            prompt_parts.append(f"taking place in {location}")
+        
+        # Combine all parts and add styling
+        prompt = ", ".join(prompt_parts) + ", professional event poster style, vibrant colors, inviting atmosphere"
         
         # Initialize Google Genai client
         client = genai.Client(api_key=Config.GOOGLE_GENAI_API_KEY)
@@ -764,3 +792,6 @@ def admin_create_event():
             return render_template('events/admin_create_event.html', submission=submission, form_data=request.form)
     
     return render_template('events/admin_create_event.html', submission=submission, form_data={})
+
+
+

@@ -319,6 +319,10 @@
         document.getElementById('generateAiImage').addEventListener('click', async function() {
             const title = document.getElementById('title').value;
             const eventType = document.getElementById('event_type').value;
+            const eventDate = document.getElementById('event_date').value;
+            const startTime = document.getElementById('start_time').value;
+            const endTime = document.getElementById('end_time').value;
+            const location = document.getElementById('location').value;
             
             if (!title) {
                 alert('Please enter an event title first');
@@ -338,7 +342,11 @@
                     },
                     body: JSON.stringify({
                         title: title,
-                        event_type: eventType
+                        event_type: eventType,
+                        event_date: eventDate,
+                        start_time: startTime,
+                        end_time: endTime,
+                        location: location
                     })
                 });
                 

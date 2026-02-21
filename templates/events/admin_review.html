@@ -195,6 +195,25 @@
         box-shadow: 0 5px 20px rgba(220, 53, 69, 0.3);
     }
     
+    .btn-revoke {
+        background: #fd7e14;
+        color: white;
+        padding: 15px 40px;
+        border-radius: 30px;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s;
+        flex: 1;
+    }
+    
+    .btn-revoke:hover {
+        background: #e56e08;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(253, 126, 20, 0.3);
+    }
+    
     .status-indicator {
         display: inline-block;
         padding: 8px 20px;
@@ -230,12 +249,14 @@
         <a href="{{ url_for('events.admin_submissions') }}" class="back-btn">
             <i class="bi bi-arrow-left"></i> Back to All Submissions
         </a>
-        <h2>Review Event Submission</h2>
-        <p>Carefully review the submission details before making a decision</p>
+        <div>
+            <h2>Review Event Submission</h2>
+            <p>Carefully review the submission details before making a decision</p>
+        </div>
     </div>
     
     <!-- Submission Details -->
-    <div class="submission-details">
+    <div class="submission-details" id="submissionContent">
         <!-- Event Info -->
         <div class="detail-section">
             <div class="section-title">
@@ -374,9 +395,30 @@
             </div>
         </form>
     </div>
+    {% elif submission.status == 'approved' %}
+    <div class="review-actions">
+        <h3 class="action-title">Submission Approved</h3>
+        <p class="text-muted mb-4">This submission has been approved and the event has been created in the system.</p>
+        
+        {% if submission.admin_notes %}
+        <div class="mb-4">
+            <div class="detail-label mb-2">Admin Notes</div>
+            <div class="text-content">{{ submission.admin_notes }}</div>
+        </div>
+        {% endif %}
+        
+        <form method="POST" action="{{ url_for('events.admin_review_submission', submission_id=submission.id) }}" style="margin-top: 20px;">
+            <div class="action-buttons">
+                <button type="submit" name="action" value="revoke" class="btn-revoke"
+                        onclick="return confirm('Are you sure you want to revoke this approval? The submission will return to pending status.')">
+                    <i class="bi bi-arrow-counterclockwise"></i> Revoke Approval
+                </button>
+            </div>
+        </form>
+    </div>
     {% else %}
     <div class="review-actions text-center">
-        <h4 class="text-muted">This submission has already been {{ submission.status }}</h4>
+        <h4 class="text-muted">This submission has been {{ submission.status }}</h4>
         {% if submission.admin_notes %}
         <div class="mt-4">
             <div class="detail-label mb-2">Admin Notes</div>
