@@ -19,6 +19,9 @@
 
     <div class="col-md-8 d-flex align-items-center justify-content-center">
       <div class="w-100 auth-form-container-large">
+        <div class="mb-3">
+          <a href="{{ url_for('index') }}" class="btn btn-light border border-secondary">← Back</a>
+        </div>
         <div class="text-center mb-4">
           <h2>Sign Up</h2>
           <p class="text-muted">Create your account</p>
@@ -145,7 +148,7 @@
           </div>
 
           <div class="signup-actions">
-          <a class="btn btn-light" href="{{ url_for('auth.login') }}">Back to Sign In</a>
+          <a class="btn btn-light" href="{{ url_for('auth.login') }}">Sign In</a>
           <button type="submit" class="btn btn-primary">Create Account</button>
           </div>
         </form>

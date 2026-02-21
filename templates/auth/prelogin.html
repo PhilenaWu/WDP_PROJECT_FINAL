@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Genlink – Bridging Generations</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #f39a1f;
+    --orange-deep: #d97f06;
+    --coral: #ff8c61;
+    --cream: #fbf8f5;
+    --text: #1c1209;
+    --muted: #8a7260;
+    --glow: rgba(243,154,31,0.3);
+    --glow-strong: rgba(243,154,31,0.5);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 9999;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 56px;
+    background: rgba(251,248,245,0.82);
+    backdrop-filter: blur(22px);
+    border-bottom: 1px solid rgba(243,154,31,0.12);
+    animation: slideDown 0.7s cubic-bezier(.16,1,.3,1) both;
+  }
+  @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  .brand { display: flex; align-items: center; gap: 11px; text-decoration: none; }
+  .brand-icon {
+    width: 42px; height: 42px; border-radius: 13px;
+    background: linear-gradient(135deg, var(--orange) 0%, var(--coral) 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; font-weight: 900; color: #fff;
+    box-shadow: 0 4px 18px var(--glow);
+    transition: transform 0.35s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s;
+    letter-spacing: -1px;
+  }
+  .brand:hover .brand-icon { transform: rotate(-10deg) scale(1.1); box-shadow: 0 8px 28px var(--glow-strong); }
+  .brand-name {
+    font-size: 1.35rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--orange), var(--coral));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .brand-logo {
+    width: 84px;
+    height: 84px;
+    object-fit: contain;
+    border-radius: 10px;
+  }
+
+  .nav-right { display: flex; align-items: center; gap: 10px; }
+  .nav-btn {
+    padding: 9px 24px; border-radius: 999px; font-size: 0.85rem; font-weight: 600;
+    text-decoration: none; transition: all 0.25s; cursor: pointer; border: none;
+    font-family: 'Poppins', sans-serif;
+  }
+  .nav-btn-ghost { color: var(--muted); background: transparent; border: 1.5px solid rgba(139,114,96,0.25); }
+  .nav-btn-ghost:hover { color: var(--orange); border-color: var(--orange); background: rgba(243,154,31,0.06); }
+  .nav-btn-fill { color: #fff; background: linear-gradient(135deg, var(--orange), var(--coral)); box-shadow: 0 4px 16px var(--glow); }
+  .nav-btn-fill:hover { transform: translateY(-2px); box-shadow: 0 8px 28px var(--glow-strong); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 130px 56px 80px; position: relative; overflow: hidden;
+  }
+
+  /* Background blobs */
+  .blob { position: absolute; border-radius: 50%; filter: blur(90px); pointer-events: none; }
+  .blob-a { width: 650px; height: 650px; background: radial-gradient(circle, rgba(243,154,31,0.22), transparent 70%); top: -120px; right: -160px; animation: drift 9s ease-in-out infinite alternate; }
+  .blob-b { width: 450px; height: 450px; background: radial-gradient(circle, rgba(255,140,97,0.18), transparent 70%); bottom: -80px; left: -100px; animation: drift 11s ease-in-out infinite alternate-reverse; }
+  .blob-c { width: 300px; height: 300px; background: radial-gradient(circle, rgba(255,213,100,0.2), transparent 70%); top: 45%; left: 45%; animation: drift 7s ease-in-out infinite alternate; }
+  @keyframes drift { from { transform: translate(0,0) scale(1); } to { transform: translate(25px,-20px) scale(1.08); } }
+
+  /* Dot grid */
+  .dotgrid {
+    position: absolute; inset: 0; pointer-events: none;
+    background-image: radial-gradient(circle, rgba(243,154,31,0.1) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(ellipse 75% 75% at 50% 50%, black 30%, transparent 100%);
+  }
+
+  /* Spinning ring */
+  .spin-ring {
+    position: absolute; border-radius: 50%; border: 1px solid rgba(243,154,31,0.2); pointer-events: none;
+    top: 50%; left: 50%; transform: translate(-50%,-50%);
+    animation: spin linear infinite;
+  }
+  .ring-1 { width: 520px; height: 520px; animation-duration: 22s; }
+  .ring-2 { width: 760px; height: 760px; border-color: rgba(255,140,97,0.12); animation-duration: 35s; animation-direction: reverse; }
+  @keyframes spin { from { transform: translate(-50%,-50%) rotate(0deg); } to { transform: translate(-50%,-50%) rotate(360deg); } }
+
+  .hero-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 80px;
+    align-items: center; max-width: 1180px; width: 100%; position: relative; z-index: 2;
+  }
+
+  /* ── HERO LEFT ── */
+  .hero-left { animation: fadeLeft 0.9s cubic-bezier(.16,1,.3,1) 0.15s both; }
+  @keyframes fadeLeft { from { opacity: 0; transform: translateX(-32px); } to { opacity: 1; transform: translateX(0); } }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(243,154,31,0.1); border: 1px solid rgba(243,154,31,0.28);
+    border-radius: 999px; padding: 6px 16px 6px 10px;
+    font-size: 0.72rem; font-weight: 700; color: var(--orange-deep);
+    letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 28px;
+  }
+  .pill-dot { width: 8px; height: 8px; background: var(--orange); border-radius: 50%; animation: blink 2s ease-in-out infinite; }
+  @keyframes blink { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(1.4); } }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.6rem, 4.5vw, 4rem);
+    font-weight: 900; line-height: 1.08; margin-bottom: 22px;
+  }
+  h1 em {
+    font-style: italic;
+    background: linear-gradient(135deg, var(--orange) 0%, var(--coral) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+
+  .hero-sub {
+    font-size: 1rem; line-height: 1.8; color: var(--muted);
+    max-width: 440px; margin-bottom: 40px; font-weight: 400;
+  }
+
+  .cta-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 48px; }
+
+  .btn-primary-cta {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 15px 34px;
+    background: linear-gradient(135deg, var(--orange) 0%, var(--coral) 100%);
+    color: #fff; text-decoration: none; border-radius: 999px;
+    font-weight: 700; font-size: 0.95rem;
+    box-shadow: 0 6px 28px var(--glow);
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s;
+    position: relative; overflow: hidden;
+  }
+  .btn-primary-cta::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, var(--coral), var(--orange));
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .btn-primary-cta:hover { transform: translateY(-3px) scale(1.04); box-shadow: 0 14px 36px var(--glow-strong); }
+  .btn-primary-cta:hover::before { opacity: 1; }
+  .btn-primary-cta span, .btn-primary-cta svg { position: relative; z-index: 1; }
+  .btn-primary-cta:hover .arrow { transform: translateX(4px); }
+  .arrow { transition: transform 0.3s; }
+
+  .btn-secondary-cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 30px; background: transparent;
+    color: var(--text); text-decoration: none; border-radius: 999px;
+    border: 2px solid rgba(28,18,9,0.14);
+    font-weight: 600; font-size: 0.95rem; transition: all 0.25s;
+  }
+  .btn-secondary-cta:hover { border-color: var(--orange); color: var(--orange); background: rgba(243,154,31,0.05); transform: translateY(-2px); }
+
+  .stats { display: flex; gap: 36px; padding-top: 36px; border-top: 1px solid rgba(28,18,9,0.08); }
+  .stat-num {
+    font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 900; line-height: 1;
+    background: linear-gradient(135deg, var(--orange), var(--coral));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    display: block; margin-bottom: 3px;
+  }
+  .stat-lbl { font-size: 0.7rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+  /* ── HERO RIGHT: Floating cards ── */
+  .hero-right {
+    position: relative; height: 520px;
+    animation: fadeRight 0.9s cubic-bezier(.16,1,.3,1) 0.3s both;
+  }
+  @keyframes fadeRight { from { opacity: 0; transform: translateX(32px); } to { opacity: 1; transform: translateX(0); } }
+
+  .fcard {
+    position: absolute; background: #fff; border-radius: 22px;
+    box-shadow: 0 16px 50px rgba(0,0,0,0.09); padding: 20px 22px;
+    animation: float ease-in-out infinite alternate;
+  }
+  @keyframes float { from { transform: translateY(0) rotate(var(--r)); } to { transform: translateY(-14px) rotate(var(--r)); } }
+
+  .fcard-main { width: 270px; left: 50%; top: 50%; transform: translate(-50%,-50%) rotate(-2deg); --r:-2deg; animation-duration: 5s; z-index: 3; }
+  .fcard-top  { width: 205px; left: -10px; top: 20px; --r: 3deg; animation-duration: 6.5s; animation-delay: 0.8s; z-index: 2; }
+  .fcard-bot  { width: 200px; right: -10px; bottom: 30px; --r:-3.5deg; animation-duration: 7.5s; animation-delay: 1.6s; z-index: 2; }
+
+  .av {
+    width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;
+  }
+  .av-a { background: linear-gradient(135deg,#fde68a,#f59e0b); }
+  .av-b { background: linear-gradient(135deg,#fdba74,#ef4444); }
+  .av-c { background: linear-gradient(135deg,#86efac,#16a34a); }
+  .av-d { background: linear-gradient(135deg,#c4b5fd,#7c3aed); }
+
+  .av-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .av-name { font-weight: 700; font-size: 0.88rem; line-height: 1.2; }
+  .av-role { font-size: 0.7rem; color: var(--muted); font-weight: 500; }
+  .card-bubble {
+    background: var(--cream); border-radius: 11px;
+    padding: 10px 13px; font-size: 0.78rem; line-height: 1.55; color: #333;
+    border-left: 3px solid var(--orange); margin-bottom: 12px;
+  }
+  .tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 12px; border-radius: 999px; font-size: 0.68rem; font-weight: 700;
+  }
+  .tag-orange { background: rgba(243,154,31,0.12); color: var(--orange-deep); }
+  .tag-green { background: rgba(22,163,74,0.1); color: #15803d; }
+  .tag-coral { background: rgba(239,68,68,0.1); color: #b91c1c; }
+
+  .mini-title { font-size: 0.8rem; font-weight: 700; margin-bottom: 10px; }
+  .av-stack { display: flex; }
+  .av-stack .av { width: 34px; height: 34px; font-size: 1rem; border: 2px solid #fff; margin-left: -8px; }
+  .av-stack .av:first-child { margin-left: 0; }
+  .mini-sub { font-size: 0.68rem; color: var(--muted); margin-top: 8px; }
+
+  .float-em { position: absolute; font-size: 1.8rem; pointer-events: none; animation: float ease-in-out infinite alternate; }
+  .fe1 { top: 0; right: 30px; animation-duration: 4s; --r:5deg; }
+  .fe2 { bottom: 60px; left: 0; animation-duration: 5.5s; animation-delay: 1s; --r:-4deg; }
+  .fe3 { top: 42%; right: -14px; animation-duration: 6s; animation-delay: 2s; --r:2deg; }
+
+  /* ── FEATURES BAND ── */
+  .features-band {
+    background: linear-gradient(135deg, var(--orange) 0%, var(--coral) 100%);
+    padding: 64px 56px; position: relative; overflow: hidden;
+  }
+  .features-band::before {
+    content: ''; position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");
+  }
+  .features-inner { display: grid; grid-template-columns: repeat(4,1fr); gap: 40px; max-width: 1080px; margin: 0 auto; position: relative; z-index: 1; }
+  .feat { text-align: center; }
+  .feat-icon { font-size: 2.4rem; display: block; margin-bottom: 12px; transition: transform 0.35s cubic-bezier(.34,1.56,.64,1); filter: drop-shadow(0 3px 10px rgba(0,0,0,0.18)); }
+  .feat:hover .feat-icon { transform: scale(1.25) rotate(6deg); }
+  .feat-title { font-weight: 700; font-size: 0.93rem; color: #fff; margin-bottom: 6px; }
+  .feat-desc { font-size: 0.76rem; color: rgba(255,255,255,0.82); line-height: 1.55; }
+
+  /* ── TESTIMONIALS ── */
+  .testimonials-section { padding: 100px 56px; max-width: 1180px; margin: 0 auto; }
+  .section-eyebrow { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--orange); margin-bottom: 14px; }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.9rem, 3.5vw, 2.8rem); font-weight: 900; line-height: 1.15; margin-bottom: 56px;
+  }
+  .section-title em { font-style: italic; background: linear-gradient(135deg,var(--orange),var(--coral)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+  .tgrid { display: grid; grid-template-columns: repeat(3,1fr); gap: 22px; }
+  .tcard {
+    background: #fff; border-radius: 20px; padding: 30px;
+    border: 1px solid rgba(243,154,31,0.13);
+    position: relative; transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .tcard:hover { transform: translateY(-6px); box-shadow: 0 18px 44px rgba(243,154,31,0.11); }
+  .tcard::before {
+    content: '\201C'; position: absolute; top: 18px; right: 24px;
+    font-family: 'Playfair Display', serif; font-size: 4.5rem; line-height: 1;
+    color: rgba(243,154,31,0.1); font-style: italic;
+  }
+  .stars { color: var(--orange); font-size: 0.85rem; margin-bottom: 14px; letter-spacing: 2px; }
+  .tcard p { font-size: 0.85rem; line-height: 1.7; color: #555; margin-bottom: 22px; font-style: italic; }
+  .t-author { display: flex; align-items: center; gap: 11px; }
+  .t-av { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+  .t-name { font-weight: 700; font-size: 0.84rem; }
+  .t-age { font-size: 0.7rem; color: var(--muted); }
+
+  /* ── CTA SECTION ── */
+  .cta-section {
+    margin: 0 56px 100px; border-radius: 28px; padding: 80px 60px;
+    background: linear-gradient(135deg, var(--text) 0%, #3d2408 100%);
+    text-align: center; position: relative; overflow: hidden;
+  }
+  .cta-section::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 80% at 50% 0%, rgba(243,154,31,0.2), transparent 70%);
+  }
+  .cta-section h2 {
+    font-family: 'Playfair Display', serif; font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 900; color: #fff; margin-bottom: 16px; position: relative; z-index: 1;
+  }
+  .cta-section h2 em { font-style: italic; color: var(--orange); }
+  .cta-section p { font-size: 1rem; color: rgba(255,255,255,0.7); margin-bottom: 40px; position: relative; z-index: 1; }
+  .cta-btns { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; position: relative; z-index: 1; }
+  .cta-primary {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 16px 40px; background: linear-gradient(135deg, var(--orange), var(--coral));
+    color: #fff; text-decoration: none; border-radius: 999px;
+    font-weight: 700; font-size: 1rem; box-shadow: 0 8px 32px rgba(243,154,31,0.5);
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s;
+  }
+  .cta-primary:hover { transform: translateY(-3px) scale(1.04); box-shadow: 0 14px 44px rgba(243,154,31,0.65); }
+  .cta-secondary {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 15px 36px; background: transparent;
+    color: #fff; text-decoration: none; border-radius: 999px;
+    border: 2px solid rgba(255,255,255,0.3); font-weight: 600; font-size: 1rem;
+    transition: all 0.25s;
+  }
+  .cta-secondary:hover { border-color: var(--orange); color: var(--orange); background: rgba(243,154,31,0.08); transform: translateY(-2px); }
+
+  /* ── FOOTER ── */
+  footer {
+    background: #fff; border-top: 1px solid rgba(243,154,31,0.12);
+    padding: 48px 56px 32px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;
+  }
+  .footer-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .footer-tagline { font-size: 0.78rem; color: var(--muted); margin-top: 6px; }
+  .footer-links { display: flex; gap: 28px; }
+  .footer-links a { font-size: 0.82rem; color: var(--muted); text-decoration: none; font-weight: 500; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--orange); }
+  .footer-copy { font-size: 0.76rem; color: var(--muted); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    nav { padding: 16px 24px; }
+    .hero { padding: 110px 24px 60px; }
+    .hero-grid { grid-template-columns: 1fr; gap: 50px; }
+    .hero-right { height: 340px; }
+    .fcard-main { width: 230px; }
+    .fcard-top { width: 175px; left: 0; }
+    .fcard-bot { width: 175px; right: 0; }
+    .features-band { padding: 48px 24px; }
+    .features-inner { grid-template-columns: repeat(2,1fr); gap: 32px; }
+    .testimonials-section { padding: 60px 24px; }
+    .tgrid { grid-template-columns: 1fr; }
+    .cta-section { margin: 0 24px 60px; padding: 56px 28px; }
+    footer { padding: 36px 24px 24px; flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="{{ url_for('auth.login') }}" class="brand">
+    <img src="{{ url_for('static', filename='uploads/profile_pics/logo.png') }}" alt="Genlink Logo" class="brand-logo">
+  </a>
+  <div class="nav-right">
+    <a href="{{ url_for('auth.login') }}" class="nav-btn nav-btn-ghost">Sign In</a>
+    <a href="{{ url_for('auth.signup') }}" class="nav-btn nav-btn-fill">Sign Up</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="blob blob-a"></div>
+  <div class="blob blob-b"></div>
+  <div class="blob blob-c"></div>
+  <div class="dotgrid"></div>
+  <div class="spin-ring ring-1"></div>
+  <div class="spin-ring ring-2"></div>
+
+  <div class="hero-grid">
+    <!-- LEFT -->
+    <div class="hero-left">
+      <div class="pill"><span class="pill-dot"></span> Built for Singapore communities</div>
+      <h1>Where <em>every</em> generation belongs together</h1>
+      <p class="hero-sub">Genlink is the platform that bridges the gap between young and old — sharing stories, building friendships, and creating moments that matter across generations.</p>
+      <div class="cta-row">
+        <a href="{{ url_for('auth.signup') }}" class="btn-primary-cta">
+          <span>Sign Up</span>
+          <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="{{ url_for('auth.login') }}" class="btn-secondary-cta">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16" fill="currentColor" stroke="none"/></svg>
+          Sign In
+        </a>
+      </div>
+      <div class="stats">
+        <div class="stat"><span class="stat-num">2,400+</span><span class="stat-lbl">Members</span></div>
+        <div class="stat"><span class="stat-num">98%</span><span class="stat-lbl">Satisfaction</span></div>
+        <div class="stat"><span class="stat-num">50+</span><span class="stat-lbl">Events Monthly</span></div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="hero-right">
+      <!-- Main card -->
+      <div class="fcard fcard-main">
+        <div class="av-row">
+          <div class="av av-a">👴</div>
+          <div>
+            <div class="av-name">Uncle Robert</div>
+            <div class="av-role">Senior Member · 72 yrs</div>
+          </div>
+        </div>
+        <div class="card-bubble">"Sharing my stories with the younger ones gives me purpose. Genlink made that possible!" 💛</div>
+        <span class="tag tag-orange">✦ Just Connected</span>
+      </div>
+
+      <!-- Top-left card -->
+      <div class="fcard fcard-top">
+        <div class="mini-title">Active Now 🟢</div>
+        <div class="av-stack">
+          <div class="av av-b">👩</div>
+          <div class="av av-c">👦</div>
+          <div class="av av-d">👵</div>
+          <div class="av av-a">🧑</div>
+        </div>
+        <div class="mini-sub">+148 members online</div>
+      </div>
+
+      <!-- Bottom-right card -->
+      <div class="fcard fcard-bot">
+        <div class="av-row">
+          <div class="av av-c">👧</div>
+          <div>
+            <div class="av-name">Priya, 22</div>
+            <div class="av-role">Youth Member</div>
+          </div>
+        </div>
+        <span class="tag tag-green">🎉 Event RSVP'd</span>
+        <div class="mini-sub" style="margin-top:10px;">Kopi & Conversations – Sat 10am</div>
+      </div>
+
+      <!-- Floating emojis -->
+      <span class="float-em fe1">🌟</span>
+      <span class="float-em fe2">🤝</span>
+      <span class="float-em fe3">💬</span>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES BAND -->
+<section class="features-band">
+  <div class="features-inner">
+    <div class="feat">
+      <span class="feat-icon">🤝</span>
+      <div class="feat-title">Smart Connections</div>
+      <div class="feat-desc">Get matched with members across generations based on shared interests and hobbies.</div>
+    </div>
+    <div class="feat">
+      <span class="feat-icon">📖</span>
+      <div class="feat-title">Storyboard</div>
+      <div class="feat-desc">Share life experiences, recipes, wisdom and memories in a vibrant community feed.</div>
+    </div>
+    <div class="feat">
+      <span class="feat-icon">🗓️</span>
+      <div class="feat-title">Local Events</div>
+      <div class="feat-desc">Discover and join community events — workshops, tours, and bonding sessions.</div>
+    </div>
+    <div class="feat">
+      <span class="feat-icon">💬</span>
+      <div class="feat-title">Messaging</div>
+      <div class="feat-desc">Real-time, private chat with your connections in a safe, moderated space.</div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials-section">
+  <div class="section-eyebrow">Real Stories</div>
+  <h2 class="section-title">Connections that <em>changed lives</em></h2>
+  <div class="tgrid">
+    <div class="tcard">
+      <div class="stars">★★★★★</div>
+      <p>"I was lonely after retirement, but Genlink introduced me to a group of young volunteers who taught me photography. I never felt so alive!"</p>
+      <div class="t-author">
+        <div class="t-av av-a">👨‍🦳</div>
+        <div><div class="t-name">Mr. Tan Ah Kow</div><div class="t-age">Elderly Member · 68 years old</div></div>
+      </div>
+    </div>
+    <div class="tcard">
+      <div class="stars">★★★★★</div>
+      <p>"As a student, I wanted to give back to the community. Through Genlink I found a grandmother figure who taught me how to make kueh. Priceless."</p>
+      <div class="t-author">
+        <div class="t-av av-c">👩‍🎓</div>
+        <div><div class="t-name">Aisha Rahman</div><div class="t-age">Youth Member · 21 years old</div></div>
+      </div>
+    </div>
+    <div class="tcard">
+      <div class="stars">★★★★★</div>
+      <p>"The events are wonderful. I attended a storytelling session and ended up sharing my kampung memories. The young people were genuinely moved."</p>
+      <div class="t-author">
+        <div class="t-av av-d">👩‍🦱</div>
+        <div><div class="t-name">Madam Lim Siew Eng</div><div class="t-age">Senior Member · 74 years old</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BIG CTA -->
+<section class="cta-section">
+  <h2>Ready to <em>bridge</em> the gap?</h2>
+  <p>Join thousands of Singaporeans building meaningful connections across generations — it's free, forever.</p>
+  <div class="cta-btns">
+    <a href="{{ url_for('auth.signup') }}" class="cta-primary">
+      Create Your Account
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+    <a href="{{ url_for('auth.login') }}" class="cta-secondary">Sign In Instead</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <a href="{{ url_for('auth.login') }}" class="footer-brand">
+      <img src="{{ url_for('static', filename='uploads/profile_pics/logo.png') }}" alt="Genlink Logo" class="brand-logo">
+    </a>
+    <div class="footer-tagline">Bridging generations, one story at a time.</div>
+  </div>
+  <div class="footer-links">
+    <a href="{{ url_for('auth.login') }}">About</a>
+    <a href="{{ url_for('auth.login') }}">Features</a>
+    <a href="{{ url_for('auth.login') }}">Events</a>
+    <a href="{{ url_for('auth.login') }}">Contact</a>
+    <a href="{{ url_for('auth.login') }}">Privacy</a>
+  </div>
+  <div class="footer-copy">© 2025 Genlink. Made with 🧡 in Singapore.</div>
+</footer>
+
+<script>
+  // Parallax blobs on mouse move
+  document.addEventListener('mousemove', (e) => {
+    const x = (e.clientX / window.innerWidth - 0.5) * 2;
+    const y = (e.clientY / window.innerHeight - 0.5) * 2;
+    document.querySelector('.blob-a').style.transform = `translate(${x * 18}px, ${y * 14}px)`;
+    document.querySelector('.blob-b').style.transform = `translate(${x * -12}px, ${y * -10}px)`;
+    document.querySelector('.blob-c').style.transform = `translate(${x * 8}px, ${y * 8}px)`;
+  });
+
+  // Intersection observer for fade-in sections
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.style.opacity = '1'; e.target.style.transform = 'translateY(0)'; } });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.tcard, .feat').forEach(el => {
+    el.style.opacity = '0'; el.style.transform = 'translateY(24px)';
+    el.style.transition = 'opacity 0.6s ease, transform 0.6s cubic-bezier(.16,1,.3,1)';
+    observer.observe(el);
+  });
+</script>
+</body>
+</html>

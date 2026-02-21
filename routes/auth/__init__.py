@@ -11,6 +11,154 @@ auth_bp = Blueprint('auth', __name__)
 
 GMAIL_EMAIL_PATTERN = r'^[a-zA-Z0-9._%+-]+@gmail\.com$'
 
+GOOGLE_TRANSLATE_LANGUAGES = [
+    ('af', 'Afrikaans'),
+    ('sq', 'Albanian'),
+    ('am', 'Amharic'),
+    ('ar', 'Arabic'),
+    ('hy', 'Armenian'),
+    ('as', 'Assamese'),
+    ('ay', 'Aymara'),
+    ('az', 'Azerbaijani'),
+    ('bm', 'Bambara'),
+    ('eu', 'Basque'),
+    ('be', 'Belarusian'),
+    ('bn', 'Bengali'),
+    ('bho', 'Bhojpuri'),
+    ('bs', 'Bosnian'),
+    ('bg', 'Bulgarian'),
+    ('ca', 'Catalan'),
+    ('ceb', 'Cebuano'),
+    ('zh-CN', 'Chinese (Simplified)'),
+    ('zh-TW', 'Chinese (Traditional)'),
+    ('co', 'Corsican'),
+    ('hr', 'Croatian'),
+    ('cs', 'Czech'),
+    ('da', 'Danish'),
+    ('dv', 'Dhivehi'),
+    ('doi', 'Dogri'),
+    ('nl', 'Dutch'),
+    ('en', 'English'),
+    ('eo', 'Esperanto'),
+    ('et', 'Estonian'),
+    ('ee', 'Ewe'),
+    ('fil', 'Filipino'),
+    ('fi', 'Finnish'),
+    ('fr', 'French'),
+    ('fy', 'Frisian'),
+    ('gl', 'Galician'),
+    ('ka', 'Georgian'),
+    ('de', 'German'),
+    ('el', 'Greek'),
+    ('gn', 'Guarani'),
+    ('gu', 'Gujarati'),
+    ('ht', 'Haitian Creole'),
+    ('ha', 'Hausa'),
+    ('haw', 'Hawaiian'),
+    ('he', 'Hebrew'),
+    ('hi', 'Hindi'),
+    ('hmn', 'Hmong'),
+    ('hu', 'Hungarian'),
+    ('is', 'Icelandic'),
+    ('ig', 'Igbo'),
+    ('ilo', 'Ilocano'),
+    ('id', 'Indonesian'),
+    ('ga', 'Irish'),
+    ('it', 'Italian'),
+    ('ja', 'Japanese'),
+    ('jv', 'Javanese'),
+    ('kn', 'Kannada'),
+    ('kk', 'Kazakh'),
+    ('km', 'Khmer'),
+    ('rw', 'Kinyarwanda'),
+    ('gom', 'Konkani'),
+    ('ko', 'Korean'),
+    ('kri', 'Krio'),
+    ('ku', 'Kurdish (Kurmanji)'),
+    ('ckb', 'Kurdish (Sorani)'),
+    ('ky', 'Kyrgyz'),
+    ('lo', 'Lao'),
+    ('la', 'Latin'),
+    ('lv', 'Latvian'),
+    ('ln', 'Lingala'),
+    ('lt', 'Lithuanian'),
+    ('lg', 'Luganda'),
+    ('lb', 'Luxembourgish'),
+    ('mk', 'Macedonian'),
+    ('mai', 'Maithili'),
+    ('mg', 'Malagasy'),
+    ('ms', 'Malay'),
+    ('ml', 'Malayalam'),
+    ('mt', 'Maltese'),
+    ('mi', 'Maori'),
+    ('mr', 'Marathi'),
+    ('mni-Mtei', 'Meiteilon (Manipuri)'),
+    ('lus', 'Mizo'),
+    ('mn', 'Mongolian'),
+    ('my', 'Myanmar (Burmese)'),
+    ('ne', 'Nepali'),
+    ('no', 'Norwegian'),
+    ('or', 'Odia (Oriya)'),
+    ('om', 'Oromo'),
+    ('ps', 'Pashto'),
+    ('fa', 'Persian'),
+    ('pl', 'Polish'),
+    ('pt', 'Portuguese'),
+    ('pa', 'Punjabi'),
+    ('qu', 'Quechua'),
+    ('ro', 'Romanian'),
+    ('ru', 'Russian'),
+    ('sm', 'Samoan'),
+    ('sa', 'Sanskrit'),
+    ('gd', 'Scots Gaelic'),
+    ('nso', 'Sepedi'),
+    ('sr', 'Serbian'),
+    ('st', 'Sesotho'),
+    ('sn', 'Shona'),
+    ('sd', 'Sindhi'),
+    ('si', 'Sinhala'),
+    ('sk', 'Slovak'),
+    ('sl', 'Slovenian'),
+    ('so', 'Somali'),
+    ('es', 'Spanish'),
+    ('su', 'Sundanese'),
+    ('sw', 'Swahili'),
+    ('sv', 'Swedish'),
+    ('tg', 'Tajik'),
+    ('ta', 'Tamil'),
+    ('tt', 'Tatar'),
+    ('te', 'Telugu'),
+    ('th', 'Thai'),
+    ('ti', 'Tigrinya'),
+    ('ts', 'Tsonga'),
+    ('tr', 'Turkish'),
+    ('tk', 'Turkmen'),
+    ('ak', 'Twi'),
+    ('uk', 'Ukrainian'),
+    ('ur', 'Urdu'),
+    ('ug', 'Uyghur'),
+    ('uz', 'Uzbek'),
+    ('vi', 'Vietnamese'),
+    ('cy', 'Welsh'),
+    ('xh', 'Xhosa'),
+    ('yi', 'Yiddish'),
+    ('yo', 'Yoruba'),
+    ('zu', 'Zulu'),
+]
+
+GOOGLE_TRANSLATE_LANGUAGE_CODES = {
+    code.lower(): code for code, _ in GOOGLE_TRANSLATE_LANGUAGES
+}
+
+GOOGLE_TRANSLATE_LANGUAGE_ALIASES = {
+    'zh': 'zh-CN',
+    'zh-cn': 'zh-CN',
+    'zh-hans': 'zh-CN',
+    'zh-tw': 'zh-TW',
+    'zh-hant': 'zh-TW',
+    'iw': 'he',
+}
+
 # Gmail's SMTP server with TLS encryption on port 587.
 def is_valid_gmail(email):
     normalized = (email or '').strip().lower()
@@ -578,7 +726,16 @@ def settings():
 @auth_bp.route('/language', methods=['GET'])
 @login_required
 def language_settings():
-    return render_template('auth/language.html')
+    raw_language = (getattr(current_user, 'language', None) or 'en').strip()
+    normalized = GOOGLE_TRANSLATE_LANGUAGE_CODES.get(raw_language.lower())
+    if not normalized:
+        normalized = GOOGLE_TRANSLATE_LANGUAGE_ALIASES.get(raw_language.lower(), 'en')
+
+    return render_template(
+        'auth/language.html',
+        language_options=GOOGLE_TRANSLATE_LANGUAGES,
+        current_language=normalized,
+    )
 
 
 @auth_bp.route('/language/update', methods=['POST'])
@@ -588,15 +745,9 @@ def update_language():
 
     data = request.get_json(silent=True) or request.form
     raw_language = (data.get('language') or 'en').strip()
-    language_map = {
-        'en': 'en',
-        'zh': 'zh-CN',
-        'zh-cn': 'zh-CN',
-        'zh-CN': 'zh-CN',
-        'ta': 'ta',
-        'ms': 'ms',
-    }
-    language = language_map.get(raw_language.lower(), 'en')
+    language = GOOGLE_TRANSLATE_LANGUAGE_CODES.get(raw_language.lower())
+    if not language:
+        language = GOOGLE_TRANSLATE_LANGUAGE_ALIASES.get(raw_language.lower(), 'en')
 
     execute_query(
         "UPDATE users SET language = %s WHERE id = %s",

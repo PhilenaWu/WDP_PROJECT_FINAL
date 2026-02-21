@@ -67,7 +67,9 @@ def create_app():
 
     @app.route("/")
     def index():
-        return redirect(url_for("main.home"))
+        if current_user.is_authenticated:
+            return redirect(url_for("main.home"))
+        return render_template("auth/prelogin.html")
 
     # Template filters
     @app.template_filter('format_time')

@@ -387,17 +387,31 @@
     <script>
         const userLang = "{{ current_user.language if current_user.is_authenticated else '' }}";
 
-        const languageMap = {
-            'en': 'en',
+        const languageAliases = {
             'zh': 'zh-CN',
             'zh-cn': 'zh-CN',
-            'ta': 'ta',
-            'ms': 'ms'
+            'zh-hans': 'zh-CN',
+            'zh-tw': 'zh-TW',
+            'zh-hant': 'zh-TW',
+            'iw': 'he'
         };
 
+        function isValidLanguageCode(code) {
+            return /^[a-z]{2,3}(?:-[A-Za-z]{2,8})?$/.test(code);
+        }
+
         function normalizeLanguage(lang) {
-            const normalized = (lang || '').trim().toLowerCase();
-            return languageMap[normalized] || 'en';
+            const raw = (lang || '').trim();
+            if (!raw) {
+                return 'en';
+            }
+
+            const lowered = raw.toLowerCase();
+            if (languageAliases[lowered]) {
+                return languageAliases[lowered];
+            }
+
+            return isValidLanguageCode(raw) ? raw : 'en';
         }
 
         function applyLanguageWhenReady(lang, timeoutMs = 5000) {
@@ -429,7 +443,6 @@
             new google.translate.TranslateElement(
                 {
                     pageLanguage: 'en',
-                    includedLanguages: 'en,zh-CN,ta,ms',
                     autoDisplay: false
                 },
                 'google_translate_element'
