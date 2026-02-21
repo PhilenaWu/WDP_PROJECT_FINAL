@@ -11,18 +11,18 @@
 {% block footer %}{% endblock %}
 
 {% block content %}
-<div class="container-fluid vh-100">
+<div class="container-fluid vh-100 signup-vibe-shell">
     <div class="row h-100">
-        <div class="col-md-4 d-none d-md-flex align-items-center justify-content-center login-banner">
+        <div class="col-md-4 d-none d-md-flex align-items-center justify-content-center login-banner signup-vibe-banner">
             <div class="text-center">
                 <img src="{{ url_for('static', filename='uploads/profile_pics/logo.png') }}" alt="Genlink Logo" class="auth-logo-large">
             </div>
         </div>
 
         <div class="col-md-8 d-flex align-items-center justify-content-center">
-            <div class="w-100 auth-form-container">
-                <div class="mb-3">
-                    <a href="{{ url_for('index') }}" class="btn btn-light border border-secondary">← Back</a>
+            <div class="w-100 auth-form-container-large signup-vibe-card">
+                <div class="signup-topbar">
+                    <a href="{{ url_for('index') }}" class="btn signup-back-btn">← Back</a>
                 </div>
                 <div class="text-center mb-4">
                     <h2>Sign in</h2>
@@ -41,6 +41,13 @@
                 {% endwith %}
 
                 <form method="POST">
+                    <a href="{{ url_for('auth.login_google') }}" class="btn btn-light w-100 border google-signup-btn mb-3">
+                        <img src="{{ url_for('static', filename='images/google-logo.svg') }}" alt="Google" class="google-logo-real">
+                        Continue with Google
+                    </a>
+
+                    <div class="signup-divider mb-3"><span>or sign in with username</span></div>
+
                     <!-- error message with countdown -->
                     {% if error %}
                         <p class="auth-error-message" id="errorMessage">

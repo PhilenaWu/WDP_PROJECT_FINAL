@@ -151,8 +151,10 @@
                         {% if current and current|length > 0 %}
                             {% for u in current %}
                                 <div class="d-flex align-items-center">
-                                    <img
-                                        src="{% if u.profile_picture and u.profile_picture != 'None' and u.profile_picture != '' %}{{ url_for('static', filename=u.profile_picture) }}{% else %}{{ url_for('static', filename='uploads/main_topics_images/default_pfp.png') }}{% endif %}"
+                                        <img 
+                                            src="{{ u.avatar_url }}"
+                                            data-default-avatar="{{ url_for('static', filename='uploads/main_topics_images/default_pfp.png') }}"
+                                            onerror="this.onerror=null;this.src=this.dataset.defaultAvatar;"
                                         alt="User"
                                         class="rounded-circle me-3"
                                         style="width: 50px; height: 50px; object-fit: cover;"
@@ -193,8 +195,10 @@
                     {% if suggestions and suggestions|length > 0 %}
                         {% for u in suggestions %}
                             <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
-                                <img
-                                    src="{% if u.profile_picture and u.profile_picture != 'None' and u.profile_picture != '' %}{{ url_for('static', filename=u.profile_picture) }}{% else %}{{ url_for('static', filename='uploads/main_topics_images/default_pfp.png') }}{% endif %}"
+                                    <img 
+                                        src="{{ u.avatar_url }}"
+                                        data-default-avatar="{{ url_for('static', filename='uploads/main_topics_images/default_pfp.png') }}"
+                                        onerror="this.onerror=null;this.src=this.dataset.defaultAvatar;"
                                     alt="User"
                                     class="rounded-circle me-3"
                                     style="width: 50px; height: 50px; object-fit: cover;"

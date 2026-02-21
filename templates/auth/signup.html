@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}Genlink | Sign up{% endblock %}
+{% block body_class %}class="signup-vibe-page"{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 {% endblock %}
@@ -9,63 +10,48 @@
 {% block footer %}{% endblock %}
 
 {% block content %}
-<div class="container-fluid vh-100">
+<div class="container-fluid vh-100 signup-vibe-shell">
   <div class="row h-100">
-    <div class="col-md-4 d-none d-md-flex align-items-center justify-content-center login-banner">
+    <div class="col-md-4 d-none d-md-flex align-items-center justify-content-center login-banner signup-vibe-banner">
       <div class="text-center">
         <img src="{{ url_for('static', filename='uploads/profile_pics/logo.png') }}" alt="Genlink Logo" class="auth-logo-large">
       </div>
     </div>
 
     <div class="col-md-8 d-flex align-items-center justify-content-center">
-      <div class="w-100 auth-form-container-large">
-        <div class="mb-3">
-          <a href="{{ url_for('index') }}" class="btn btn-light border border-secondary">← Back</a>
+      <div class="w-100 auth-form-container-large signup-vibe-card">
+        <div class="signup-topbar">
+          <a href="{{ url_for('index') }}" class="btn signup-back-btn">← Back</a>
         </div>
+        <!-- ...existing code... -->
+
+        <div class="signup-stepper mb-4">
+          <div class="signup-step active"><span>1</span><small>Account</small></div>
+          <div class="signup-step-line"></div>
+          <div class="signup-step"><span>2</span><small>Profile</small></div>
+          <div class="signup-step-line"></div>
+          <div class="signup-step"><span>3</span><small>Interests</small></div>
+        </div>
+
         <div class="text-center mb-4">
-          <h2>Sign Up</h2>
-          <p class="text-muted">Create your account</p>
+          <h2>Create your account</h2>
+          <p class="text-muted">Step 1 of 3: Authentication only</p>
         </div>
 
         {% if error %}
           <p class="auth-error-message" id="errorMessage">{{ error }}</p>
         {% endif %}
 
-        <form id="aboutYouForm" method="post" action="{{ url_for('auth.signup') }}" novalidate>
+        <a href="{{ url_for('auth.signup_google') }}" class="btn btn-light w-100 border google-signup-btn mb-3">
+          <img src="{{ url_for('static', filename='images/google-logo.svg') }}" alt="Google" class="google-logo-real">
+          Continue with Google
+        </a>
+
+        <div class="signup-divider mb-3"><span>or sign up with email</span></div>
+
+        <form id="signupStep1Form" method="post" action="{{ url_for('auth.signup') }}" novalidate autocomplete="off">
+          <input type="hidden" name="signup_method" value="email">
           <div class="row g-3">
-            <div class="col-md-6">
-              <label for="firstName" class="form-label">First Name <span class="text-danger">*</span></label>
-              <input
-                id="firstName"
-                name="first_name"
-                type="text"
-                class="form-control"
-                required
-                pattern="[A-Za-z\s]+"
-                title="Only letters allowed."
-                value="{{ user.first_name or '' }}">
-            </div>
-            <div class="col-md-6">
-              <label for="lastName" class="form-label">Last Name <span class="text-danger">*</span></label>
-              <input
-                id="lastName"
-                name="last_name"
-                type="text"
-                class="form-control"
-                required
-                pattern="[A-Za-z\s]+"
-                title="Only letters allowed."
-                value="{{ user.last_name or '' }}">
-            </div>
-            <div class="col-12">
-              <label for="displayName" class="form-label">Display Name</label>
-              <input
-                id="displayName"
-                name="display_name"
-                type="text"
-                class="form-control"
-                value="{{ user.display_name or '' }}">
-            </div>
             <div class="col-12">
               <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
               <input
@@ -73,24 +59,11 @@
                 name="email"
                 type="email"
                 class="form-control"
+                autocomplete="off"
                 required
                 pattern="[a-zA-Z0-9._%+-]+@gmail\.com"
                 title="Please enter a valid Gmail address ending with @gmail.com."
                 value="{{ user.email or '' }}">
-            </div>
-            <div class="col-12">
-              <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                class="form-control"
-                required
-                minlength="3"
-                maxlength="20"
-                pattern="[A-Za-z][A-Za-z0-9_]{2,19}"
-                title="3-20 characters. Start with a letter; only letters, numbers, and underscore are allowed."
-                value="{{ user.username or '' }}">
             </div>
             <div class="col-12">
               <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
@@ -100,56 +73,36 @@
                   name="password"
                   type="password"
                   class="form-control"
+                  autocomplete="new-password"
                   required
                   minlength="8"
                   pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}"
-                  title="At least 8 characters with 1 lowercase, 1 uppercase, 1 number, and 1 special character."
-                  value="{{ user.password or '' }}">
+                  title="At least 8 characters with 1 lowercase, 1 uppercase, 1 number, and 1 special character.">
                 <button
                   type="button"
                   class="eye-icon"
-                  id="signup-eye"
+                  id="signupEye"
                   aria-label="Show password"></button>
               </div>
             </div>
             <div class="col-12">
-              <label for="phone" class="form-label">Phone Number <span class="text-danger">*</span></label>
+              <label for="confirmPassword" class="form-label">Confirm Password <span class="text-danger">*</span></label>
               <input
-                id="phone"
-                name="phone"
-                type="tel"
+                id="confirmPassword"
+                name="confirm_password"
+                type="password"
                 class="form-control"
+                autocomplete="new-password"
                 required
-                inputmode="numeric"
                 minlength="8"
-                maxlength="8"
-                pattern="[0-9]{8}"
-                title="Enter an 8-digit number, digits only."
-                value="{{ user.phone or '' }}">
-            </div>
-            <div class="col-12">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="location_enabled" id="locationToggle">
-                <label class="form-check-label" for="locationToggle">Turn on location</label>
-              </div>
-              <div class="form-text">To find activities and people near you</div>
-            </div>
-            <div class="col-12">
-              <label for="birthday" class="form-label">Birthday <span class="text-danger">*</span></label>
-              <input
-                id="birthday"
-                name="birthday"
-                type="date"
-                class="form-control"
-                required
-                value="{{ user.birthday or '' }}">
-              <div class="form-text">Your age category will be determined automatically</div>
+                pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}"
+                title="At least 8 characters with 1 lowercase, 1 uppercase, 1 number, and 1 special character.">
             </div>
           </div>
 
           <div class="signup-actions">
-          <a class="btn btn-light" href="{{ url_for('auth.login') }}">Sign In</a>
-          <button type="submit" class="btn btn-primary">Create Account</button>
+            <a class="btn btn-light" href="{{ url_for('auth.login') }}">Sign In</a>
+            <button type="submit" class="btn btn-primary">Next →</button>
           </div>
         </form>
       </div>
@@ -160,24 +113,18 @@
 
 {% block extra_js %}
   <script>
-    const form = document.getElementById('aboutYouForm');
+    const form = document.getElementById('signupStep1Form');
     const passwordInput = document.getElementById('password');
-    const passwordEye = document.getElementById('signup-eye');
-    const firstNameInput = document.getElementById('firstName');
-    const lastNameInput = document.getElementById('lastName');
+    const passwordEye = document.getElementById('signupEye');
+    const confirmPasswordInput = document.getElementById('confirmPassword');
     const emailInput = document.getElementById('email');
 
-    // validate names on input - use custom validity message (like password)
-    function validateName(input) {
-      const value = input.value;
-      const hasInvalidChars = /[^A-Za-z\s]/.test(value);
-      
-      if (hasInvalidChars) {
-        input.setCustomValidity('Only letters are allowed');
-        input.reportValidity();
-        input.value = value.replace(/[^A-Za-z\s]/g, ''); 
+    function validatePasswordMatch() {
+      if (!passwordInput || !confirmPasswordInput) return;
+      if (confirmPasswordInput.value && passwordInput.value !== confirmPasswordInput.value) {
+        confirmPasswordInput.setCustomValidity('Passwords do not match.');
       } else {
-        input.setCustomValidity(''); 
+        confirmPasswordInput.setCustomValidity('');
       }
     }
 
@@ -193,12 +140,13 @@
       }
     }
 
-    firstNameInput.addEventListener('input', () => validateName(firstNameInput));
-    lastNameInput.addEventListener('input', () => validateName(lastNameInput));
     emailInput.addEventListener('blur', () => validateEmail(emailInput));
     emailInput.addEventListener('input', () => validateEmail(emailInput));
+    passwordInput.addEventListener('input', validatePasswordMatch);
+    confirmPasswordInput.addEventListener('input', validatePasswordMatch);
 
     form.addEventListener('submit', e => {
+      validatePasswordMatch();
       if (!form.checkValidity()) {
         e.preventDefault();
         form.reportValidity();
@@ -214,5 +162,6 @@
         passwordEye.setAttribute('aria-label', hidden ? 'Hide password' : 'Show password');
       });
     }
+
   </script>
 {% endblock %}

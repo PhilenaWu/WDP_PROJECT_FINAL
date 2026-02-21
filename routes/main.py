@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, g, request
+from flask import Blueprint, render_template, g, request, url_for
 from flask_login import login_required, current_user
 import mysql.connector
 from config import Config
@@ -40,11 +40,70 @@ def select_all(query, params=()):
     return rows
 
 
+def get_user_interest_topics(user_id, limit=3):
+    user_rows = select_all(
+        "SELECT interests FROM users WHERE id = %s LIMIT 1",
+        (user_id,),
+    )
+    if not user_rows:
+        return []
+
+    raw_interests = (user_rows[0].get('interests') or '').strip()
+    if not raw_interests:
+        return []
+
+    selected_slugs = [slug.strip() for slug in raw_interests.split(',') if slug.strip()]
+    selected_slugs = list(dict.fromkeys(selected_slugs))[: int(limit)]
+    if not selected_slugs:
+        return []
+
+    placeholders = ','.join(['%s'] * len(selected_slugs))
+    topic_rows = select_all(
+        f"SELECT title, slug, image FROM topics WHERE slug IN ({placeholders})",
+        tuple(selected_slugs),
+    )
+
+    by_slug = {row.get('slug'): row for row in (topic_rows or [])}
+    ordered_topics = [by_slug[slug] for slug in selected_slugs if slug in by_slug]
+    return ordered_topics[: int(limit)]
+
+
 def normalize_users(rows):
     rows = rows or []
+    fallback_avatar = url_for("static", filename="uploads/main_topics_images/default_pfp.png")
+
+    def build_avatar_url(raw_value):
+        profile_picture = str(raw_value or "").strip()
+        if profile_picture.lower() in {"", "none", "null", "nil", "undefined", "nan"}:
+            return "", fallback_avatar
+
+        profile_picture = profile_picture.replace("\\", "/")
+        lower_path = profile_picture.lower()
+
+        if lower_path.startswith(("http://", "https://", "data:image/")):
+            return profile_picture, profile_picture
+
+        if "/static/" in lower_path:
+            idx = lower_path.find("/static/") + len("/static/")
+            profile_picture = profile_picture[idx:]
+        elif lower_path.startswith("static/"):
+            profile_picture = profile_picture[len("static/"):]
+
+        profile_picture = profile_picture.lstrip("/")
+
+        if profile_picture.startswith("profile_pics/"):
+            profile_picture = f"uploads/{profile_picture}"
+        elif profile_picture and "/" not in profile_picture:
+            profile_picture = f"uploads/profile_pics/{profile_picture}"
+
+        avatar_url = url_for("static", filename=profile_picture) if profile_picture else fallback_avatar
+        return profile_picture, avatar_url
+
     for r in rows:
         r["name"] = r.get("display_name") or r.get("username") or "User"
-        r["profile_picture"] = r.get("profile_picture") or r.get("profile_pic") or ""
+        profile_picture, avatar_url = build_avatar_url(r.get("profile_picture") or r.get("profile_pic") or "")
+        r["profile_picture"] = profile_picture
+        r["avatar_url"] = avatar_url
         r["age_group"] = r.get("age_group") or ""
         r["mutual_count"] = r.get("mutual_count", 0)
     return rows
@@ -143,6 +202,7 @@ def storyboard():
 
     featured = get_featured_topics()
     topics = get_all_topics(q=q, sort=sort)
+    selected_interest_topics = get_user_interest_topics(current_user.id, limit=3)
 
     result_count = len(topics)  # ✅ ADD THIS
 
@@ -150,6 +210,7 @@ def storyboard():
         'storyboard/main_topics.html',
         user=current_user,
         featured=featured,
+        selected_interest_topics=selected_interest_topics,
         topics=topics,
         q=q,
         sort=sort,

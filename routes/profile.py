@@ -49,12 +49,19 @@ def profile():
                 flash('Username already taken. Please choose another.', 'error')
                 return render_template('auth/profile.html', user=user, dob_value=_format_dob(user))
 
+        if not display_name:
+            flash('Display name is required.', 'error')
+            return render_template('auth/profile.html', user=user, dob_value=_format_dob(user))
+
         date_of_birth = user.date_of_birth
         age_group = user.age_group
         if date_of_birth_str:
             try:
                 date_of_birth = datetime.strptime(date_of_birth_str, '%Y-%m-%d').date()
                 age = calculate_age(date_of_birth)
+                if age < 13:
+                    flash('You must be at least 13 years old.', 'error')
+                    return render_template('auth/profile.html', user=user, dob_value=_format_dob(user))
                 age_group = get_age_group(age)
             except ValueError:
                 flash('Invalid date format. Please use YYYY-MM-DD.', 'error')

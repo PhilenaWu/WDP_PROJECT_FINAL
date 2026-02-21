@@ -26,13 +26,14 @@
 
 			<form class="profile-form mt-2" id="profileForm" method="post" enctype="multipart/form-data">
 				<div class="row align-items-center profile-row">
-					<label for="displayName" class="col-md-3 col-form-label text-md-end">Display Name:</label>
+					<label for="displayName" class="col-md-3 col-form-label text-md-end">Display Name*:</label>
 					<div class="col-md-9">
 						<input
 							id="displayName"
 							name="display_name"
 							type="text"
 							class="form-control"
+							required
 							value="{{ user.display_name or '' }}">
 					</div>
 				</div>
@@ -181,9 +182,16 @@
 	const lastNameInput = document.getElementById('lastName');
 	const emailInput = document.getElementById('email');
 	const profileForm = document.getElementById('profileForm');
+	const birthdayInput = document.getElementById('birthday');
 	const photoUpload = document.getElementById('photoUpload');
 	const profileImage = document.getElementById('profileImage');
 	const uploadTrigger = document.getElementById('uploadTrigger');
+
+	if (birthdayInput) {
+		const today = new Date();
+		const maxDate = new Date(today.getFullYear() - 13, today.getMonth(), today.getDate());
+		birthdayInput.max = maxDate.toISOString().split('T')[0];
+	}
 
 	function validateName(input) {
 		const value = input.value;
@@ -219,6 +227,17 @@
 
 	if (profileForm) {
 		profileForm.addEventListener('submit', (event) => {
+			if (birthdayInput && birthdayInput.value && birthdayInput.max && birthdayInput.value > birthdayInput.max) {
+				event.preventDefault();
+				birthdayInput.setCustomValidity('You must be at least 13 years old.');
+				birthdayInput.reportValidity();
+				return;
+			}
+
+			if (birthdayInput) {
+				birthdayInput.setCustomValidity('');
+			}
+
 			if (!profileForm.checkValidity()) {
 				event.preventDefault();
 				profileForm.reportValidity();

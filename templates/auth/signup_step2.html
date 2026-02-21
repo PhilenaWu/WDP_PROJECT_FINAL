@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Genlink | Sign up{% endblock %}
+{% block body_class %}class="signup-vibe-page"{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% endblock %}
+
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="container-fluid vh-100 signup-vibe-shell">
+  <div class="row h-100">
+    <div class="col-md-4 d-none d-md-flex align-items-center justify-content-center login-banner signup-vibe-banner">
+      <div class="text-center">
+        <img src="{{ url_for('static', filename='uploads/profile_pics/logo.png') }}" alt="Genlink Logo" class="auth-logo-large">
+      </div>
+    </div>
+
+    <div class="col-md-8 d-flex align-items-center justify-content-center">
+      <div class="w-100 auth-form-container-large signup-vibe-card">
+        <div class="signup-topbar">
+          <a href="{{ url_for('auth.signup', preserve=1) }}" class="btn signup-back-btn">← Back</a>
+        </div>
+        <!-- ...existing code... -->
+
+        <div class="signup-stepper mb-4">
+          <div class="signup-step done"><span>✓</span><small>Account</small></div>
+          <div class="signup-step-line active"></div>
+          <div class="signup-step active"><span>2</span><small>Profile</small></div>
+          <div class="signup-step-line"></div>
+          <div class="signup-step"><span>3</span><small>Interests</small></div>
+        </div>
+
+        <div class="text-center mb-4">
+          <h2>Tell us about you</h2>
+          <p class="text-muted">Step 2 of 3: Profile details</p>
+        </div>
+
+        {% if error %}
+          <p class="auth-error-message" id="errorMessage">{{ error }}</p>
+        {% endif %}
+
+        <form id="signupStep2Form" method="post" action="{{ url_for('auth.signup_step2') }}" novalidate>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="firstName" class="form-label">First Name <span class="text-danger">*</span></label>
+              <input id="firstName" name="first_name" type="text" class="form-control" required pattern="[A-Za-z\s]+" title="Only letters allowed." value="{{ user.first_name or '' }}">
+            </div>
+            <div class="col-md-6">
+              <label for="lastName" class="form-label">Last Name <span class="text-danger">*</span></label>
+              <input id="lastName" name="last_name" type="text" class="form-control" required pattern="[A-Za-z\s]+" title="Only letters allowed." value="{{ user.last_name or '' }}">
+            </div>
+            <div class="col-12">
+              <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+              <input id="username" name="username" type="text" class="form-control" required minlength="3" maxlength="20" pattern="[A-Za-z][A-Za-z0-9_]{2,19}" title="3-20 characters. Start with a letter; only letters, numbers, and underscore are allowed." value="{{ user.username or '' }}">
+            </div>
+            <div class="col-12">
+              <label for="displayName" class="form-label">Display Name <span class="text-danger">*</span></label>
+              <input id="displayName" name="display_name" type="text" class="form-control" required value="{{ user.display_name or '' }}">
+            </div>
+            <div class="col-12">
+              <label for="phone" class="form-label">Phone Number <small class="text-muted">(Optional)</small></label>
+              <input id="phone" name="phone" type="tel" class="form-control" inputmode="numeric" minlength="8" maxlength="8" pattern="[0-9]{8}" title="Enter an 8-digit number, digits only." value="{{ user.phone or '' }}">
+            </div>
+            <div class="col-12">
+              <label for="birthday" class="form-label">Birthday <span class="text-danger">*</span></label>
+              <input id="birthday" name="birthday" type="date" class="form-control" required value="{{ user.birthday or '' }}">
+              <div class="form-text">Your age category will be determined automatically.</div>
+            </div>
+          </div>
+
+          <div class="signup-actions">
+            <a class="btn btn-light" href="{{ url_for('auth.signup', preserve=1) }}">Back</a>
+            <button type="submit" class="btn btn-primary">Next →</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const form = document.getElementById('signupStep2Form');
+  const firstNameInput = document.getElementById('firstName');
+  const lastNameInput = document.getElementById('lastName');
+  const birthdayInput = document.getElementById('birthday');
+
+  if (birthdayInput) {
+    const today = new Date();
+    const maxDate = new Date(today.getFullYear() - 13, today.getMonth(), today.getDate());
+    birthdayInput.max = maxDate.toISOString().split('T')[0];
+  }
+
+  function validateName(input) {
+    const value = input.value;
+    const hasInvalidChars = /[^A-Za-z\s]/.test(value);
+    if (hasInvalidChars) {
+      input.setCustomValidity('Only letters are allowed');
+      input.value = value.replace(/[^A-Za-z\s]/g, '');
+    } else {
+      input.setCustomValidity('');
+    }
+  }
+
+  firstNameInput.addEventListener('input', () => validateName(firstNameInput));
+  lastNameInput.addEventListener('input', () => validateName(lastNameInput));
+
+  form.addEventListener('submit', (e) => {
+    if (birthdayInput && birthdayInput.value && birthdayInput.max && birthdayInput.value > birthdayInput.max) {
+      e.preventDefault();
+      birthdayInput.setCustomValidity('You must be at least 13 years old.');
+      birthdayInput.reportValidity();
+      return;
+    }
+    if (birthdayInput) {
+      birthdayInput.setCustomValidity('');
+    }
+
+    if (!form.checkValidity()) {
+      e.preventDefault();
+      form.reportValidity();
+    }
+  });
+</script>
+{% endblock %}

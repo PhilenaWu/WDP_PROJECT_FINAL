@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Genlink | Sign up{% endblock %}
+{% block body_class %}class="signup-vibe-page"{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% endblock %}
+
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="container-fluid vh-100 signup-vibe-shell">
+  <div class="row h-100">
+    <div class="col-md-4 d-none d-md-flex align-items-center justify-content-center login-banner signup-vibe-banner">
+      <div class="text-center">
+        <img src="{{ url_for('static', filename='uploads/profile_pics/logo.png') }}" alt="Genlink Logo" class="auth-logo-large">
+      </div>
+    </div>
+
+    <div class="col-md-8 d-flex align-items-center justify-content-center">
+      <div class="w-100 auth-form-container-large signup-vibe-card">
+        <div class="signup-topbar">
+          <a href="{{ url_for('auth.signup_step2') }}" class="btn signup-back-btn">← Back</a>
+        </div>
+        <div class="signup-stepper mb-4">
+          <div class="signup-step done"><span>✓</span><small>Account</small></div>
+          <div class="signup-step-line active"></div>
+          <div class="signup-step done"><span>✓</span><small>Profile</small></div>
+          <div class="signup-step-line active"></div>
+          <div class="signup-step active"><span>3</span><small>Interests</small></div>
+        </div>
+        <div class="text-center mb-4">
+          <div style="display:flex;justify-content:center;align-items:center;gap:12px;">
+            <span style="background:linear-gradient(135deg,#f39a1f 60%,#ff8c61 100%);border-radius:50%;padding:12px 14px;box-shadow:0 2px 12px rgba(243,154,31,0.12);">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="16" fill="#fff5ea"/><path d="M16 8v16M8 16h16" stroke="#f39a1f" stroke-width="2" stroke-linecap="round"/></svg>
+            </span>
+            <h2 class="fw-bold mb-0">Pick your interests</h2>
+          </div>
+          <p class="text-muted mt-2">Step 3 of 3: Choose 1 to 3 storyboard categories</p>
+        </div>
+        {% if error %}
+          <p class="auth-error-message" id="errorMessage">{{ error }}</p>
+        {% endif %}
+        <form method="post" action="{{ url_for('auth.signup_step3') }}" id="signupStep3Form">
+          <div class="interest-limit-note">You can select up to 3 interests.</div>
+          <div class="mb-4">
+            <div style="background:linear-gradient(135deg,#fffdfa 60%,#fff5ea 100%);border-radius:18px;box-shadow:0 4px 24px rgba(243,154,31,0.13);padding:18px 16px;">
+              <label for="interestsDropdown" class="form-label fw-semibold mb-2" style="font-size:17px;color:#f39a1f;">Select Interests</label>
+              <select id="interestsDropdown" name="interests" class="form-select" multiple size="6" style="border-radius:12px;min-height:180px;font-size:15px;background:#fffdfa;border:1.5px solid #f39a1f;box-shadow:0 2px 12px rgba(243,154,31,0.08);">
+                {% for topic in topic_options %}
+                  <option value="{{ topic.slug }}" {% if topic.slug in selected_interests %}selected{% endif %}>{{ topic.title }}</option>
+                {% endfor %}
+              </select>
+              <div class="form-text mt-2">Hold Ctrl (Windows) or Command (Mac) to select multiple.</div>
+            </div>
+          </div>
+          <div class="signup-actions mt-4">
+            <a class="btn btn-light" href="{{ url_for('auth.signup_step2') }}">Back</a>
+            <button type="submit" class="btn btn-primary">Create Account</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const form = document.getElementById('signupStep3Form');
+  const dropdown = document.getElementById('interestsDropdown');
+
+  form.addEventListener('submit', function(e) {
+    const selected = Array.from(dropdown.selectedOptions);
+    if (selected.length < 1 || selected.length > 3) {
+      e.preventDefault();
+      alert('Please select between 1 and 3 interests.');
+    }
+  });
+</script>
+{% endblock %}

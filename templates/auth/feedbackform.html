@@ -3,12 +3,11 @@
 {% block title %}Genlink | Feedback{% endblock %}
 {% block body_class %}class="editprofile-page"{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-{% endblock %}
-
 {% block content %}
 <div class="container py-5">
+    <div class="mb-3">
+        <a href="{{ url_for('main.home') }}" class="btn btn-light profile-btn">Back to Home</a>
+    </div>
     <div class="profile-card feedback-card">
         <div class="feedback-header">
             <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
@@ -20,7 +19,7 @@
             </div>
         </div>
 
-        <form id="feedbackForm" method="POST" action="{{ action_url if action_url else url_for('auth.feedback') }}" class="profile-form" style="max-width: 100%;" novalidate>
+        <form id="feedbackForm" method="POST" action="{{ action_url if action_url else url_for('auth.feedback') }}" class="profile-form" novalidate>
             {% if error %}
                 <p class="auth-error-message">{{ error }}</p>
             {% endif %}
@@ -33,13 +32,15 @@
                     id="full_name"
                     name="full_name"
                     value="{{ form_data.get('full_name', '') }}"
+                    pattern="[A-Za-z\s]+"
+                    title="Only letters allowed."
                     required
                 >
             </div>
             <!--email with retrieve button-->
             <div class="feedback-group">
                 <label for="email" class="form-label">Email</label>
-                <div class="d-flex gap-2 flex-wrap">
+                <div class="feedback-email-row">
                     <input
                         type="email"
                         class="form-control"
@@ -50,7 +51,7 @@
                         title="Please enter a valid Gmail address ending with @gmail.com."
                         required
                     >
-                    <button type="button" class="btn btn-primary" id="retrieveEmailBtn">Retrieve Email</button>
+                    <button type="button" class="btn btn-primary retrieve-btn" id="retrieveEmailBtn">Retrieve Email</button>
                 </div>
             </div>
             <!--feedback type-->
@@ -80,7 +81,6 @@
                     <a href="{{ url_for('auth.feedback_history') }}" class="btn btn-light profile-btn">Cancel</a>
                     <button type="submit" class="btn btn-primary profile-btn">Save Changes</button>
                 {% else %}
-                    <a href="{{ url_for('main.home') }}" class="btn btn-light profile-btn">Back to Home</a>
                     <button type="submit" class="btn btn-primary profile-btn">Submit</button>
                 {% endif %}
             </div>
@@ -93,7 +93,25 @@
 <script>
     const retrieveBtn = document.getElementById('retrieveEmailBtn');
     const emailInput = document.getElementById('email');
+    const fullNameInput = document.getElementById('full_name');
     const feedbackForm = document.getElementById('feedbackForm');
+
+    function validateFullName() {
+        if (!fullNameInput) {
+            return;
+        }
+
+        const value = fullNameInput.value;
+        const hasInvalidChars = /[^A-Za-z\s]/.test(value);
+
+        if (hasInvalidChars) {
+            fullNameInput.setCustomValidity('Only letters are allowed');
+            fullNameInput.reportValidity();
+            fullNameInput.value = value.replace(/[^A-Za-z\s]/g, '');
+        } else {
+            fullNameInput.setCustomValidity('');
+        }
+    }
 
     function validateFeedbackEmail() {
         if (!emailInput) {
@@ -128,8 +146,13 @@
         emailInput.addEventListener('blur', validateFeedbackEmail);
     }
 
+    if (fullNameInput) {
+        fullNameInput.addEventListener('input', validateFullName);
+    }
+
     if (feedbackForm) {
         feedbackForm.addEventListener('submit', (event) => {
+            validateFullName();
             validateFeedbackEmail();
             if (!feedbackForm.checkValidity()) {
                 event.preventDefault();
