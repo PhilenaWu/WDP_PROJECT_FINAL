@@ -543,9 +543,19 @@ def admin_review_submission(submission_id):
             flash('Submission rejected', 'success')
         
         elif action == 'revoke':
+            # Delete the event from events table (if it exists)
+            event_deleted = Event.delete_by_title_and_date(
+                submission['event_title'],
+                submission['preferred_date']
+            )
+            
             # Revoke the approval, changing status back to pending
             EventSubmission.update_status(submission_id, 'pending', current_user.id, 'Approval revoked by admin')
-            flash('Submission approval revoked and returned to pending', 'info')
+            
+            if event_deleted:
+                flash('Submission approval revoked, event removed from carousel, and returned to pending', 'info')
+            else:
+                flash('Submission approval revoked and returned to pending (no event found to remove)', 'info')
         
         return redirect(url_for('events.admin_submissions'))
     

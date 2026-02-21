@@ -358,18 +358,8 @@
             
             <div class="mb-3">
                 <div class="form-label-wrapper">
-                    <label for="event_summary" class="form-label">
-                        Event Summary<span class="text-danger">*</span>
-                    </label>
-                    <div class="speech-controls">
-                        <button type="button" class="speech-btn speak-btn" data-text="Event Summary" title="Read question aloud">
-                            <i class="bi bi-volume-up-fill"></i>
-                        </button>
-                        <button type="button" class="speech-btn listen-btn" data-target="event_summary" title="Speak your answer">
-                            <i class="bi bi-mic-fill"></i>
-                        </button>
-                    </div>
-                </div Event Title<span class="text-danger">*</span>
+                    <label for="event_title" class="form-label">
+                        Event Title<span class="text-danger">*</span>
                     </label>
                     <div class="speech-controls">
                         <button type="button" class="speech-btn speak-btn" data-text="Event Title" title="Read question aloud">
@@ -387,9 +377,19 @@
             </div>
             
             <div class="mb-3">
-                <label for="event_summary" class="form-label">
-                    Event Summary<span class="text-danger">*</span>
-                </label>
+                <div class="form-label-wrapper">
+                    <label for="event_summary" class="form-label">
+                        Event Summary<span class="text-danger">*</span>
+                    </label>
+                    <div class="speech-controls">
+                        <button type="button" class="speech-btn speak-btn" data-text="Event Summary" title="Read question aloud">
+                            <i class="bi bi-volume-up-fill"></i>
+                        </button>
+                        <button type="button" class="speech-btn listen-btn" data-target="event_summary" title="Speak your answer">
+                            <i class="bi bi-mic-fill"></i>
+                        </button>
+                    </div>
+                </div>
                 <textarea class="form-control" id="event_summary" name="event_summary" 
                           placeholder="Limit: 150 characters" 
                           maxlength="150" minlength="10" required>{{ submission.event_summary }}</textarea>
@@ -428,7 +428,27 @@
                 </div>
                 
                 <div class="col-md-4 mb-3">
-                 div class="form-label-wrapper">
+                    <label for="expected_participants" class="form-label">
+                        Expected Participants<span class="text-danger">*</span>
+                    </label>
+                    <select class="form-select" id="expected_participants" name="expected_participants" required>
+                        <option value="">Select range</option>
+                        <option value="1-20" {% if submission.expected_participants == '1-20' %}selected{% endif %}>1-20</option>
+                        <option value="21-50" {% if submission.expected_participants == '21-50' %}selected{% endif %}>21-50</option>
+                        <option value="51-100" {% if submission.expected_participants == '51-100' %}selected{% endif %}>51-100</option>
+                        <option value="100+" {% if submission.expected_participants == '100+' %}selected{% endif %}>100+</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section 3: Tell Us More -->
+        <div class="form-section">
+            <div class="section-number">3</div>
+            <h3 class="section-title">Tell Us More</h3>
+            
+            <div class="mb-3">
+                <div class="form-label-wrapper">
                     <label for="why_meaningful" class="form-label">
                         Why is this event meaningful to you?<span class="text-danger">*</span>
                     </label>
@@ -440,14 +460,14 @@
                             <i class="bi bi-mic-fill"></i>
                         </button>
                     </div>
-                </divabel>
-                    <select class="form-select" id="expected_participants" name="expected_participants" required>
-                        <option value="">Select range</option>
-                        <option value="1-20" {% if submission.expected_participants == '1-20' %}selected{% endif %}>1-20</option>
-                        <option value="21-50" {% if submission.expected_participants == '21-50' %}selected{% endif %}>21-50</option>
-                        <option value="51-100" {% if submission.expected_participants == '51-100' %}selected{% endif %}>51-100</option>
-                        <option value="100+" {% if submission.expected_participants == '100+' %}selected{% endif %}>100+</option>
-                    </select>
+                </div>
+                <textarea class="form-control" id="why_meaningful" name="why_meaningful" 
+                          placeholder="Share your story and what inspires you to organize this event..." 
+                          minlength="20" required>{{ submission.why_meaningful }}</textarea>
+                <div class="invalid-feedback">Please explain why this event is meaningful (at least 20 characters).</div>
+            </div>
+            
+            <div class="mb-3">
                 <div class="form-label-wrapper">
                     <label for="previous_experience" class="form-label">
                         Previous Experience (Optional)
@@ -460,13 +480,13 @@
                             <i class="bi bi-mic-fill"></i>
                         </button>
                     </div>
-                </div
-        
-        <!-- Section 3: Tell Us More -->
-        <div class="form-section">
-            <div class="section-number">3</div>
-            <h3 class="section-title">Tell Us More</h3>
-            div class="form-label-wrapper">
+                </div>
+                <textarea class="form-control" id="previous_experience" name="previous_experience" 
+                          placeholder="Have you organized similar events before? Tell us about it...">{{ submission.previous_experience or '' }}</textarea>
+            </div>
+            
+            <div class="mb-3">
+                <div class="form-label-wrapper">
                     <label for="accessibility" class="form-label">
                         Accessibility Considerations<span class="text-danger">*</span>
                     </label>
@@ -478,27 +498,7 @@
                             <i class="bi bi-mic-fill"></i>
                         </button>
                     </div>
-                </divfor="why_meaningful" class="form-label">
-                    Why is this event meaningful to you?<span class="text-danger">*</span>
-                </label>
-                <textarea class="form-control" id="why_meaningful" name="why_meaningful" 
-                          placeholder="Share your story and what inspires you to organize this event..." 
-                          minlength="20" required>{{ submission.why_meaningful }}</textarea>
-                <div class="invalid-feedback">Please explain why this event is meaningful (at least 20 characters).</div>
-            </div>
-            
-            <div class="mb-3">
-                <label for="previous_experience" class="form-label">
-                    Previous Experience (Optional)
-                </label>
-                <textarea class="form-control" id="previous_experience" name="previous_experience" 
-                          placeholder="Have you organized similar events before? Tell us about it...">{{ submission.previous_experience or '' }}</textarea>
-            </div>
-            
-            <div class="mb-3">
-                <label for="accessibility" class="form-label">
-                    Accessibility Considerations<span class="text-danger">*</span>
-                </label>
+                </div>
                 <textarea class="form-control" id="accessibility" name="accessibility" 
                           placeholder="How will you ensure the event is accessible for both youth and elderly?" 
                           minlength="20" required>{{ submission.accessibility_considerations }}</textarea>
@@ -529,6 +529,7 @@
         </div>
 
         <!-- Submit Section -->
+        <div class="submit-section">
             <button type="submit" class="submit-btn">
                 <i class="bi bi-check-circle"></i> Update Submission
             </button>
