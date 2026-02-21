@@ -222,39 +222,39 @@ def submit_event():
             missing_fields = [k for k, v in required_fields.items() if not v]
             if missing_fields:
                 flash('Please fill in all required fields', 'error')
-                return render_template('events/submit_event.html', form_data=request.form)
+                return render_template('events/submit_event.html', form_data=request.form, user_language=current_user.language or 'en')
 
             if not is_valid_email(organizer_email):
                 flash('Please provide a valid email address', 'error')
-                return render_template('events/submit_event.html', form_data=request.form)
+                return render_template('events/submit_event.html', form_data=request.form, user_language=current_user.language or 'en')
 
             if not is_valid_phone(organizer_phone):
                 flash('Phone number must be 8 digits and start with 8 or 9', 'error')
-                return render_template('events/submit_event.html', form_data=request.form)
+                return render_template('events/submit_event.html', form_data=request.form, user_language=current_user.language or 'en')
 
             dob_date = parse_date(organizer_dob)
             if not dob_date:
                 flash('Please provide a valid date of birth', 'error')
-                return render_template('events/submit_event.html', form_data=request.form)
+                return render_template('events/submit_event.html', form_data=request.form, user_language=current_user.language or 'en')
 
             today_date = get_singapore_today()
             if not is_at_least_13(dob_date, today_date):
                 flash('You must be at least 13 years old to create an event', 'error')
-                return render_template('events/submit_event.html', form_data=request.form)
+                return render_template('events/submit_event.html', form_data=request.form, user_language=current_user.language or 'en')
 
             preferred_date_value = parse_date(preferred_date)
             if not preferred_date_value:
                 flash('Please provide a valid preferred date', 'error')
-                return render_template('events/submit_event.html', form_data=request.form)
+                return render_template('events/submit_event.html', form_data=request.form, user_language=current_user.language or 'en')
 
             if not is_valid_preferred_date(preferred_date_value, today_date):
                 flash('Preferred date must be at least 1 week from today', 'error')
-                return render_template('events/submit_event.html', form_data=request.form)
+                return render_template('events/submit_event.html', form_data=request.form, user_language=current_user.language or 'en')
             
             # Validate event summary length (max 150 characters)
             if len(event_summary) > 150:
                 flash('Event summary must be 150 characters or less', 'error')
-                return render_template('events/submit_event.html', form_data=request.form)
+                return render_template('events/submit_event.html', form_data=request.form, user_language=current_user.language or 'en')
             # Handle submission image upload (optional)
             image_url = None
             if 'submission_image' in request.files:
@@ -272,7 +272,7 @@ def submit_event():
                         image_url = f'/static/uploads/events/{unique_filename}'
                     else:
                         flash('Invalid file type. Please upload PNG, JPG, JPEG, or GIF.', 'error')
-                        return render_template('events/submit_event.html', form_data=request.form)
+                        return render_template('events/submit_event.html', form_data=request.form, user_language=current_user.language or 'en')
 
             # Create submission
             EventSubmission.create({
@@ -300,9 +300,9 @@ def submit_event():
         except Exception as e:
             print(f"Submission error: {e}")
             flash(f'Error submitting event: {str(e)}', 'error')
-            return render_template('events/submit_event.html', form_data=request.form)
+            return render_template('events/submit_event.html', form_data=request.form, user_language=current_user.language or 'en')
     
-    return render_template('events/submit_event.html', form_data={})
+    return render_template('events/submit_event.html', form_data={}, user_language=current_user.language or 'en')
 
 
 @events_bp.route('/my-submissions')
@@ -373,39 +373,39 @@ def edit_submission(submission_id):
             missing_fields = [k for k, v in required_fields.items() if not v]
             if missing_fields:
                 flash('Please fill in all required fields', 'error')
-                return render_template('events/edit_submission.html', submission=submission)
+                return render_template('events/edit_submission.html', submission=submission, user_language=current_user.language or 'en')
 
             if not is_valid_email(organizer_email):
                 flash('Please provide a valid email address', 'error')
-                return render_template('events/edit_submission.html', submission=submission)
+                return render_template('events/edit_submission.html', submission=submission, user_language=current_user.language or 'en')
 
             if not is_valid_phone(organizer_phone):
                 flash('Phone number must be 8 digits and start with 8 or 9', 'error')
-                return render_template('events/edit_submission.html', submission=submission)
+                return render_template('events/edit_submission.html', submission=submission, user_language=current_user.language or 'en')
 
             dob_date = parse_date(organizer_dob)
             if not dob_date:
                 flash('Please provide a valid date of birth', 'error')
-                return render_template('events/edit_submission.html', submission=submission)
+                return render_template('events/edit_submission.html', submission=submission, user_language=current_user.language or 'en')
 
             today_date = get_singapore_today()
             if not is_at_least_13(dob_date, today_date):
                 flash('You must be at least 13 years old to create an event', 'error')
-                return render_template('events/edit_submission.html', submission=submission)
+                return render_template('events/edit_submission.html', submission=submission, user_language=current_user.language or 'en')
 
             preferred_date_value = parse_date(preferred_date)
             if not preferred_date_value:
                 flash('Please provide a valid preferred date', 'error')
-                return render_template('events/edit_submission.html', submission=submission)
+                return render_template('events/edit_submission.html', submission=submission, user_language=current_user.language or 'en')
 
             if not is_valid_preferred_date(preferred_date_value, today_date):
                 flash('Preferred date must be at least 1 week from today', 'error')
-                return render_template('events/edit_submission.html', submission=submission)
+                return render_template('events/edit_submission.html', submission=submission, user_language=current_user.language or 'en')
             
             # Validate event summary length (max 150 characters)
             if len(event_summary) > 150:
                 flash('Event summary must be 150 characters or less', 'error')
-                return render_template('events/edit_submission.html', submission=submission)
+                return render_template('events/edit_submission.html', submission=submission, user_language=current_user.language or 'en')
             
             # Handle new/updated submission image
             image_url = submission.get('image_url') if submission else None
@@ -424,7 +424,7 @@ def edit_submission(submission_id):
                         image_url = f'/static/uploads/events/{unique_filename}'
                     else:
                         flash('Invalid file type. Please upload PNG, JPG, JPEG, or GIF.', 'error')
-                        return render_template('events/edit_submission.html', submission=submission)
+                        return render_template('events/edit_submission.html', submission=submission, user_language=current_user.language or 'en')
 
             # Update submission
             EventSubmission.update(submission_id, {
@@ -451,9 +451,9 @@ def edit_submission(submission_id):
         except Exception as e:
             print(f"Update error: {e}")
             flash(f'Error updating submission: {str(e)}', 'error')
-            return render_template('events/edit_submission.html', submission=submission)
+            return render_template('events/edit_submission.html', submission=submission, user_language=current_user.language or 'en')
     
-    return render_template('events/edit_submission.html', submission=submission)
+    return render_template('events/edit_submission.html', submission=submission, user_language=current_user.language or 'en')
 
 
 @events_bp.route('/submissions/<int:submission_id>/delete', methods=['POST'])

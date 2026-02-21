@@ -155,6 +155,74 @@
         background: #17a2b8;
         color: white;
     }
+    
+    /* Speech Button Styles */
+    .speech-controls {
+        display: inline-flex;
+        gap: 5px;
+        margin-left: 8px;
+        vertical-align: middle;
+    }
+    
+    .speech-btn {
+        background: #6c757d;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 0.9rem;
+        padding: 0;
+    }
+    
+    .speech-btn:hover {
+        transform: scale(1.1);
+    }
+    
+    .speech-btn.listen-btn {
+        background: #007bff;
+    }
+    
+    .speech-btn.listen-btn:hover {
+        background: #0056b3;
+    }
+    
+    .speech-btn.listen-btn.listening {
+        background: #dc3545;
+        animation: pulse 1s infinite;
+    }
+    
+    .speech-btn.speak-btn {
+        background: #28a745;
+    }
+    
+    .speech-btn.speak-btn:hover {
+        background: #1e7e34;
+    }
+    
+    .speech-btn.speak-btn.speaking {
+        animation: pulse 1s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    
+    .form-label-wrapper {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+    
+    .form-label-wrapper .form-label {
+        margin-bottom: 0;
+    }
 </style>
 {% endblock %}
 
@@ -185,9 +253,19 @@
             
             <div class="row">
                 <div class="col-md-12 mb-3">
-                    <label for="organizer_name" class="form-label">
-                        Full Name<span class="text-danger">*</span>
-                    </label>
+                    <div class="form-label-wrapper">
+                        <label for="organizer_name" class="form-label">
+                            Full Name<span class="text-danger">*</span>
+                        </label>
+                        <div class="speech-controls">
+                            <button type="button" class="speech-btn speak-btn" data-text="Full Name" title="Read question aloud">
+                                <i class="bi bi-volume-up-fill"></i>
+                            </button>
+                            <button type="button" class="speech-btn listen-btn" data-target="organizer_name" title="Speak your answer">
+                                <i class="bi bi-mic-fill"></i>
+                            </button>
+                        </div>
+                    </div>
                     <input type="text" class="form-control" id="organizer_name" name="organizer_name" 
                            placeholder="Enter your full name" value="{{ submission.organizer_name }}" 
                            minlength="2" required>
@@ -213,9 +291,19 @@
                 </div>
                 
                 <div class="col-md-6 mb-3">
-                    <label for="organizer_email" class="form-label">
-                        Email<span class="text-danger">*</span>
-                    </label>
+                    <div class="form-label-wrapper">
+                        <label for="organizer_email" class="form-label">
+                            Email<span class="text-danger">*</span>
+                        </label>
+                        <div class="speech-controls">
+                            <button type="button" class="speech-btn speak-btn" data-text="Email" title="Read question aloud">
+                                <i class="bi bi-volume-up-fill"></i>
+                            </button>
+                            <button type="button" class="speech-btn listen-btn" data-target="organizer_email" title="Speak your answer">
+                                <i class="bi bi-mic-fill"></i>
+                            </button>
+                        </div>
+                    </div>
                     <input type="email" class="form-control" id="organizer_email" name="organizer_email" 
                            placeholder="johndoe@gmail.com" value="{{ submission.organizer_email }}"
                            pattern="[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}" required>
@@ -223,9 +311,19 @@
                 </div>
                 
                 <div class="col-md-6 mb-3">
-                    <label for="organizer_phone" class="form-label">
-                        Phone Number<span class="text-danger">*</span>
-                    </label>
+                    <div class="form-label-wrapper">
+                        <label for="organizer_phone" class="form-label">
+                            Phone Number<span class="text-danger">*</span>
+                        </label>
+                        <div class="speech-controls">
+                            <button type="button" class="speech-btn speak-btn" data-text="Phone Number" title="Read question aloud">
+                                <i class="bi bi-volume-up-fill"></i>
+                            </button>
+                            <button type="button" class="speech-btn listen-btn" data-target="organizer_phone" title="Speak your answer">
+                                <i class="bi bi-mic-fill"></i>
+                            </button>
+                        </div>
+                    </div>
                     <input type="tel" class="form-control" id="organizer_phone" name="organizer_phone" 
                            placeholder="81234567" pattern="[89][0-9]{7}" maxlength="8" inputmode="numeric"
                            value="{{ submission.organizer_phone }}" required>
@@ -233,9 +331,19 @@
                 </div>
                 
                 <div class="col-md-12 mb-3">
-                    <label for="organizer_location" class="form-label">
-                        Location<span class="text-danger">*</span>
-                    </label>
+                    <div class="form-label-wrapper">
+                        <label for="organizer_location" class="form-label">
+                            Location<span class="text-danger">*</span>
+                        </label>
+                        <div class="speech-controls">
+                            <button type="button" class="speech-btn speak-btn" data-text="Location" title="Read question aloud">
+                                <i class="bi bi-volume-up-fill"></i>
+                            </button>
+                            <button type="button" class="speech-btn listen-btn" data-target="organizer_location" title="Speak your answer">
+                                <i class="bi bi-mic-fill"></i>
+                            </button>
+                        </div>
+                    </div>
                     <input type="text" class="form-control" id="organizer_location" name="organizer_location" 
                            placeholder="E.g. Wild Wild Wet - 519599" value="{{ submission.organizer_location or '' }}" required>
                     <div class="invalid-feedback">Please enter a location.</div>
@@ -249,9 +357,29 @@
             <h3 class="section-title">Your Event Idea</h3>
             
             <div class="mb-3">
-                <label for="event_title" class="form-label">
-                    Event Title<span class="text-danger">*</span>
-                </label>
+                <div class="form-label-wrapper">
+                    <label for="event_summary" class="form-label">
+                        Event Summary<span class="text-danger">*</span>
+                    </label>
+                    <div class="speech-controls">
+                        <button type="button" class="speech-btn speak-btn" data-text="Event Summary" title="Read question aloud">
+                            <i class="bi bi-volume-up-fill"></i>
+                        </button>
+                        <button type="button" class="speech-btn listen-btn" data-target="event_summary" title="Speak your answer">
+                            <i class="bi bi-mic-fill"></i>
+                        </button>
+                    </div>
+                </div Event Title<span class="text-danger">*</span>
+                    </label>
+                    <div class="speech-controls">
+                        <button type="button" class="speech-btn speak-btn" data-text="Event Title" title="Read question aloud">
+                            <i class="bi bi-volume-up-fill"></i>
+                        </button>
+                        <button type="button" class="speech-btn listen-btn" data-target="event_title" title="Speak your answer">
+                            <i class="bi bi-mic-fill"></i>
+                        </button>
+                    </div>
+                </div>
                 <input type="text" class="form-control" id="event_title" name="event_title" 
                        placeholder="Give your event a memorable name" value="{{ submission.event_title }}" 
                        minlength="3" required>
@@ -300,9 +428,19 @@
                 </div>
                 
                 <div class="col-md-4 mb-3">
-                    <label for="expected_participants" class="form-label">
-                        Expected No. of Participants<span class="text-danger">*</span>
+                 div class="form-label-wrapper">
+                    <label for="why_meaningful" class="form-label">
+                        Why is this event meaningful to you?<span class="text-danger">*</span>
                     </label>
+                    <div class="speech-controls">
+                        <button type="button" class="speech-btn speak-btn" data-text="Why is this event meaningful to you?" title="Read question aloud">
+                            <i class="bi bi-volume-up-fill"></i>
+                        </button>
+                        <button type="button" class="speech-btn listen-btn" data-target="why_meaningful" title="Speak your answer">
+                            <i class="bi bi-mic-fill"></i>
+                        </button>
+                    </div>
+                </divabel>
                     <select class="form-select" id="expected_participants" name="expected_participants" required>
                         <option value="">Select range</option>
                         <option value="1-20" {% if submission.expected_participants == '1-20' %}selected{% endif %}>1-20</option>
@@ -310,17 +448,37 @@
                         <option value="51-100" {% if submission.expected_participants == '51-100' %}selected{% endif %}>51-100</option>
                         <option value="100+" {% if submission.expected_participants == '100+' %}selected{% endif %}>100+</option>
                     </select>
-                </div>
-            </div>
-        </div>
+                <div class="form-label-wrapper">
+                    <label for="previous_experience" class="form-label">
+                        Previous Experience (Optional)
+                    </label>
+                    <div class="speech-controls">
+                        <button type="button" class="speech-btn speak-btn" data-text="Previous Experience" title="Read question aloud">
+                            <i class="bi bi-volume-up-fill"></i>
+                        </button>
+                        <button type="button" class="speech-btn listen-btn" data-target="previous_experience" title="Speak your answer">
+                            <i class="bi bi-mic-fill"></i>
+                        </button>
+                    </div>
+                </div
         
         <!-- Section 3: Tell Us More -->
         <div class="form-section">
             <div class="section-number">3</div>
             <h3 class="section-title">Tell Us More</h3>
-            
-            <div class="mb-3">
-                <label for="why_meaningful" class="form-label">
+            div class="form-label-wrapper">
+                    <label for="accessibility" class="form-label">
+                        Accessibility Considerations<span class="text-danger">*</span>
+                    </label>
+                    <div class="speech-controls">
+                        <button type="button" class="speech-btn speak-btn" data-text="Accessibility Considerations" title="Read question aloud">
+                            <i class="bi bi-volume-up-fill"></i>
+                        </button>
+                        <button type="button" class="speech-btn listen-btn" data-target="accessibility" title="Speak your answer">
+                            <i class="bi bi-mic-fill"></i>
+                        </button>
+                    </div>
+                </divfor="why_meaningful" class="form-label">
                     Why is this event meaningful to you?<span class="text-danger">*</span>
                 </label>
                 <textarea class="form-control" id="why_meaningful" name="why_meaningful" 
@@ -592,5 +750,114 @@
     if (editSubmissionFileInput) {
         editSubmissionFileInput.addEventListener('change', function() { validateEditSubmissionFileSize(this); });
     }
+
+    // ========== SPEECH FUNCTIONALITY ==========
+    (function() {
+        const userLanguage = "{{ user_language or 'en' }}";
+        
+        // Language mapping for Web Speech API
+        const languageMap = {
+            'en': 'en-US',
+            'zh-CN': 'zh-CN',
+            'zh': 'zh-CN',
+            'ta': 'ta-IN',
+            'ms': 'ms-MY'
+        };
+        
+        const speechLang = languageMap[userLanguage] || 'en-US';
+        
+        // Text-to-Speech function
+        function speakText(text, button) {
+            if ('speechSynthesis' in window) {
+                // Cancel any ongoing speech
+                window.speechSynthesis.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = speechLang;
+                utterance.rate = 0.9;
+                utterance.pitch = 1;
+                
+                button.classList.add('speaking');
+                
+                utterance.onend = function() {
+                    button.classList.remove('speaking');
+                };
+                
+                utterance.onerror = function() {
+                    button.classList.remove('speaking');
+                    console.error('Speech synthesis error');
+                };
+                
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert('Text-to-speech is not supported in your browser.');
+            }
+        }
+        
+        // Speech-to-Text function
+        function listenForSpeech(inputElement, button) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (!SpeechRecognition) {
+                alert('Speech recognition is not supported in your browser. Please use Chrome or Edge.');
+                return;
+            }
+            
+            const recognition = new SpeechRecognition();
+            recognition.lang = speechLang;
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            
+            button.classList.add('listening');
+            
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                inputElement.value = transcript;
+                inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+                button.classList.remove('listening');
+            };
+            
+            recognition.onerror = function(event) {
+                button.classList.remove('listening');
+                if (event.error !== 'no-speech' && event.error !== 'aborted') {
+                    console.error('Speech recognition error:', event.error);
+                    alert('Speech recognition error: ' + event.error);
+                }
+            };
+            
+            recognition.onend = function() {
+                button.classList.remove('listening');
+            };
+            
+            recognition.start();
+        }
+        
+        // Initialize speech buttons
+        function initSpeechButtons() {
+            // Get all speak buttons
+            document.querySelectorAll('.speak-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const labelText = this.getAttribute('data-text');
+                    speakText(labelText, this);
+                });
+            });
+            
+            // Get all listen buttons
+            document.querySelectorAll('.listen-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('data-target');
+                    const inputElement = document.getElementById(targetId);
+                    if (inputElement) {
+                        listenForSpeech(inputElement, this);
+                    }
+                });
+            });
+        }
+        
+        // Initialize on page load
+        initSpeechButtons();
+    })();
 </script>
 {% endblock %}
