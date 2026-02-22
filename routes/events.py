@@ -616,7 +616,7 @@ def update_submission_status(submission_id):
         old_status = submission['status']
         
         # Update the status
-        admin_notes = f'Status changed from {old_status} to {new_status} via drag-and-drop'
+        admin_notes = f'Status changed from {old_status} to {new_status}'
         EventSubmission.update_status(submission_id, new_status, current_user.id, admin_notes)
         
         # Handle status-specific actions
