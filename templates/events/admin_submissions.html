@@ -563,7 +563,7 @@
     <div id="folder-rejected" class="folder-content">
         <div class="drag-instruction" style="background: #fce4ec; border-color: #e91e63; color: #c2185b;">
             <i class="bi bi-lock"></i>
-            Rejected submissions cannot be moved. Use <strong>Review & Decide</strong> to change status.
+            Rejected submissions cannot be moved
         </div>
         {% set rejected_submissions = submissions|selectattr('status', 'equalto', 'rejected')|list %}
         {% if rejected_submissions and rejected_submissions|length > 0 %}
