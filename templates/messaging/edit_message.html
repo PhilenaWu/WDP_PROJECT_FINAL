@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% block title %}Edit Message - Genlink{% endblock %}
 {% block content %}
+{% block navbar %}{% endblock %}
+{% block banner %}{% endblock %}
 <div class="container" style="max-width:600px;margin:3rem auto;">
     <h2>Edit Message</h2>
     <div style="background:white;padding:2rem;border-radius:12px;">
@@ -10,4 +12,7 @@
         </form>
     </div>
 </div>
+
+{% block footer %}{% endblock %}
+
 {% endblock %}

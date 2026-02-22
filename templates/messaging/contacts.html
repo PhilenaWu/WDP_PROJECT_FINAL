@@ -1,94 +1,335 @@
 {% extends "base.html" %}
-{% block title %}Contacts - Genlink{% endblock %}
+{% block title %}Contacts & Groups - Genlink{% endblock %}
 
 {% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-    .messaging-container { max-width: 1200px; margin: 2rem auto; padding: 2rem; display: grid; grid-template-columns: 300px 1fr; gap: 2rem; min-height: 80vh; }
-    .sidebar { background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-    .sidebar h3 { margin-bottom: 1rem; color: #2c2c2c; }
-    .contact-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; cursor: pointer; transition: background 0.3s; text-decoration: none; color: inherit; }
-    .contact-item:hover { background: #fff5f0; }
-    .contact-avatar { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #ff6b35, #ff8c42); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.3rem; flex-shrink: 0; }
-    .contact-info { flex: 1; }
-    .contact-name { font-weight: 600; color: #2c2c2c; }
-    .contact-status { font-size: 0.85rem; color: #999; }
-    .favorite-star { color: #ffc107; font-size: 1.2rem; }
-    .main-content { background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-    .add-contact-form { background: #f9f9f9; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; }
-    .contact-actions { display: flex; gap: 0.5rem; }
-    .btn-small { padding: 0.4rem 0.8rem; font-size: 0.9rem; }
-    .btn-edit { background: #2196f3; color: white; }
-    .btn-edit:hover { background: #1976d2; color: white; }
-    .btn-delete { background: #f44336; color: white; }
-    .btn-delete:hover { background: #d32f2f; color: white; }
+  .gl-title { font-family: 'Sora', sans-serif; }
+
+  /* ── Sidebar ── */
+  .gl-sidebar { position: sticky; top: 88px; }
+
+  .gl-sidebar-tabs { display: flex; border-bottom: 1px solid #dee2e6; }
+  .gl-sidebar-tab { flex: 1; padding: 13px 10px; background: transparent; border: none; font-size: 13px; font-weight: 600; cursor: pointer; color: #6c757d; border-bottom: 2.5px solid transparent; margin-bottom: -1px; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; font-family: inherit; }
+  .gl-sidebar-tab:hover { color: #495057; background: #f8f9fa; }
+  .gl-sidebar-tab.active { color: #ff6b35; border-bottom-color: #ff6b35; background: #fff8f5; }
+  .gl-sidebar-tab .gl-tab-count { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 100px; }
+  .gl-sidebar-tab.active .gl-tab-count { background: #ff6b35; color: white; }
+  .gl-sidebar-tab:not(.active) .gl-tab-count { background: #e9ecef; color: #6c757d; }
+
+  .gl-sb-panel { display: none; }
+  .gl-sb-panel.active { display: block; }
+
+  .gl-contact-mini { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; text-decoration: none !important; color: inherit !important; transition: background 0.15s; }
+  .gl-contact-mini:hover { background: #f8f9fa; }
+
+  .gl-avatar { border-radius: 50%; background: linear-gradient(135deg, #F05A1A, #F0A01A); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0; }
+  .gl-avatar-sm { width: 32px; height: 32px; font-size: 12px; }
+  .gl-avatar-md { width: 36px; height: 36px; font-size: 14px; }
+  .gl-avatar-lg { width: 48px; height: 48px; font-size: 18px; }
+  .gl-avatar-group { border-radius: 12px; }
+  .gl-avatar.teal { background: linear-gradient(135deg, #0FA87E, #3AB8C0); }
+  .gl-avatar.indigo { background: linear-gradient(135deg, #5B4FD4, #8B7FFF); }
+  .gl-avatar.rose { background: linear-gradient(135deg, #E84470, #F07A9A); }
+
+  .gl-btn-new-group { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px; border-radius: 10px; border: 1.5px dashed #dee2e6; background: transparent; color: #6c757d; font-size: 13px; font-weight: 500; text-decoration: none !important; transition: all 0.2s; width: 100%; }
+  .gl-btn-new-group:hover { border-color: #F05A1A; color: #F05A1A !important; background: #fff5f0; }
+
+  /* ── Main view toggle ── */
+  .gl-view { display: none; }
+  .gl-view.active { display: block; }
+  .gl-view-groups.active { display: flex; flex-direction: column; min-height: 50vh; }
+
+  /* ── Contact row animation ── */
+  .gl-contact-row { animation: glFadeUp 0.3s ease both; }
+  @keyframes glFadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── Action buttons ── */
+  .gl-btn-chat { background: #E8F4FF; color: #3A8FE8; border-color: #C5DEFF; }
+  .gl-btn-chat:hover { background: #3A8FE8; color: white; border-color: #3A8FE8; }
+  .gl-btn-edit { color: #4A3F35; border-color: #dee2e6; }
+  .gl-btn-edit:hover { background: #f8f9fa; border-color: #4A3F35; color: #1A1410; }
+  .gl-btn-remove { color: #E8445A; border-color: #FFCCD3; }
+  .gl-btn-remove:hover { background: #E8445A; color: white; border-color: #E8445A; }
+
+  /* ── Group card ── */
+  .gl-grp-banner { height: 68px; position: relative; overflow: hidden; border-radius: 0.75rem 0.75rem 0 0; }
+  .gl-grp-banner.c0 { background: linear-gradient(135deg, #F05A1A, #F0A01A); }
+  .gl-grp-banner.c1 { background: linear-gradient(135deg, #0FA87E, #3AB8C0); }
+  .gl-grp-banner.c2 { background: linear-gradient(135deg, #5B4FD4, #8B7FFF); }
+  .gl-grp-banner.c3 { background: linear-gradient(135deg, #E84470, #F07A9A); }
+  .gl-grp-banner-icon { position: absolute; bottom: -14px; left: 18px; width: 48px; height: 48px; border-radius: 13px; background: white; border: 2px solid #EDE8E0; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+  .gl-grp-card { transition: all 0.2s; animation: glFadeUp 0.3s ease both; }
+  .gl-grp-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08) !important; }
+
+  .gl-create-card { border: 2px dashed #dee2e6; border-radius: 0.75rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 36px 20px; cursor: pointer; transition: all 0.2s; min-height: 190px; color: #6c757d; text-decoration: none !important; }
+  .gl-create-card:hover { border-color: #F05A1A; background: #fff8f5; color: #F05A1A !important; }
+  .gl-create-icon { width: 42px; height: 42px; border-radius: 12px; background: #f8f9fa; display: flex; align-items: center; justify-content: center; font-size: 20px; transition: all 0.2s; }
+  .gl-create-card:hover .gl-create-icon { background: #FFE8DC; }
+
+  /* ── Section label ── */
+  .gl-section-label { font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #6c757d; }
 </style>
 {% endblock %}
 
 {% block content %}
+<div class="container py-5" style="max-width: 1100px;">
 
-
-<div class="messaging-container">
-    <div class="sidebar">
-        <h3>My Contacts</h3>
-        {% if contacts %}
-            {% for contact in contacts %}
-            <a href="{{ url_for('messaging.chat_direct', contact_id=contact.contact_user_id) }}" class="contact-item">
-                <div class="contact-avatar">{{ (contact.contact_display_name or '?')[0].upper() }}</div>
-                <div class="contact-info">
-                    <div class="contact-name">{{ contact.nickname or contact.contact_display_name }}{% if contact.is_favorite %} <span class="favorite-star">★</span>{% endif %}</div>
-                    <div class="contact-status">{{ contact.contact_age_group or '' }}</div>
-                </div>
-            </a>
-            {% endfor %}
-        {% else %}
-            <p style="color: #999; text-align: center; padding: 2rem;">No contacts yet</p>
-        {% endif %}
+  <!-- Page Header (updates when switching tabs) -->
+  <div class="d-flex align-items-end justify-content-between mb-4">
+    <div>
+      <h1 class="gl-title fw-bold" id="pageTitle">Contacts</h1>
+      <p class="text-muted small mb-0" id="pageSubtitle">Manage your network and stay connected</p>
     </div>
-    <div class="main-content">
-        <div style="display: flex; align-items: center; gap: 18rem;">
-            <h2>Manage Contacts</h2>
-            <a href="{{ url_for('messaging.view_groups') }}" class="btn btn-primary">Manage Group</a>
+    <div id="headerCta">
+      <button class="btn btn-primary d-flex align-items-center gap-2" onclick="document.getElementById('addContactForm').scrollIntoView({behavior:'smooth'})">
+        <i class="bi bi-plus-lg"></i> Add Contact
+      </button>
+    </div>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- ═══════ SIDEBAR ═══════ -->
+    <div class="col-md-4 col-lg-3">
+      <div class="card rounded-4 gl-sidebar">
+
+        <!-- Tab Toggle -->
+        <div class="gl-sidebar-tabs">
+          <button class="gl-sidebar-tab active" onclick="switchView('contacts', this)">
+            <i class="bi bi-person"></i> Contacts
+            <span class="gl-tab-count">{{ contacts|length }}</span>
+          </button>
+          <button class="gl-sidebar-tab" onclick="switchView('groups', this)">
+            <i class="bi bi-people"></i> Groups
+            <span class="gl-tab-count">{{ groups|length }}</span>
+          </button>
         </div>
-        <div class="add-contact-form">
-            <h3>Add New Contact</h3>
-            <form method="POST" action="{{ url_for('messaging.add_contact') }}">
-                <div class="mb-3">
-                    <label for="contact_user_id" class="form-label">Select User *</label>
+
+        <!-- Contacts Panel -->
+        <div class="gl-sb-panel active" id="sb-contacts">
+          <div class="card-body p-2">
+            {% if contacts %}
+              {% for contact in contacts %}
+              <a href="{{ url_for('messaging.chat_direct', contact_id=contact.contact_user_id) }}" class="gl-contact-mini">
+                <div class="gl-avatar gl-avatar-sm">{{ (contact.contact_display_name or '?')[0].upper() }}</div>
+                <div>
+                  <div class="fw-medium small">
+                    {{ contact.nickname or contact.contact_display_name }}
+                    {% if contact.is_favorite %}<span class="text-warning">★</span>{% endif %}
+                  </div>
+                  <div class="text-muted" style="font-size:11px;">{{ contact.contact_age_group or '' }}</div>
+                </div>
+              </a>
+              {% endfor %}
+            {% else %}
+              <p class="text-muted text-center py-4 mb-0 small">No contacts yet</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Groups Panel -->
+        <div class="gl-sb-panel" id="sb-groups">
+          <div class="card-body p-2">
+            {% if groups %}
+              {% set grp_colors = ['', 'teal', 'indigo', 'rose'] %}
+              {% set grp_icons = ['🏘️', '👥', '🌐', '🎯', '💬', '🤝'] %}
+              {% for g in groups %}
+              <a href="{{ url_for('messaging.chat_group', group_id=g.id) }}" class="gl-contact-mini">
+                <div class="gl-avatar gl-avatar-md gl-avatar-group {{ grp_colors[loop.index0 % 4] }}">{{ grp_icons[loop.index0 % 6] }}</div>
+                <div>
+                  <div class="fw-medium small">{{ g.name }}</div>
+                  <div class="text-muted" style="font-size:11px;">{{ g.member_count }} member{{ 's' if g.member_count != 1 else '' }}</div>
+                </div>
+              </a>
+              {% endfor %}
+            {% else %}
+              <p class="text-muted text-center py-4 mb-0 small">No groups yet</p>
+            {% endif %}
+          </div>
+          <div class="card-footer bg-transparent p-2">
+            <a href="{{ url_for('messaging.create_group') }}" class="gl-btn-new-group">
+              <i class="bi bi-plus-lg"></i> New Group
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══════ MAIN PANEL ═══════ -->
+    <div class="col-md-8 col-lg-9">
+
+        <!-- ── CONTACTS VIEW ── -->
+        <div class="gl-view active" id="view-contacts">
+
+            <!-- Add Contact -->
+            <div class="card rounded-4 mb-4" id="contactsBlock">
+            <div class="card-header bg-transparent">
+                <h5 class="gl-title fw-bold mb-0">Contacts</h5>
+                <div class="d-flex align-items-center gap-2 mt-2">
+                <span class="gl-section-label mb-0">Add New Contacts</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Add Contact Form -->
+                <form method="POST" action="{{ url_for('messaging.add_contact') }}">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                    <label for="contact_user_id" class="form-label small fw-semibold">Select User <span class="text-danger">*</span></label>
                     <select id="contact_user_id" name="contact_user_id" class="form-select" required>
-                        <option value="">-- Choose a user --</option>
+                        <option value="">— Choose a user —</option>
                         {% for user in available_users %}
                         <option value="{{ user.id }}">{{ user.display_name or user.username }} ({{ user.age_group or 'N/A' }})</option>
                         {% endfor %}
                     </select>
-                </div>
-                <div class="mb-3">
-                    <label for="nickname" class="form-label">Nickname (Optional)</label>
+                    </div>
+                    <div class="col-md-6">
+                    <label for="nickname" class="form-label small fw-semibold">Nickname <span class="text-muted fw-normal">(Optional)</span></label>
                     <input type="text" class="form-control" id="nickname" name="nickname" placeholder="e.g., Uncle Lim" minlength="2" maxlength="50">
-                </div>
-                <button type="submit" class="btn btn-primary">Add Contact</button>
-            </form>
-        </div>
-        <h3>Your Contacts ({{ contacts|length }})</h3>
-        <div style="margin-top: 1rem;">
-            {% for contact in contacts %}
-            <div class="contact-item" style="background: #f9f9f9; margin-bottom: 1rem; justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 1rem;">
-                    <div class="contact-avatar">{{ (contact.contact_display_name or '?')[0].upper() }}</div>
-                    <div class="contact-info">
-                        <div class="contact-name">{{ contact.nickname or contact.contact_display_name }}{% if contact.is_favorite %} <span class="favorite-star">★</span>{% endif %}</div>
-                        <div class="contact-status">@{{ contact.contact_username }} • {{ contact.contact_age_group or '' }}</div>
                     </div>
                 </div>
-                <div class="contact-actions">
-                    <a href="{{ url_for('messaging.chat_direct', contact_id=contact.contact_user_id) }}" class="btn btn-primary btn-small">Chat</a>
-                    <a href="{{ url_for('messaging.edit_contact', contact_id=contact.id) }}" class="btn btn-edit btn-small">Edit</a>
-                    <form method="POST" action="{{ url_for('messaging.delete_contact', contact_id=contact.id) }}" style="display:inline;" onsubmit="return confirm('Remove this contact?');">
-                        <button type="submit" class="btn btn-delete btn-small">Remove</button>
-                    </form>
+                <div class="d-flex align-items-center gap-3 mt-3">
+                    <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i> Add Contact
+                    </button>
+                    <span class="text-muted small">They'll be notified once added</span>
                 </div>
+                </form>
+                <hr>
+                <div class="d-flex align-items-center gap-1">
+                <div>
+                    <h5 class="mb-0">Your Contacts</h5>
+                </div>
+                <span class="badge rounded-pill bg-primary">{{ contacts|length }}</span>
+                </div>
+                <!-- Contacts List -->
+                {% if contacts %}
+                {% for contact in contacts %}
+                <div class="d-flex align-items-center gap-3 py-3 gl-contact-row {{ '' if loop.last else 'border-bottom' }}" style="animation-delay: {{ loop.index0 * 0.06 }}s">
+                    <div class="gl-avatar gl-avatar-lg">{{ (contact.contact_display_name or '?')[0].upper() }}</div>
+                    <div class="flex-grow-1" style="min-width:0;">
+                    <div class="fw-semibold">
+                        {{ contact.nickname or contact.contact_display_name }}
+                        {% if contact.is_favorite %}<span class="text-warning">★</span>{% endif %}
+                    </div>
+                    <div class="text-muted small d-flex align-items-center gap-2">
+                        @{{ contact.contact_username }}
+                        {% if contact.contact_age_group %}
+                        <span class="badge bg-warning bg-opacity-10 text-warning-emphasis rounded-pill" style="font-size:11px;">{{ contact.contact_age_group }}</span>
+                        {% endif %}
+                    </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                    <a href="{{ url_for('messaging.chat_direct', contact_id=contact.contact_user_id) }}" class="btn btn-sm gl-btn-chat">
+                        <i class="bi bi-chat-dots me-1"></i>Chat
+                    </a>
+                    <a href="{{ url_for('messaging.edit_contact', contact_id=contact.id) }}" class="btn btn-sm btn-outline-secondary gl-btn-edit">
+                        <i class="bi bi-pencil me-1"></i>Edit
+                    </a>
+                    <form method="POST" action="{{ url_for('messaging.delete_contact', contact_id=contact.id) }}" class="d-inline m-0 p-0" onsubmit="return confirm('Remove this contact?');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger gl-btn-remove">
+                        <i class="bi bi-x-lg me-1"></i>Remove
+                        </button>
+                    </form>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p class="text-muted text-center py-5 mb-0">No contacts yet. Add someone to get started!</p>
+                {% endif %}
             </div>
-            {% endfor %}
+            </div>
         </div>
+
+        <!-- ── GROUPS VIEW ── -->
+                <div class="gl-view gl-view-groups" id="view-groups">
+                    <div class="row g-3">
+                    {% if groups %}
+                        {% set banner_icons = ['🏘️', '👥', '🌐', '🎯', '💬', '🤝'] %}
+                        {% for group in groups %}
+                        <div class="col-sm-6 col-lg-4">
+                        <div class="card rounded-4 border gl-grp-card h-100" style="animation-delay: {{ loop.index0 * 0.05 }}s">
+                            <div class="gl-grp-banner c{{ loop.index0 % 4 }}">
+                            <div class="gl-grp-banner-icon">{{ banner_icons[loop.index0 % 6] }}</div>
+                            </div>
+                            <div class="card-body pt-4 pb-3 px-3">
+                            <h6 class="gl-title fw-bold mb-1">{{ group.name }}</h6>
+                            <div class="d-flex align-items-center gap-2 text-muted small mb-2">
+                                <span>{{ group.member_count }} member{{ 's' if group.member_count != 1 else '' }}</span>
+                                {% if group.description %}
+                                <span style="width:3px;height:3px;border-radius:50%;background:#adb5bd;"></span>
+                                <span class="text-truncate" style="max-width:140px;">{{ group.description }}</span>
+                                {% endif %}
+                            </div>
+                            </div>
+                            <div class="card-footer bg-transparent d-flex align-items-center gap-2 px-3 py-2">
+                            <a href="{{ url_for('messaging.chat_group', group_id=group.id) }}" class="btn btn-primary btn-sm flex-grow-1 d-flex align-items-center justify-content-center gap-1">
+                                <i class="bi bi-chat-dots"></i> Open Chat
+                            </a>
+                            <a href="{{ url_for('messaging.edit_group', group_id=group.id) }}" class="btn btn-outline-secondary btn-sm" title="Settings">
+                                <i class="bi bi-gear"></i>
+                            </a>
+                            </div>
+                        </div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <!-- Create New Group -->
+                    <div class="col-sm-6 col-lg-4">
+                        <a href="{{ url_for('messaging.create_group') }}" class="gl-create-card h-100">
+                        <div class="gl-create-icon"><i class="bi bi-plus-lg"></i></div>
+                        <div class="fw-semibold gl-title">New Group</div>
+                        <div class="small opacity-75">Bring your people together</div>
+                        </a>
+                    </div>
+                </div>
+      </div>
     </div>
+  </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    var viewConfig = {
+        contacts: {
+            title: 'Contacts',
+            subtitle: 'Manage your network and stay connected',
+            ctaHtml: '<button class="btn btn-primary d-flex align-items-center gap-2" onclick="document.getElementById(\'addContactForm\').scrollIntoView({behavior:\'smooth\'})"><i class="bi bi-plus-lg"></i> Add Contact</button>'
+        },
+        groups: {
+            title: 'My Groups',
+            subtitle: 'Collaborate and stay connected with your communities',
+            ctaHtml: '<a href="{{ url_for("messaging.create_group") }}" class="btn btn-primary d-flex align-items-center gap-2"><i class="bi bi-plus-lg"></i> Create Group</a>'
+        }
+    };
+
+    window.switchView = function(view, btn) {
+        // Sidebar tabs
+        document.querySelectorAll('.gl-sidebar-tab').forEach(function(t) { t.classList.remove('active'); });
+        if (btn) btn.classList.add('active');
+
+        // Sidebar panels
+        document.querySelectorAll('.gl-sb-panel').forEach(function(p) { p.classList.remove('active'); });
+        var sbPanel = document.getElementById('sb-' + view);
+        if (sbPanel) sbPanel.classList.add('active');
+
+        // Main views
+        document.querySelectorAll('.gl-view').forEach(function(v) { v.classList.remove('active'); });
+        var mainView = document.getElementById('view-' + view);
+        if (mainView) mainView.classList.add('active');
+
+        // Update header
+        var config = viewConfig[view];
+        if (config) {
+            document.getElementById('pageTitle').textContent = config.title;
+            document.getElementById('pageSubtitle').textContent = config.subtitle;
+            document.getElementById('headerCta').innerHTML = config.ctaHtml;
+        }
+    };
+})();
+</script>
 {% endblock %}

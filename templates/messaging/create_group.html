@@ -19,7 +19,7 @@
                     {% endfor %}{% else %}<p style="color:#999;text-align:center;padding:2rem;">Add contacts first. <a href="{{ url_for('messaging.view_contacts') }}">Go to Contacts</a></p>{% endif %}
                 </div>
             </div>
-            <div style="display:flex;gap:1rem;margin-top:2rem;"><button type="submit" class="btn btn-primary" {% if not contacts %}disabled{% endif %}>Create Group</button><a href="{{ url_for('messaging.view_groups') }}" class="btn btn-secondary">Cancel</a></div>
+            <div style="display:flex;gap:1rem;margin-top:2rem;"><button type="submit" class="btn btn-primary" {% if not contacts %}disabled{% endif %}>Create Group</button><a href="{{ url_for('messaging.view_contacts') }}" class="btn btn-secondary">Cancel</a></div>
         </form>
     </div>
 </div>
