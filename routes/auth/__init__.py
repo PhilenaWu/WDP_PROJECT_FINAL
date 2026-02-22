@@ -3,6 +3,7 @@ from flask_login import login_user, logout_user, current_user, login_required
 from models import User
 from datetime import datetime, timedelta
 import re
+import regex
 import secrets
 import smtplib
 import requests
@@ -13,7 +14,7 @@ from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 auth_bp = Blueprint('auth', __name__)
 
 GMAIL_EMAIL_PATTERN = r'^[a-zA-Z0-9._%+-]+@gmail\.com$'
-NAME_ONLY_PATTERN = r'^[A-Za-z\s]+$'
+NAME_ONLY_PATTERN = r"^[\p{L} .'-]+$"
 PASSWORD_PATTERN = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$'
 SIGNUP_DRAFT_KEY = 'signup_draft'
 GOOGLE_OAUTH_STATE_KEY = 'google_oauth_state'
@@ -174,7 +175,7 @@ def is_valid_gmail(email):
 
 def is_valid_name(name):
     normalized = (name or '').strip()
-    return bool(re.match(NAME_ONLY_PATTERN, normalized))
+    return bool(regex.match(NAME_ONLY_PATTERN, normalized))
 
 
 def is_valid_password(password):
@@ -311,10 +312,26 @@ def feedback():
     from database import execute_query
 
     if request.method == 'POST':
+        from deep_translator import GoogleTranslator
         full_name = request.form.get('full_name', '').strip()
         email = request.form.get('email', '').strip().lower()
         feedback_type = request.form.get('feedback_type', '').strip()
         feedback_text = request.form.get('feedback_text', '').strip()
+
+        # Translate Chinese input to English
+        def translate_if_chinese(text):
+            if text:
+                try:
+                    # If contains Chinese characters, translate
+                    if any('\u4e00' <= c <= '\u9fff' for c in text):
+                        return GoogleTranslator(source='auto', target='en').translate(text)
+                except Exception:
+                    pass
+            return text
+
+        full_name = translate_if_chinese(full_name)
+        feedback_type = translate_if_chinese(feedback_type)
+        feedback_text = translate_if_chinese(feedback_text)
 
         if not full_name or not email or not feedback_type or not feedback_text:
             return render_template(
@@ -1041,12 +1058,12 @@ def login():
             session['failed_attempts'] = failed_attempts
             
             if failed_attempts >= 3:
-                # Lock out for 5 minutes after 3 failed attempts
-                lockout_time = datetime.now() + timedelta(minutes=5)
+                # Lock out for 10 seconds after 3 failed attempts
+                lockout_time = datetime.now() + timedelta(seconds=10)
                 session['lockout_time'] = lockout_time.isoformat()  # datetime to string
                 return render_template('auth/login.html', 
                     error="Too many failed attempts.", 
-                    lockout_seconds=300)
+                    lockout_seconds=10)
             else:
                 remaining_attempts = 3 - failed_attempts
                 return render_template('auth/login.html', 

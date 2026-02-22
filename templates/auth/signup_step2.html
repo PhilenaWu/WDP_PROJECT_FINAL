@@ -2,40 +2,274 @@
 
 {% block title %}Genlink | Sign up{% endblock %}
 {% block body_class %}class="signup-vibe-page"{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<style>
+/* =============================================
+   SIGNUP 2 — Profile
+   ============================================= */
+
+.auth-form-container-large { max-width: 580px !important; }
+
+.signup-vibe-card {
+  background: rgba(255,255,255,0.94) !important;
+  border: 1px solid rgba(243,154,31,0.18) !important;
+  border-radius: 28px !important;
+  box-shadow: 0 2px 0 rgba(243,154,31,0.07), 0 24px 64px rgba(31,24,17,0.12), inset 0 1px 0 rgba(255,255,255,0.85) !important;
+  backdrop-filter: blur(14px);
+  padding: 36px 44px !important;
+  animation: cardEnter .45s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes cardEnter {
+  from { opacity:0; transform:translateY(18px) scale(.98); }
+  to   { opacity:1; transform:none; }
+}
+html[data-theme='dark'] .signup-vibe-card {
+  background: rgba(15,22,38,0.93) !important;
+  border-color: rgba(243,154,31,0.16) !important;
+  box-shadow: 0 2px 0 rgba(0,0,0,.35), 0 24px 64px rgba(0,0,0,.52), inset 0 1px 0 rgba(255,255,255,.04) !important;
+}
+
+.signup-back-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  border-radius: 999px !important;
+  padding: 7px 16px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  border: 1.5px solid rgba(139,114,96,.20) !important;
+  background: rgba(255,255,255,.60) !important;
+  color: #7a6355 !important;
+  text-decoration: none !important;
+  transition: all .2s ease !important;
+  margin-bottom: 22px;
+}
+.signup-back-btn:hover {
+  border-color: rgba(243,154,31,.45) !important;
+  color: #f39a1f !important;
+  background: rgba(255,249,240,.92) !important;
+  transform: translateX(-2px) !important;
+}
+html[data-theme='dark'] .signup-back-btn {
+  background: rgba(23,34,54,.88) !important;
+  border-color: #3a4b6a !important;
+  color: #dbe5f7 !important;
+}
+
+/* ── Stepper ── */
+.stp {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr 1fr !important;
+  background: #ffffff !important;
+  border-radius: 14px !important;
+  padding: 5px !important;
+  gap: 0 !important;
+  margin-bottom: 30px !important;
+  box-sizing: border-box !important;
+}
+html[data-theme='dark'] .stp { background: rgba(255,255,255,.08) !important; }
+
+.stp-tab {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 9px 6px 8px !important;
+  gap: 5px !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  cursor: default !important;
+  user-select: none !important;
+  min-height: 0 !important;
+  height: auto !important;
+  transition: background .25s, box-shadow .25s, border-radius .25s !important;
+}
+
+.stp-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  min-height: 0 !important;
+}
+
+.stp-num {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  min-height: 0 !important;
+  max-width: 20px !important;
+  max-height: 20px !important;
+  border-radius: 50% !important;
+  background: rgba(0,0,0,.13) !important;
+  color: rgba(0,0,0,.30) !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  flex-shrink: 0 !important;
+  box-sizing: border-box !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  transition: background .25s, color .25s !important;
+}
+html[data-theme='dark'] .stp-num {
+  background: rgba(255,255,255,.14) !important;
+  color: rgba(255,255,255,.30) !important;
+}
+
+.stp-label {
+  display: inline !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  color: rgba(0,0,0,.32) !important;
+  white-space: nowrap !important;
+  transition: color .25s !important;
+  line-height: 1 !important;
+}
+html[data-theme='dark'] .stp-label { color: rgba(255,255,255,.28) !important; }
+
+.stp-bar {
+  display: block !important;
+  width: 44px !important;
+  height: 2.5px !important;
+  min-height: 0 !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  transition: background .3s !important;
+}
+
+/* Done */
+.stp-tab.done .stp-num   { background: #43a047 !important; color: #fff !important; }
+.stp-tab.done .stp-label { color: #43a047 !important; }
+.stp-tab.done .stp-bar   { background: #43a047 !important; }
+html[data-theme='dark'] .stp-tab.done .stp-label { color: #81c784 !important; }
+
+/* Active */
+.stp-tab.active {
+  background: linear-gradient(135deg, #f39a1f 0%, #ff8c61 100%) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 3px 14px rgba(243,154,31,.30) !important;
+}
+.stp-tab.active .stp-num   { background: rgba(255,255,255,.25) !important; color: #fff !important; }
+.stp-tab.active .stp-label { color: #fff !important; font-weight: 700 !important; }
+.stp-tab.active .stp-bar   { background: rgba(255,255,255,.55) !important; }
+
+/* ── Form controls ── */
+.signup-vibe-card .form-control {
+  border-radius: 12px !important;
+  min-height: 48px !important;
+  border: 1.5px solid rgba(139,114,96,.20) !important;
+  background: #fdfaf7 !important;
+  font-size: 14px !important;
+}
+.signup-vibe-card .form-control:focus {
+  border-color: rgba(243,154,31,.55) !important;
+  box-shadow: 0 0 0 3.5px rgba(243,154,31,.13) !important;
+  background: #fff !important;
+}
+html[data-theme='dark'] .signup-vibe-card .form-control {
+  background: rgba(23,34,54,.70) !important;
+  border-color: #2f3d59 !important;
+}
+html[data-theme='dark'] .signup-vibe-card .form-control:focus {
+  background: rgba(23,34,54,.95) !important;
+}
+.signup-vibe-card .form-control[readonly] {
+  background: rgba(243,154,31,.06) !important;
+  cursor: default;
+}
+
+/* ── Action buttons ── */
+.signup-actions { display: flex; gap: 12px; margin-top: 24px; }
+.signup-actions .btn {
+  flex: 1;
+  padding: 13px 20px;
+  border-radius: 12px !important;
+  font-weight: 600;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: all .22s ease;
+}
+.signup-actions .btn-primary {
+  background: linear-gradient(135deg, #f39a1f 0%, #ff8c61 100%) !important;
+  border: none !important;
+  box-shadow: 0 5px 18px rgba(243,154,31,.28);
+}
+.signup-actions .btn-primary:hover {
+  filter: brightness(1.04);
+  box-shadow: 0 8px 26px rgba(243,154,31,.40);
+  transform: translateY(-1px);
+}
+.signup-actions .btn-light {
+  border: 1.5px solid rgba(139,114,96,.20) !important;
+  color: #7a6355 !important;
+  background: #fff !important;
+}
+.signup-actions .btn-light:hover {
+  border-color: rgba(139,114,96,.38) !important;
+  background: rgba(0,0,0,.02) !important;
+}
+</style>
 {% endblock %}
 
 {% block navbar %}{% endblock %}
 {% block footer %}{% endblock %}
 
 {% block content %}
-<div class="container-fluid vh-100 signup-vibe-shell">
-  <div class="row h-100">
+<div class="container-fluid signup-vibe-shell" style="min-height:100vh;">
+  <div class="row" style="min-height:100vh;">
     <div class="col-md-4 d-none d-md-flex align-items-center justify-content-center login-banner signup-vibe-banner">
       <div class="text-center">
         <img src="{{ url_for('static', filename='uploads/profile_pics/logo.png') }}" alt="Genlink Logo" class="auth-logo-large">
       </div>
     </div>
 
-    <div class="col-md-8 d-flex align-items-center justify-content-center">
+    <div class="col-md-8 d-flex align-items-center justify-content-center py-4">
       <div class="w-100 auth-form-container-large signup-vibe-card">
-        <div class="signup-topbar">
-          <a href="{{ url_for('auth.signup', preserve=1) }}" class="btn signup-back-btn">← Back</a>
-        </div>
-        <!-- ...existing code... -->
 
-        <div class="signup-stepper mb-4">
-          <div class="signup-step done"><span>✓</span><small>Account</small></div>
-          <div class="signup-step-line active"></div>
-          <div class="signup-step active"><span>2</span><small>Profile</small></div>
-          <div class="signup-step-line"></div>
-          <div class="signup-step"><span>3</span><small>Interests</small></div>
+        <a href="{{ url_for('auth.signup', preserve=1) }}" class="btn signup-back-btn">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7L9 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Back
+        </a>
+
+        <!-- Stepper — step 1 done, step 2 active -->
+        <div class="stp">
+          <div class="stp-tab done">
+            <div class="stp-row">
+              <span class="stp-num">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <span class="stp-label">Account</span>
+            </div>
+            <span class="stp-bar"></span>
+          </div>
+          <div class="stp-tab active">
+            <div class="stp-row">
+              <span class="stp-num">2</span>
+              <span class="stp-label">Profile</span>
+            </div>
+            <span class="stp-bar"></span>
+          </div>
+          <div class="stp-tab">
+            <div class="stp-row">
+              <span class="stp-num">3</span>
+              <span class="stp-label">Interests</span>
+            </div>
+            <span class="stp-bar"></span>
+          </div>
         </div>
 
         <div class="text-center mb-4">
-          <h2>Tell us about you</h2>
-          <p class="text-muted">Step 2 of 3: Profile details</p>
+          <h2 style="font-weight:700;letter-spacing:-0.02em;">Tell us about you</h2>
+          <p class="text-muted" style="font-size:13.5px;">Step 2 of 3 — Profile details</p>
         </div>
 
         {% if error %}
@@ -46,36 +280,60 @@
           <div class="row g-3">
             <div class="col-md-6">
               <label for="firstName" class="form-label">First Name <span class="text-danger">*</span></label>
-              <input id="firstName" name="first_name" type="text" class="form-control" required pattern="[A-Za-z\s]+" title="Only letters allowed." value="{{ user.first_name or '' }}">
+              <input id="firstName" name="first_name" type="text" class="form-control" required
+                pattern="[A-Za-z\s]+" title="Only letters allowed."
+                value="{{ user.first_name or '' }}">
             </div>
             <div class="col-md-6">
               <label for="lastName" class="form-label">Last Name <span class="text-danger">*</span></label>
-              <input id="lastName" name="last_name" type="text" class="form-control" required pattern="[A-Za-z\s]+" title="Only letters allowed." value="{{ user.last_name or '' }}">
+              <input id="lastName" name="last_name" type="text" class="form-control" required
+                pattern="[A-Za-z\s]+" title="Only letters allowed."
+                value="{{ user.last_name or '' }}">
             </div>
             <div class="col-12">
               <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
-              <input id="username" name="username" type="text" class="form-control" required minlength="3" maxlength="20" pattern="[A-Za-z][A-Za-z0-9_]{2,19}" title="3-20 characters. Start with a letter; only letters, numbers, and underscore are allowed." value="{{ user.username or '' }}">
+              <input id="username" name="username" type="text" class="form-control" required
+                minlength="3" maxlength="20"
+                pattern="[A-Za-z][A-Za-z0-9_]{2,19}"
+                title="3–20 characters. Start with a letter; only letters, numbers, and underscore."
+                value="{{ user.username or '' }}">
             </div>
             <div class="col-12">
               <label for="displayName" class="form-label">Display Name <span class="text-danger">*</span></label>
-              <input id="displayName" name="display_name" type="text" class="form-control" required value="{{ user.display_name or '' }}">
+              <input id="displayName" name="display_name" type="text" class="form-control" required
+                value="{{ user.display_name or '' }}">
             </div>
             <div class="col-12">
               <label for="phone" class="form-label">Phone Number <small class="text-muted">(Optional)</small></label>
-              <input id="phone" name="phone" type="tel" class="form-control" inputmode="numeric" minlength="8" maxlength="8" pattern="[0-9]{8}" title="Enter an 8-digit number, digits only." value="{{ user.phone or '' }}">
+              <input id="phone" name="phone" type="tel" class="form-control"
+                inputmode="numeric" minlength="8" maxlength="8"
+                pattern="[0-9]{8}" title="Enter an 8-digit number."
+                value="{{ user.phone or '' }}">
             </div>
             <div class="col-12">
-              <label for="birthday" class="form-label">Birthday <span class="text-danger">*</span></label>
-              <input id="birthday" name="birthday" type="date" class="form-control" required value="{{ user.birthday or '' }}">
-              <div class="form-text">Your age category will be determined automatically.</div>
+              <div class="row g-2 align-items-center">
+                <div class="col-6">
+                  <label for="birthday" class="form-label">Birthday <span class="text-danger">*</span></label>
+                  <input id="birthday" name="birthday" type="date" class="form-control" required
+                    value="{{ user.birthday or '' }}">
+                </div>
+                <div class="col-6">
+                  <label class="form-label">Age Group</label>
+                  <input type="text" class="form-control" value="{{ user.age_category or '' }}" readonly>
+                </div>
+              </div>
             </div>
           </div>
 
           <div class="signup-actions">
             <a class="btn btn-light" href="{{ url_for('auth.signup', preserve=1) }}">Back</a>
-            <button type="submit" class="btn btn-primary">Next →</button>
+            <button type="submit" class="btn btn-primary">
+              Next
+              <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
           </div>
         </form>
+
       </div>
     </div>
   </div>
@@ -86,8 +344,9 @@
 <script>
   const form = document.getElementById('signupStep2Form');
   const firstNameInput = document.getElementById('firstName');
-  const lastNameInput = document.getElementById('lastName');
-  const birthdayInput = document.getElementById('birthday');
+  const lastNameInput  = document.getElementById('lastName');
+  const birthdayInput  = document.getElementById('birthday');
+  const ageGroupInput  = document.querySelector('.col-6 input[readonly].form-control');
 
   if (birthdayInput) {
     const today = new Date();
@@ -96,34 +355,43 @@
   }
 
   function validateName(input) {
-    const value = input.value;
-    const hasInvalidChars = /[^A-Za-z\s]/.test(value);
-    if (hasInvalidChars) {
+    if (/[^A-Za-z\s]/.test(input.value)) {
       input.setCustomValidity('Only letters are allowed');
-      input.value = value.replace(/[^A-Za-z\s]/g, '');
+      input.value = input.value.replace(/[^A-Za-z\s]/g, '');
     } else {
       input.setCustomValidity('');
     }
   }
 
-  firstNameInput.addEventListener('input', () => validateName(firstNameInput));
-  lastNameInput.addEventListener('input', () => validateName(lastNameInput));
+  function getAgeGroup(birthdayStr) {
+    if (!birthdayStr) return '';
+    const birthday = new Date(birthdayStr);
+    const today = new Date();
+    let age = today.getFullYear() - birthday.getFullYear();
+    const m = today.getMonth() - birthday.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthday.getDate())) age--;
+    if (age < 13) return '';
+    if (age < 18) return 'Youth';
+    if (age < 60) return 'Adult';
+    return 'Elderly';
+  }
 
-  form.addEventListener('submit', (e) => {
+  birthdayInput && birthdayInput.addEventListener('input', () => {
+    if (ageGroupInput) ageGroupInput.value = getAgeGroup(birthdayInput.value);
+  });
+
+  firstNameInput.addEventListener('input', () => validateName(firstNameInput));
+  lastNameInput.addEventListener('input',  () => validateName(lastNameInput));
+
+  form.addEventListener('submit', e => {
     if (birthdayInput && birthdayInput.value && birthdayInput.max && birthdayInput.value > birthdayInput.max) {
       e.preventDefault();
       birthdayInput.setCustomValidity('You must be at least 13 years old.');
       birthdayInput.reportValidity();
       return;
     }
-    if (birthdayInput) {
-      birthdayInput.setCustomValidity('');
-    }
-
-    if (!form.checkValidity()) {
-      e.preventDefault();
-      form.reportValidity();
-    }
+    if (birthdayInput) birthdayInput.setCustomValidity('');
+    if (!form.checkValidity()) { e.preventDefault(); form.reportValidity(); }
   });
 </script>
 {% endblock %}

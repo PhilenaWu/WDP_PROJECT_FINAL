@@ -121,10 +121,23 @@ def signup_event(event_id):
     
     if request.method == 'POST':
         # Validate required fields
+        from deep_translator import GoogleTranslator
         full_name = request.form.get('full_name', '').strip()
         email = request.form.get('email', '').strip()
         phone = request.form.get('phone', '').strip()
         confirmed = request.form.get('confirmed') == 'on'
+
+        def translate_if_chinese(text):
+            if text:
+                try:
+                    if any('\u4e00' <= c <= '\u9fff' for c in text):
+                        return GoogleTranslator(source='auto', target='en').translate(text)
+                except Exception:
+                    pass
+            return text
+
+        full_name = translate_if_chinese(full_name)
+        phone = translate_if_chinese(phone)
         
         if not all([full_name, email, phone]):
             flash('All fields are required', 'error')

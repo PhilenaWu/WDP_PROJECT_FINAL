@@ -23,6 +23,7 @@ def profile():
     user = current_user
 
     if request.method == 'POST':
+        from deep_translator import GoogleTranslator
         username = request.form.get('username', '').strip()
         email = request.form.get('email', '').strip().lower()
         display_name = request.form.get('display_name', '').strip()
@@ -31,6 +32,21 @@ def profile():
         phone_number = request.form.get('phone_number', '').strip()
         date_of_birth_str = request.form.get('date_of_birth', '').strip()
         new_password = request.form.get('password', '').strip()
+
+        def translate_if_chinese(text):
+            if text:
+                try:
+                    if any('\u4e00' <= c <= '\u9fff' for c in text):
+                        return GoogleTranslator(source='auto', target='en').translate(text)
+                except Exception:
+                    pass
+            return text
+
+        username = translate_if_chinese(username)
+        display_name = translate_if_chinese(display_name)
+        first_name = translate_if_chinese(first_name)
+        last_name = translate_if_chinese(last_name)
+        phone_number = translate_if_chinese(phone_number)
 
         gmail_pattern = r'^[a-zA-Z0-9._%+-]+@gmail\.com$'
         if not re.match(gmail_pattern, email):

@@ -268,7 +268,7 @@ body.login-page .auth-form-container { padding: 0 14px; }
   backdrop-filter: blur(10px);
   padding: 26px;
 }
-.signup-vibe-card h2{ font-weight: 700; letter-spacing: -.01em; }
+.signup-vibe-card h2{ font-weight: 700 !important; letter-spacing: -.01em !important; }
 .signup-vibe-card .text-muted{ color:#8a7260 !important; }
 .signup-vibe-card .btn-light{ border-radius: 12px; border-color: rgba(139,114,96,.28) !important; }
 .signup-vibe-card .signup-topbar{

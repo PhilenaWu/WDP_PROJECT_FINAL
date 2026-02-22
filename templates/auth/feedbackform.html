@@ -32,8 +32,8 @@
                     id="full_name"
                     name="full_name"
                     value="{{ form_data.get('full_name', '') }}"
-                    pattern="[A-Za-z\s]+"
-                    title="Only letters allowed."
+                    pattern="[\p{L} .'-]+"
+                    title="Only letters (any language), spaces, periods, apostrophes, hyphens allowed."
                     required
                 >
             </div>
@@ -100,14 +100,13 @@
         if (!fullNameInput) {
             return;
         }
-
         const value = fullNameInput.value;
-        const hasInvalidChars = /[^A-Za-z\s]/.test(value);
-
+        // Allow all Unicode letters, spaces, periods, apostrophes, hyphens
+        const hasInvalidChars = /[^\p{L} .'-]/u.test(value);
         if (hasInvalidChars) {
-            fullNameInput.setCustomValidity('Only letters are allowed');
+            fullNameInput.setCustomValidity("Only letters (any language), spaces, periods, apostrophes, hyphens allowed.");
             fullNameInput.reportValidity();
-            fullNameInput.value = value.replace(/[^A-Za-z\s]/g, '');
+            fullNameInput.value = value.replace(/[^\p{L} .'-]/gu, '');
         } else {
             fullNameInput.setCustomValidity('');
         }

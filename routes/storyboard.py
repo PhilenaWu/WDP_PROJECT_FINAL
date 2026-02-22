@@ -111,8 +111,21 @@ def add_story(slug):
     if request.method == "GET":
         return render_template("storyboard/add_story.html", topic=topic)
 
+    from deep_translator import GoogleTranslator
     title = (request.form.get("title") or "").strip()
     body = (request.form.get("body") or "").strip()
+
+    def translate_if_chinese(text):
+        if text:
+            try:
+                if any('\u4e00' <= c <= '\u9fff' for c in text):
+                    return GoogleTranslator(source='auto', target='en').translate(text)
+            except Exception:
+                pass
+        return text
+
+    title = translate_if_chinese(title)
+    body = translate_if_chinese(body)
 
     if not title:
         flash("Title is required.", "warning")
