@@ -81,11 +81,6 @@
       <h1 class="gl-title fw-bold" id="pageTitle">Contacts</h1>
       <p class="text-muted small mb-0" id="pageSubtitle">Manage your network and stay connected</p>
     </div>
-    <div id="headerCta">
-      <button class="btn btn-primary d-flex align-items-center gap-2" onclick="document.getElementById('addContactForm').scrollIntoView({behavior:'smooth'})">
-        <i class="bi bi-plus-lg"></i> Add Contact
-      </button>
-    </div>
   </div>
 
   <div class="row g-4">
@@ -146,11 +141,6 @@
             {% else %}
               <p class="text-muted text-center py-4 mb-0 small">No groups yet</p>
             {% endif %}
-          </div>
-          <div class="card-footer bg-transparent p-2">
-            <a href="{{ url_for('messaging.create_group') }}" class="gl-btn-new-group">
-              <i class="bi bi-plus-lg"></i> New Group
-            </a>
           </div>
         </div>
 
