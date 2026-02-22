@@ -36,13 +36,13 @@ class Config:
     RESET_TOKEN_MAX_AGE_SECONDS = int(os.environ.get('RESET_TOKEN_MAX_AGE_SECONDS', 1800))
     
     # Google Maps API
-    GOOGLE_MAPS_API_KEY = os.environ.get('GOOGLE_MAPS_API_KEY') or ''
+    GOOGLE_MAPS_API_KEY = os.environ.get('GOOGLE_MAPS_API_KEY', '').strip()
     
-    # Google Gemini AI Image Generation
-    GOOGLE_GENAI_API_KEY = os.environ.get('GOOGLE_GENAI_API_KEY') or ''
+    # Google Gemini AI Image Generation - explicitly strip whitespace
+    _raw_genai_key = os.environ.get('GOOGLE_GENAI_API_KEY', '')
+    GOOGLE_GENAI_API_KEY = _raw_genai_key.strip() if _raw_genai_key else ''
 
     # Google OAuth (Signup/Login)
     GOOGLE_OAUTH_CLIENT_ID = os.environ.get('GOOGLE_OAUTH_CLIENT_ID', '')
     GOOGLE_OAUTH_CLIENT_SECRET = os.environ.get('GOOGLE_OAUTH_CLIENT_SECRET', '')
     GOOGLE_OAUTH_REDIRECT_URI = os.environ.get('GOOGLE_OAUTH_REDIRECT_URI', '')
-    

@@ -213,8 +213,9 @@
                     <label for="image" class="form-label">Upload Image</label>
                     <input type="file" class="form-control" id="image" name="image" 
                            accept="image/png,image/jpeg,image/jpg,image/gif" 
-                           onchange="validateFileSize(this)" required>
+                           onchange="validateFileSize(this)">
                     <div class="invalid-feedback" id="fileSizeError">File size must be less than 5MB.</div>
+                    <div class="invalid-feedback" id="imageRequiredError">Please upload an image or generate one using AI.</div>
                     <small class="text-muted">Max 5MB. Formats: PNG, JPG, JPEG, GIF</small>
                 </div>
                 
@@ -249,32 +250,61 @@
 
 {% block extra_js %}
 <script>
+    // File size validation - expose globally for onchange handler
+    function validateFileSize(input) {
+        const file = input.files[0];
+        const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+        const errorDiv = document.getElementById('fileSizeError');
+        
+        if (file && file.size > maxSize) {
+            input.classList.add('is-invalid');
+            if (errorDiv) errorDiv.style.display = 'block';
+            input.setCustomValidity('File size must be less than 5MB');
+        } else {
+            input.classList.remove('is-invalid');
+            if (errorDiv) errorDiv.style.display = 'none';
+            input.setCustomValidity('');
+        }
+    }
+
     (function() {
         'use strict';
         const form = document.querySelector('form');
+        const fileInput = document.getElementById('image');
+        const aiImageUrlInput = document.getElementById('ai_image_url');
         
-        // File size validation
-        function validateFileSize(input) {
-            const file = input.files[0];
-            const maxSize = 5 * 1024 * 1024; // 5MB in bytes
-            const errorDiv = document.getElementById('fileSizeError');
+        // Validate that either file or AI image is provided
+        function validateImageInput() {
+            const hasFile = fileInput.files && fileInput.files.length > 0;
+            const hasAiImage = aiImageUrlInput.value && aiImageUrlInput.value.trim() !== '';
+            const imageRequiredError = document.getElementById('imageRequiredError');
             
-            if (file && file.size > maxSize) {
-                input.classList.add('is-invalid');
-                if (errorDiv) errorDiv.style.display = 'block';
-                input.setCustomValidity('File size must be less than 5MB');
+            if (!hasFile && !hasAiImage) {
+                fileInput.classList.add('is-invalid');
+                if (imageRequiredError) imageRequiredError.style.display = 'block';
+                fileInput.setCustomValidity('Please upload an image or generate one using AI');
+                return false;
             } else {
-                input.classList.remove('is-invalid');
-                if (errorDiv) errorDiv.style.display = 'none';
-                input.setCustomValidity('');
+                fileInput.classList.remove('is-invalid');
+                if (imageRequiredError) imageRequiredError.style.display = 'none';
+                fileInput.setCustomValidity('');
+                return true;
             }
         }
         
         form.addEventListener('submit', function(event) {
+            // Check image input
+            if (!validateImageInput()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            // Check built-in validity
             if (!form.checkValidity()) {
                 event.preventDefault();
                 event.stopPropagation();
             }
+            
             form.classList.add('was-validated');
         }, false);
         

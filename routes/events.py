@@ -701,12 +701,34 @@ def generate_ai_image():
         # Combine all parts and add styling
         prompt = ", ".join(prompt_parts) + ", professional event poster style, vibrant colors, inviting atmosphere"
         
+        # Get API key from Config
+        api_key = Config.GOOGLE_GENAI_API_KEY
+        
+        print(f"DEBUG: Checking API key")
+        print(f"  Config.GOOGLE_GENAI_API_KEY: '{api_key}'")
+        print(f"  Type: {type(api_key)}, Length: {len(api_key) if api_key else 0}")
+        
+        if not api_key:
+            print("DEBUG: API key is missing!")
+            return jsonify({
+                'success': False, 
+                'error': 'GOOGLE_GENAI_API_KEY not configured. Please verify your .env file has the GOOGLE_GENAI_API_KEY line and restart the server.'
+            }), 500
+        
         # Initialize Google Genai client
-        client = genai.Client(api_key=Config.GOOGLE_GENAI_API_KEY)
+        try:
+            client = genai.Client(api_key=api_key)
+            print(f"DEBUG: Client created successfully")
+        except Exception as e:
+            print(f"DEBUG: Error creating client: {type(e).__name__}: {e}")
+            return jsonify({
+                'success': False, 
+                'error': f'Failed to initialize AI client: {str(e)}'
+            }), 500
         
         # Generate image using Gemini 2.5 Flash Image
         response = client.models.generate_content(
-            model="gemini-2.5-flash-image",
+            model="models/gemini-2.5-flash-image",
             contents=prompt
         )
         
