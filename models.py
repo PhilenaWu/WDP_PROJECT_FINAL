@@ -199,6 +199,25 @@ class Event:
         query = "SELECT id FROM event_registrations WHERE event_id = %s AND user_id = %s"
         result = execute_query(query, (event_id, user_id), fetch_one=True)
         return result is not None
+    
+    @staticmethod
+    def delete_by_title_and_date(title, event_date):
+        """Delete event by title and date (used when revoking submission approval)"""
+        # First delete all registrations for this event
+        query_get_id = "SELECT id FROM events WHERE title = %s AND event_date = %s"
+        event = execute_query(query_get_id, (title, event_date), fetch_one=True)
+        
+        if event:
+            event_id = event['id']
+            # Delete registrations first (foreign key constraint)
+            query_delete_reg = "DELETE FROM event_registrations WHERE event_id = %s"
+            execute_query(query_delete_reg, (event_id,), commit=True)
+            
+            # Then delete the event
+            query_delete_event = "DELETE FROM events WHERE id = %s"
+            execute_query(query_delete_event, (event_id,), commit=True)
+            return True
+        return False
 
 
 class EventRegistration:

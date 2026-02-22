@@ -346,6 +346,18 @@
 
 {% block extra_js %}
 <script>
+    // ===== SYNC LANGUAGE FROM BACKEND TO LOCALSTORAGE =====
+    (function() {
+        const adminLanguage = "{{ admin_language or 'en' }}";
+        if (adminLanguage && adminLanguage !== 'en') {
+            localStorage.setItem('siteLanguage', adminLanguage);
+            // Trigger the translation function from base.html if it exists
+            if (typeof setSiteLanguage === 'function') {
+                setSiteLanguage(adminLanguage);
+            }
+        }
+    })();
+
     function filterSubmissions(status) {
         const cards = document.querySelectorAll('.submission-card');
         const tabs = document.querySelectorAll('.filter-tab');
