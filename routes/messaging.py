@@ -49,8 +49,18 @@ def view_contacts():
             (user_id,), fetch_all=True
         ) or []
 
-    return render_template('messaging/contacts.html', contacts=contacts, available_users=available_users)
+    groups = execute_query("""
+        SELECT g.*,
+            (SELECT COUNT(*) FROM group_members WHERE group_id = g.id) AS member_count
+        FROM `groups` g
+        JOIN group_members gm ON g.id = gm.group_id
+        WHERE gm.user_id = %s AND g.is_active = TRUE
+        ORDER BY g.name
+    """, (user_id,), fetch_all=True) or []
 
+    return render_template('messaging/contacts.html',
+        contacts=contacts, available_users=available_users,
+        groups=groups)
 
 @messaging_bp.route('/contacts/add', methods=['POST'])
 @login_required
@@ -242,7 +252,7 @@ def create_group():
             )
 
         flash(f'Group "{name}" created successfully!', 'success')
-        return redirect(url_for('messaging.view_groups'))
+        return redirect(url_for('messaging.view_contacts'))
 
     contacts = execute_query("""
         SELECT c.*, u.display_name AS contact_display_name, u.username AS contact_username
@@ -262,7 +272,7 @@ def edit_group(group_id):
     group = execute_query("SELECT * FROM `groups` WHERE id = %s AND is_active = TRUE", (group_id,), fetch_one=True)
     if not group:
         flash('Group not found', 'error')
-        return redirect(url_for('messaging.view_groups'))
+        return redirect(url_for('messaging.view_contacts'))
 
     membership = execute_query(
         "SELECT * FROM group_members WHERE group_id = %s AND user_id = %s AND is_admin = TRUE",
@@ -270,7 +280,7 @@ def edit_group(group_id):
     )
     if not membership:
         flash('Only group admins can edit group details', 'error')
-        return redirect(url_for('messaging.view_groups'))
+        return redirect(url_for('messaging.view_contacts'))
 
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
@@ -305,15 +315,15 @@ def delete_group(group_id):
     group = execute_query("SELECT * FROM `groups` WHERE id = %s", (group_id,), fetch_one=True)
     if not group:
         flash('Group not found', 'error')
-        return redirect(url_for('messaging.view_groups'))
+        return redirect(url_for('messaging.view_contacts'))
 
     if group['created_by'] != user_id:
         flash('Only the group creator can delete this group', 'error')
-        return redirect(url_for('messaging.view_groups'))
+        return redirect(url_for('messaging.view_contacts'))
 
     execute_query("UPDATE `groups` SET is_active = FALSE WHERE id = %s", (group_id,), commit=True)
     flash(f'Group "{group["name"]}" has been deleted', 'success')
-    return redirect(url_for('messaging.view_groups'))
+    return redirect(url_for('messaging.view_contacts'))
 
 
 # ==================== MESSAGES CRUD ====================
@@ -343,8 +353,50 @@ def chat_direct(contact_id):
         (contact_id, user_id), commit=True
     )
 
-    return render_template('messaging/chat_direct.html', contact=contact_user, messages=messages)
+    # Fetch sidebar contacts
+    all_contacts = execute_query("""
+        SELECT c.*,
+            u.display_name AS contact_display_name,
+            u.username     AS contact_username,
+            u.age_group    AS contact_age_group,
+            latest_msg.content AS last_message,
+            latest_msg.sender_id AS last_message_sender_id,
+            latest_msg.created_at AS last_message_time
+        FROM contacts c
+        JOIN users u ON c.contact_user_id = u.id
+        LEFT JOIN (
+            SELECT m1.*
+            FROM messages m1
+            INNER JOIN (
+                SELECT
+                    LEAST(sender_id, receiver_id) AS user_a,
+                    GREATEST(sender_id, receiver_id) AS user_b,
+                    MAX(created_at) AS max_time
+                FROM messages
+                WHERE is_deleted = FALSE AND group_id IS NULL
+                GROUP BY LEAST(sender_id, receiver_id), GREATEST(sender_id, receiver_id)
+            ) m2 ON LEAST(m1.sender_id, m1.receiver_id) = m2.user_a
+                AND GREATEST(m1.sender_id, m1.receiver_id) = m2.user_b
+                AND m1.created_at = m2.max_time
+            WHERE m1.is_deleted = FALSE AND m1.group_id IS NULL
+        ) latest_msg ON (
+            (latest_msg.sender_id = %s AND latest_msg.receiver_id = c.contact_user_id)
+            OR (latest_msg.sender_id = c.contact_user_id AND latest_msg.receiver_id = %s)
+        )
+        WHERE c.user_id = %s
+        ORDER BY latest_msg.created_at DESC, c.is_favorite DESC, u.display_name ASC
+    """, (user_id, user_id, user_id), fetch_all=True) or []
 
+    all_groups = execute_query("""
+        SELECT g.*,
+            (SELECT COUNT(*) FROM group_members WHERE group_id = g.id) AS member_count
+        FROM `groups` g
+        JOIN group_members gm ON g.id = gm.group_id
+        WHERE gm.user_id = %s AND g.is_active = TRUE
+        ORDER BY g.name
+    """, (user_id,), fetch_all=True) or []
+
+    return render_template('messaging/chat_direct.html', contact=contact_user, messages=messages, all_contacts=all_contacts, all_groups=all_groups)
 
 @messaging_bp.route('/chat/group/<int:group_id>')
 @login_required
@@ -375,9 +427,53 @@ def chat_group(group_id):
         ORDER BY m.created_at ASC
     """, (group_id,), fetch_all=True) or []
 
-    return render_template('messaging/chat_group.html',
-                           group=group, messages=messages,
-                           is_admin=membership['is_admin'] if membership else False)
+    is_admin = membership['is_admin'] if membership else False
+
+    all_contacts = execute_query("""
+        SELECT c.*,
+            u.display_name AS contact_display_name,
+            u.username     AS contact_username,
+            u.age_group    AS contact_age_group,
+            latest_msg.content AS last_message,
+            latest_msg.sender_id AS last_message_sender_id,
+            latest_msg.created_at AS last_message_time
+        FROM contacts c
+        JOIN users u ON c.contact_user_id = u.id
+        LEFT JOIN (
+            SELECT m1.*
+            FROM messages m1
+            INNER JOIN (
+                SELECT
+                    LEAST(sender_id, receiver_id) AS user_a,
+                    GREATEST(sender_id, receiver_id) AS user_b,
+                    MAX(created_at) AS max_time
+                FROM messages
+                WHERE is_deleted = FALSE AND group_id IS NULL
+                GROUP BY LEAST(sender_id, receiver_id), GREATEST(sender_id, receiver_id)
+            ) m2 ON LEAST(m1.sender_id, m1.receiver_id) = m2.user_a
+                AND GREATEST(m1.sender_id, m1.receiver_id) = m2.user_b
+                AND m1.created_at = m2.max_time
+            WHERE m1.is_deleted = FALSE AND m1.group_id IS NULL
+        ) latest_msg ON (
+            (latest_msg.sender_id = %s AND latest_msg.receiver_id = c.contact_user_id)
+            OR (latest_msg.sender_id = c.contact_user_id AND latest_msg.receiver_id = %s)
+        )
+        WHERE c.user_id = %s
+        ORDER BY latest_msg.created_at DESC, c.is_favorite DESC, u.display_name ASC
+    """, (user_id, user_id, user_id), fetch_all=True) or []
+    
+    all_groups = execute_query("""
+        SELECT g.*, (SELECT COUNT(*) FROM group_members WHERE group_id = g.id) AS member_count
+        FROM `groups` g JOIN group_members gm ON g.id = gm.group_id
+        WHERE gm.user_id = %s AND g.is_active = TRUE ORDER BY g.name
+    """, (user_id,), fetch_all=True) or []
+
+    return render_template(
+        'messaging/chat_group.html',
+        group=group, messages=messages, is_admin=is_admin,
+        all_contacts=all_contacts, all_groups=all_groups
+    )
+
 
 
 @messaging_bp.route('/message/send', methods=['POST'])
