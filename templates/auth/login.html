@@ -20,6 +20,12 @@
   padding: 36px 44px !important;
   animation: cardEnter .45s cubic-bezier(.22,1,.36,1) both;
 }
+
+@media (max-width: 768px) {
+  .signup-vibe-card {
+    margin-top: 32px !important;
+  }
+}
 @keyframes cardEnter {
   from { opacity:0; transform:translateY(18px) scale(.98); }
   to   { opacity:1; transform:none; }
