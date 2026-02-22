@@ -38,6 +38,35 @@
 
 </div>
 
+{% if selected_interest_topics and selected_interest_topics|length > 0 %}
+<div class="card border-0 shadow-sm rounded-4 p-4 mb-5 interest-topics-wrap">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div>
+      <h4 class="fw-bold mb-1">Your Selected Interests</h4>
+      <p class="text-muted mb-0">Storyboards based on your signup preferences</p>
+    </div>
+    <span class="interest-count-pill">{{ selected_interest_topics|length }} / 3</span>
+  </div>
+
+  <div class="row g-4">
+    {% for t in selected_interest_topics %}
+      <div class="col-12 col-md-4">
+        <a href="{{ url_for('storyboard.topic_detail', slug=t.slug) }}" class="featured-card text-decoration-none d-block">
+          <div class="position-relative overflow-hidden rounded-4 shadow-sm featured-wrap">
+            <img src="{{ url_for('static', filename='uploads/main_topics_images/' ~ t.image) }}"
+                 class="w-100 featured-img"
+                 alt="{{ t.title }}">
+            <div class="featured-overlay">
+              <div class="featured-title">{{ t.title }}</div>
+            </div>
+          </div>
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
   <!-- ================= TOOLBAR ================= -->
   <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
 

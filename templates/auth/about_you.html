@@ -56,7 +56,9 @@
             type="text"
             class="input-field"
             placeholder="Display name"
+            required
             value="{{ user.display_name or '' }}">
+          <span class="star">*</span>
         </div>
 
         <!-- email -->
@@ -172,6 +174,13 @@
     const firstNameInput = document.getElementById('firstName');
     const lastNameInput = document.getElementById('lastName');
     const emailInput = document.getElementById('email');
+    const birthdayInput = document.getElementById('birthday');
+
+    if (birthdayInput) {
+      const today = new Date();
+      const maxDate = new Date(today.getFullYear() - 13, today.getMonth(), today.getDate());
+      birthdayInput.max = maxDate.toISOString().split('T')[0];
+    }
 
     // validate names on input - use custom validity message (like password)
     function validateName(input) {
@@ -205,6 +214,17 @@
     emailInput.addEventListener('input', () => validateEmail(emailInput));
 
     form.addEventListener('submit', e => {
+      if (birthdayInput && birthdayInput.value && birthdayInput.max && birthdayInput.value > birthdayInput.max) {
+        e.preventDefault();
+        birthdayInput.setCustomValidity('You must be at least 13 years old.');
+        birthdayInput.reportValidity();
+        return;
+      }
+
+      if (birthdayInput) {
+        birthdayInput.setCustomValidity('');
+      }
+
       if (!form.checkValidity()) {
         e.preventDefault();
         form.reportValidity();

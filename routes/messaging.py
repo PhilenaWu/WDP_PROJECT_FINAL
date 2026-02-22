@@ -60,6 +60,19 @@ def add_contact():
     contact_user_id = request.form.get('contact_user_id')
     nickname = request.form.get('nickname', '').strip()
 
+    from deep_translator import GoogleTranslator
+
+    def translate_if_chinese(text):
+        if text:
+            try:
+                if any('\u4e00' <= c <= '\u9fff' for c in text):
+                    return GoogleTranslator(source='auto', target='en').translate(text)
+            except Exception:
+                pass
+        return text
+
+    nickname = translate_if_chinese(nickname)
+
     if not contact_user_id:
         flash('Please select a user to add', 'error')
         return redirect(url_for('messaging.view_contacts'))

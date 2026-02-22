@@ -9,6 +9,16 @@ from google import genai
 from werkzeug.utils import secure_filename
 from pathlib import Path
 from config import Config
+from deep_translator import GoogleTranslator
+def translate_to_english(text):
+    if text:
+        try:
+            # Only translate if not already English (simple heuristic: contains non-ASCII or CJK)
+            if any(ord(c) > 127 for c in text):
+                return GoogleTranslator(source='auto', target='en').translate(text)
+        except Exception:
+            pass
+    return text
 
 events_bp = Blueprint('events', __name__)
 
@@ -121,10 +131,23 @@ def signup_event(event_id):
     
     if request.method == 'POST':
         # Validate required fields
+        from deep_translator import GoogleTranslator
         full_name = request.form.get('full_name', '').strip()
         email = request.form.get('email', '').strip()
         phone = request.form.get('phone', '').strip()
         confirmed = request.form.get('confirmed') == 'on'
+
+        def translate_if_chinese(text):
+            if text:
+                try:
+                    if any('\u4e00' <= c <= '\u9fff' for c in text):
+                        return GoogleTranslator(source='auto', target='en').translate(text)
+                except Exception:
+                    pass
+            return text
+
+        full_name = translate_if_chinese(full_name)
+        phone = translate_if_chinese(phone)
         
         if not all([full_name, email, phone]):
             flash('All fields are required', 'error')
@@ -184,6 +207,7 @@ def submit_event():
     """Event submission form for users"""
     if request.method == 'POST':
         try:
+
             # Organizer info
             organizer_name = request.form.get('organizer_name', '').strip()
             organizer_dob = request.form.get('organizer_dob', '').strip()
@@ -191,18 +215,27 @@ def submit_event():
             organizer_email = request.form.get('organizer_email', '').strip()
             organizer_phone = request.form.get('organizer_phone', '').strip()
             organizer_location = request.form.get('organizer_location', '').strip()
-            
+
             # Event details
             event_title = request.form.get('event_title', '').strip()
             event_summary = request.form.get('event_summary', '').strip()
             event_type = request.form.get('event_type', '').strip()
             preferred_date = request.form.get('preferred_date', '').strip()
             expected_participants = request.form.get('expected_participants', '').strip()
-            
+
             # Additional info
             why_meaningful = request.form.get('why_meaningful', '').strip()
             previous_experience = request.form.get('previous_experience', '').strip()
             accessibility = request.form.get('accessibility', '').strip()
+
+            # Translate relevant fields to English before storing
+            organizer_name = translate_to_english(organizer_name)
+            organizer_location = translate_to_english(organizer_location)
+            event_title = translate_to_english(event_title)
+            event_summary = translate_to_english(event_summary)
+            why_meaningful = translate_to_english(why_meaningful)
+            previous_experience = translate_to_english(previous_experience)
+            accessibility = translate_to_english(accessibility)
             
             # Validate required fields
             required_fields = {

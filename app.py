@@ -46,7 +46,11 @@ def create_app():
         return User.get_by_id(int(user_id))
 
     # Blueprints
-    from routes.auth import auth_bp
+    from routes.auth import (
+        auth_bp,
+        GOOGLE_TRANSLATE_LANGUAGES,
+        GOOGLE_TRANSLATE_LANGUAGE_ALIASES,
+    )
     from routes.profile import profile_bp
     from routes.main import main_bp
     from routes.events import events_bp
@@ -67,7 +71,9 @@ def create_app():
 
     @app.route("/")
     def index():
-        return redirect(url_for("main.home"))
+        if current_user.is_authenticated:
+            return redirect(url_for("main.home"))
+        return render_template("auth/prelogin.html")
 
     # Template filters
     @app.template_filter('format_time')
@@ -128,6 +134,15 @@ def create_app():
             return {"appearance_pref": pref}
         except Exception:
             return {"appearance_pref": default_pref}
+
+    @app.context_processor
+    def inject_translate_language_codes():
+        return {
+            "translate_language_codes": [
+                code for code, _ in GOOGLE_TRANSLATE_LANGUAGES
+            ],
+            "translate_language_aliases": GOOGLE_TRANSLATE_LANGUAGE_ALIASES,
+        }
 
     # If you already have a storyboard blueprint route, you can delete this duplicate route
     @app.route("/storyboard")

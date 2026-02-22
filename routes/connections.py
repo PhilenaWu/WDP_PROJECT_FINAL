@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify, g
+from flask import Blueprint, render_template, request, jsonify, g, url_for
 from flask_login import login_required, current_user
 import mysql.connector
 from config import Config
@@ -67,9 +67,41 @@ def fail(msg="error", code=400, **extra):
 
 def normalize_users(rows):
     rows = rows or []
+    fallback_avatar = url_for("static", filename="uploads/main_topics_images/default_pfp.png")
+
+    def build_avatar_url(raw_value):
+        profile_picture = str(raw_value or "").strip()
+        if profile_picture.lower() in {"", "none", "null", "nil", "undefined", "nan"}:
+            return "", fallback_avatar
+
+        profile_picture = profile_picture.replace("\\", "/")
+
+        lower_path = profile_picture.lower()
+        if lower_path.startswith(("http://", "https://", "data:image/")):
+            return profile_picture, profile_picture
+
+        if "/static/" in lower_path:
+            idx = lower_path.find("/static/") + len("/static/")
+            profile_picture = profile_picture[idx:]
+        elif lower_path.startswith("static/"):
+            profile_picture = profile_picture[len("static/"):]
+        elif lower_path.startswith("/static/"):
+            profile_picture = profile_picture[len("/static/"):]
+
+        profile_picture = profile_picture.lstrip("/")
+
+        if profile_picture.startswith("profile_pics/"):
+            profile_picture = f"uploads/{profile_picture}"
+        elif profile_picture and "/" not in profile_picture:
+            profile_picture = f"uploads/profile_pics/{profile_picture}"
+
+        return profile_picture, url_for("static", filename=profile_picture) if profile_picture else fallback_avatar
+
     for r in rows:
         r["name"] = r.get("display_name") or r.get("username") or "User"
-        r["profile_picture"] = r.get("profile_picture") or r.get("profile_pic") or ""
+        profile_picture, avatar_url = build_avatar_url(r.get("profile_picture") or r.get("profile_pic") or "")
+        r["profile_picture"] = profile_picture
+        r["avatar_url"] = avatar_url
         r["age_group"] = r.get("age_group") or ""
         # mutual_count may exist for suggestions; keep if present
     return rows

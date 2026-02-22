@@ -4,6 +4,129 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<style>
+/* =============================================
+   LOGIN PAGE — matches signup card design
+   ============================================= */
+
+.auth-form-container-large { max-width: 580px !important; }
+
+.signup-vibe-card {
+  background: rgba(255,255,255,0.94) !important;
+  border: 1px solid rgba(243,154,31,0.18) !important;
+  border-radius: 28px !important;
+  box-shadow: 0 2px 0 rgba(243,154,31,0.07), 0 24px 64px rgba(31,24,17,0.12), inset 0 1px 0 rgba(255,255,255,0.85) !important;
+  backdrop-filter: blur(14px);
+  padding: 36px 44px !important;
+  animation: cardEnter .45s cubic-bezier(.22,1,.36,1) both;
+}
+
+@media (max-width: 768px) {
+  .signup-vibe-card {
+    margin-top: 32px !important;
+  }
+}
+@keyframes cardEnter {
+  from { opacity:0; transform:translateY(18px) scale(.98); }
+  to   { opacity:1; transform:none; }
+}
+html[data-theme='dark'] .signup-vibe-card {
+  background: rgba(15,22,38,0.93) !important;
+  border-color: rgba(243,154,31,0.16) !important;
+  box-shadow: 0 2px 0 rgba(0,0,0,.35), 0 24px 64px rgba(0,0,0,.52), inset 0 1px 0 rgba(255,255,255,.04) !important;
+}
+
+/* Back button */
+.signup-back-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  border-radius: 999px !important;
+  padding: 7px 16px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  border: 1.5px solid rgba(139,114,96,.20) !important;
+  background: rgba(255,255,255,.60) !important;
+  color: #7a6355 !important;
+  text-decoration: none !important;
+  transition: all .2s ease !important;
+  margin-bottom: 22px;
+}
+.signup-back-btn:hover {
+  border-color: rgba(243,154,31,.45) !important;
+  color: #f39a1f !important;
+  background: rgba(255,249,240,.92) !important;
+  transform: translateX(-2px) !important;
+  text-decoration: none !important;
+}
+html[data-theme='dark'] .signup-back-btn {
+  background: rgba(23,34,54,.88) !important;
+  border-color: #3a4b6a !important;
+  color: #dbe5f7 !important;
+}
+html[data-theme='dark'] .signup-back-btn:hover {
+  border-color: rgba(243,154,31,.55) !important;
+  color: #ffd9a6 !important;
+  background: rgba(29,42,66,.95) !important;
+}
+
+/* Form controls */
+.signup-vibe-card .form-control {
+  border-radius: 12px !important;
+  min-height: 48px !important;
+  border: 1.5px solid rgba(139,114,96,.20) !important;
+  background: #fdfaf7 !important;
+  font-size: 14px !important;
+  transition: border-color .2s, box-shadow .2s, background .2s;
+}
+.signup-vibe-card .form-control:focus {
+  border-color: rgba(243,154,31,.55) !important;
+  box-shadow: 0 0 0 3.5px rgba(243,154,31,.13) !important;
+  background: #fff !important;
+}
+html[data-theme='dark'] .signup-vibe-card .form-control {
+  background: rgba(23,34,54,.70) !important;
+  border-color: #2f3d59 !important;
+}
+html[data-theme='dark'] .signup-vibe-card .form-control:focus {
+  background: rgba(23,34,54,.95) !important;
+}
+
+/* Primary button */
+.signup-vibe-card .btn-primary {
+  border-radius: 12px !important;
+  padding: 13px 20px !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  background: linear-gradient(135deg, #f39a1f 0%, #ff8c61 100%) !important;
+  border: none !important;
+  box-shadow: 0 5px 18px rgba(243,154,31,.28) !important;
+  transition: all .22s ease !important;
+}
+.signup-vibe-card .btn-primary:hover {
+  filter: brightness(1.04) !important;
+  box-shadow: 0 8px 26px rgba(243,154,31,.40) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Google button */
+.google-signup-btn {
+  border-radius: 12px !important;
+  padding: 12px 16px !important;
+  font-weight: 600 !important;
+  transition: all .2s ease !important;
+}
+.google-signup-btn:hover {
+  box-shadow: 0 5px 18px rgba(0,0,0,.09) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Divider */
+.signup-divider { position: relative; text-align: center; color: #aaa; font-size: 12.5px; }
+.signup-divider::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: #e8e2db; }
+.signup-divider span { position: relative; background: rgba(255,255,255,.94); padding: 0 12px; }
+html[data-theme='dark'] .signup-divider span { background: rgba(15,22,38,.93); }
+</style>
 {% endblock %}
 
 {% block body_class %}class="login-page"{% endblock %}
@@ -11,152 +134,137 @@
 {% block footer %}{% endblock %}
 
 {% block content %}
-<div class="container-fluid vh-100">
-    <div class="row h-100">
-        <div class="col-md-4 d-none d-md-flex align-items-center justify-content-center login-banner">
-            <div class="text-center">
-                <img src="{{ url_for('static', filename='uploads/profile_pics/logo.png') }}" alt="Genlink Logo" class="auth-logo-large">
-            </div>
-        </div>
-
-        <div class="col-md-8 d-flex align-items-center justify-content-center">
-            <div class="w-100 auth-form-container">
-                <div class="text-center mb-4">
-                    <h2>Login</h2>
-                    <p class="text-muted">Sign in to your account</p>
-                </div>
-
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show {% if message == 'Please log in to access this page.' %}login-required-alert{% endif %}" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
-
-                <form method="POST">
-                    <!-- error message with countdown -->
-                    {% if error %}
-                        <p class="auth-error-message" id="errorMessage">
-                            {{ error }}
-                            {% if lockout_seconds %}
-                                <span id="countdown"></span>
-                                <input type="hidden" id="lockout-seconds" value="{{ lockout_seconds }}">
-                            {% endif %}
-                        </p>
-                    {% endif %}
-
-                    <!-- username -->
-                    <div class="mb-3">
-                        <label for="username" class="form-label">
-                            <i class="bi bi-person"></i> Username
-                        </label>
-                        <input type="text" class="form-control" id="username" name="username" required>
-                    </div>
-
-                    <!-- password -->
-                    <div class="mb-3">
-                        <label for="password" class="form-label">
-                            <i class="bi bi-lock"></i> Password
-                        </label>
-                        <div class="password-input-wrapper">
-                            <input type="password" class="form-control" id="password" name="password" required>
-                            <button
-                              type="button"
-                              class="eye-icon"
-                              id="signin-eye"
-                              aria-label="Show password"
-                            ></button>
-                        </div>
-                    </div>
-
-                    <!-- login button -->
-                    <button type="submit" class="btn btn-primary w-100 py-2 mb-3 signin-login">
-                        Login
-                    </button>
-
-                    <!-- signup link -->
-                    <div class="text-center">
-                        <p class="mb-0">Don't have an account?
-                            <a href="{{ url_for('auth.signup') }}" class="text-primary-color">Sign up</a>
-                        </p>
-                        <p class="mt-2 mb-0">Forgot your password?
-                            <a href="{{ url_for('auth.forgot_password') }}" class="text-primary-color">Forgot password</a>
-                        </p>
-                    </div>
-                </form>
-            </div>
-        </div>
+<div class="container-fluid vh-100 signup-vibe-shell">
+  <div class="row h-100">
+    <div class="col-md-4 d-none d-md-flex align-items-center justify-content-center login-banner signup-vibe-banner">
+      <div class="text-center">
+        <img src="{{ url_for('static', filename='uploads/profile_pics/logo.png') }}" alt="Genlink Logo" class="auth-logo-large">
+      </div>
     </div>
+
+    <div class="col-md-8 d-flex align-items-center justify-content-center">
+      <div class="w-100 auth-form-container-large signup-vibe-card">
+
+        <a href="{{ url_for('index') }}" class="btn signup-back-btn">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7L9 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Back
+        </a>
+
+        <div class="text-center mb-4">
+          <h2 style="font-weight:700;letter-spacing:-0.02em;">Sign in</h2>
+          <p class="text-muted" style="font-size:13.5px;">Sign in to your account</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show {% if message == 'Please log in to access this page.' %}login-required-alert{% endif %}" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+          <a href="{{ url_for('auth.login_google') }}" class="btn btn-light w-100 border google-signup-btn mb-3">
+            <img src="{{ url_for('static', filename='images/google-logo.svg') }}" alt="Google" class="google-logo-real">
+            Continue with Google
+          </a>
+
+          <div class="signup-divider mb-3"><span>or sign in with username</span></div>
+
+          {% if error %}
+            <p class="auth-error-message" id="errorMessage">
+              {{ error }}
+              {% if lockout_seconds %}
+                <span id="countdown"></span>
+                <input type="hidden" id="lockout-seconds" value="{{ lockout_seconds }}">
+              {% endif %}
+            </p>
+          {% endif %}
+
+          <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control" id="username" name="username" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <div class="password-input-wrapper">
+              <input type="password" class="form-control" id="password" name="password" required>
+              <button type="button" class="eye-icon" id="signin-eye" aria-label="Show password"></button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 mb-3 signin-login">Login</button>
+
+          <div class="text-center" style="font-size:13.5px;">
+            <p class="mb-1">Don't have an account?
+              <a href="{{ url_for('auth.signup') }}" class="text-primary-color">Sign up</a>
+            </p>
+            <p class="mb-0">Forgot your password?
+              <a href="{{ url_for('auth.forgot_password') }}" class="text-primary-color">Forgot password</a>
+            </p>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    // Toggle password visibility
-    const eyeBtn = document.getElementById('signin-eye');
-    const pwdInput = document.getElementById('password');
-    
-    if (eyeBtn && pwdInput) {
-        eyeBtn.addEventListener('click', () => {
-            const isHidden = pwdInput.type === 'password';
-            pwdInput.type = isHidden ? 'text' : 'password';
-            eyeBtn.classList.toggle('open', isHidden);
-            eyeBtn.setAttribute(
-                'aria-label',
-                isHidden ? 'Hide password' : 'Show password'
-            );
-        });
+  const eyeBtn   = document.getElementById('signin-eye');
+  const pwdInput = document.getElementById('password');
+
+  if (eyeBtn && pwdInput) {
+    eyeBtn.addEventListener('click', () => {
+      const isHidden = pwdInput.type === 'password';
+      pwdInput.type = isHidden ? 'text' : 'password';
+      eyeBtn.classList.toggle('open', isHidden);
+      eyeBtn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+    });
+  }
+
+  const lockoutInput = document.getElementById('lockout-seconds');
+  let remainingSeconds = parseInt(lockoutInput?.value, 10) || 0;
+
+  if (remainingSeconds > 0) {
+    const countdownElement = document.getElementById('countdown');
+    const usernameInput    = document.querySelector('input[name="username"]');
+    const passwordInput    = document.querySelector('input[name="password"]');
+    const loginButton      = document.querySelector('.signin-login');
+
+    usernameInput.disabled = true;
+    passwordInput.disabled = true;
+    eyeBtn.disabled = true;
+    loginButton.disabled = true;
+    loginButton.style.opacity = '0.5';
+    loginButton.style.cursor  = 'not-allowed';
+
+    function updateCountdown() {
+      if (remainingSeconds <= 0) {
+        countdownElement.textContent = '';
+        document.getElementById('errorMessage').textContent = 'You can now try logging in again.';
+        usernameInput.disabled = false;
+        passwordInput.disabled = false;
+        eyeBtn.disabled        = false;
+        loginButton.disabled   = false;
+        loginButton.style.opacity = '1';
+        loginButton.style.cursor  = 'pointer';
+        return;
+      }
+      const minutes = Math.floor(remainingSeconds / 60);
+      const seconds = remainingSeconds % 60;
+      countdownElement.textContent = ` Please try again in ${minutes}m ${seconds}s.`;
+      remainingSeconds--;
+      setTimeout(updateCountdown, 1000);
     }
 
-    // Lockout countdown 
-    const lockoutInput = document.getElementById('lockout-seconds');
-    let remainingSeconds = parseInt(lockoutInput?.value, 10) || 0;
-
-    if (remainingSeconds > 0) {
-        const countdownElement = document.getElementById('countdown');
-        const usernameInput = document.querySelector('input[name="username"]');
-        const passwordInput = document.querySelector('input[name="password"]');
-        const loginButton = document.querySelector('.signin-login');
-
-        // Disable inputs during lockout
-        usernameInput.disabled = true;
-        passwordInput.disabled = true;
-        eyeBtn.disabled = true;
-        loginButton.disabled = true;
-        loginButton.style.opacity = '0.5';
-        loginButton.style.cursor = 'not-allowed';
-
-        const tryAgainText = 'You can now try logging in again.';
-        const tryAgainInText = 'Please try again in';
-
-        function updateCountdown() {
-            if (remainingSeconds <= 0) {
-                countdownElement.textContent = '';
-                document.getElementById('errorMessage').textContent =
-                    tryAgainText;
-                usernameInput.disabled = false;
-                passwordInput.disabled = false;
-                eyeBtn.disabled = false;
-                loginButton.disabled = false;
-                loginButton.style.opacity = '1';
-                loginButton.style.cursor = 'pointer';
-                return;
-            }
-
-            const minutes = Math.floor(remainingSeconds / 60);
-            const seconds = remainingSeconds % 60;
-            countdownElement.textContent =
-                ` ${tryAgainInText} ${minutes}m ${seconds}s.`;
-
-            remainingSeconds--;
-            setTimeout(updateCountdown, 1000);
-        }
-
-        updateCountdown();
-    }
+    updateCountdown();
+  }
 </script>
 {% endblock %}

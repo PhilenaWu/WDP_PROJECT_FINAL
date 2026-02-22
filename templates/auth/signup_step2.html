@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 <style>
 /* =============================================
-   SIGNUP 1 — Account
+   SIGNUP 2 — Profile
    ============================================= */
 
 .auth-form-container-large { max-width: 580px !important; }
@@ -31,7 +31,6 @@ html[data-theme='dark'] .signup-vibe-card {
   box-shadow: 0 2px 0 rgba(0,0,0,.35), 0 24px 64px rgba(0,0,0,.52), inset 0 1px 0 rgba(255,255,255,.04) !important;
 }
 
-/* Back button */
 .signup-back-btn {
   display: inline-flex !important;
   align-items: center !important;
@@ -59,10 +58,7 @@ html[data-theme='dark'] .signup-back-btn {
   color: #dbe5f7 !important;
 }
 
-/* ─────────────────────────────────────────────
-   STEPPER  (all elements use spans to avoid
-   Bootstrap div/block resets bleeding in)
-   ───────────────────────────────────────────── */
+/* ── Stepper ── */
 .stp {
   display: grid !important;
   grid-template-columns: 1fr 1fr 1fr !important;
@@ -75,7 +71,6 @@ html[data-theme='dark'] .signup-back-btn {
 }
 html[data-theme='dark'] .stp { background: rgba(255,255,255,.08) !important; }
 
-/* Each tab */
 .stp-tab {
   display: flex !important;
   flex-direction: column !important;
@@ -87,13 +82,11 @@ html[data-theme='dark'] .stp { background: rgba(255,255,255,.08) !important; }
   background: transparent !important;
   cursor: default !important;
   user-select: none !important;
-  transition: background .25s, box-shadow .25s, border-radius .25s !important;
-  /* reset any inherited min-height */
   min-height: 0 !important;
   height: auto !important;
+  transition: background .25s, box-shadow .25s, border-radius .25s !important;
 }
 
-/* Row inside tab */
 .stp-row {
   display: flex !important;
   align-items: center !important;
@@ -101,7 +94,6 @@ html[data-theme='dark'] .stp { background: rgba(255,255,255,.08) !important; }
   min-height: 0 !important;
 }
 
-/* Number bubble — span, hard-reset everything */
 .stp-num {
   display: inline-flex !important;
   align-items: center !important;
@@ -130,7 +122,6 @@ html[data-theme='dark'] .stp-num {
   color: rgba(255,255,255,.30) !important;
 }
 
-/* Label */
 .stp-label {
   display: inline !important;
   font-size: 12.5px !important;
@@ -142,7 +133,6 @@ html[data-theme='dark'] .stp-num {
 }
 html[data-theme='dark'] .stp-label { color: rgba(255,255,255,.28) !important; }
 
-/* Underbar */
 .stp-bar {
   display: block !important;
   width: 44px !important;
@@ -153,13 +143,13 @@ html[data-theme='dark'] .stp-label { color: rgba(255,255,255,.28) !important; }
   transition: background .3s !important;
 }
 
-/* DONE */
+/* Done */
 .stp-tab.done .stp-num   { background: #43a047 !important; color: #fff !important; }
 .stp-tab.done .stp-label { color: #43a047 !important; }
 .stp-tab.done .stp-bar   { background: #43a047 !important; }
 html[data-theme='dark'] .stp-tab.done .stp-label { color: #81c784 !important; }
 
-/* ACTIVE */
+/* Active */
 .stp-tab.active {
   background: linear-gradient(135deg, #f39a1f 0%, #ff8c61 100%) !important;
   border-radius: 10px !important;
@@ -176,7 +166,6 @@ html[data-theme='dark'] .stp-tab.done .stp-label { color: #81c784 !important; }
   border: 1.5px solid rgba(139,114,96,.20) !important;
   background: #fdfaf7 !important;
   font-size: 14px !important;
-  transition: border-color .2s, box-shadow .2s, background .2s;
 }
 .signup-vibe-card .form-control:focus {
   border-color: rgba(243,154,31,.55) !important;
@@ -190,6 +179,10 @@ html[data-theme='dark'] .signup-vibe-card .form-control {
 html[data-theme='dark'] .signup-vibe-card .form-control:focus {
   background: rgba(23,34,54,.95) !important;
 }
+.signup-vibe-card .form-control[readonly] {
+  background: rgba(243,154,31,.06) !important;
+  cursor: default;
+}
 
 /* ── Action buttons ── */
 .signup-actions { display: flex; gap: 12px; margin-top: 24px; }
@@ -199,11 +192,11 @@ html[data-theme='dark'] .signup-vibe-card .form-control:focus {
   border-radius: 12px !important;
   font-weight: 600;
   font-size: 14px;
-  transition: all .22s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 5px;
+  transition: all .22s ease;
 }
 .signup-actions .btn-primary {
   background: linear-gradient(135deg, #f39a1f 0%, #ff8c61 100%) !important;
@@ -224,20 +217,6 @@ html[data-theme='dark'] .signup-vibe-card .form-control:focus {
   border-color: rgba(139,114,96,.38) !important;
   background: rgba(0,0,0,.02) !important;
 }
-
-/* Google btn */
-.google-signup-btn {
-  border-radius: 12px !important;
-  padding: 12px 16px !important;
-  font-weight: 600 !important;
-}
-.google-signup-btn:hover { box-shadow: 0 5px 18px rgba(0,0,0,.09) !important; transform: translateY(-1px); }
-
-/* Divider */
-.signup-divider { position:relative; text-align:center; color:#aaa; font-size:12.5px; }
-.signup-divider::before { content:''; position:absolute; left:0; right:0; top:50%; height:1px; background:#e8e2db; }
-.signup-divider span { position:relative; background:rgba(255,255,255,.94); padding:0 12px; }
-html[data-theme='dark'] .signup-divider span { background:rgba(15,22,38,.93); }
 </style>
 {% endblock %}
 
@@ -245,8 +224,8 @@ html[data-theme='dark'] .signup-divider span { background:rgba(15,22,38,.93); }
 {% block footer %}{% endblock %}
 
 {% block content %}
-<div class="container-fluid vh-100 signup-vibe-shell">
-  <div class="row h-100">
+<div class="container-fluid signup-vibe-shell" style="min-height:100vh;">
+  <div class="row" style="min-height:100vh;">
     <div class="col-md-4 d-none d-md-flex align-items-center justify-content-center login-banner signup-vibe-banner">
       <div class="text-center">
         <img src="{{ url_for('static', filename='uploads/profile_pics/logo.png') }}" alt="Genlink Logo" class="auth-logo-large">
@@ -256,21 +235,23 @@ html[data-theme='dark'] .signup-divider span { background:rgba(15,22,38,.93); }
     <div class="col-md-8 d-flex align-items-center justify-content-center py-4">
       <div class="w-100 auth-form-container-large signup-vibe-card">
 
-        <a href="{{ url_for('index') }}" class="btn signup-back-btn">
+        <a href="{{ url_for('auth.signup', preserve=1) }}" class="btn signup-back-btn">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7L9 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Back
         </a>
 
-        <!-- Stepper — step 1 active -->
+        <!-- Stepper — step 1 done, step 2 active -->
         <div class="stp">
-          <div class="stp-tab active">
+          <div class="stp-tab done">
             <div class="stp-row">
-              <span class="stp-num">1</span>
+              <span class="stp-num">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
               <span class="stp-label">Account</span>
             </div>
             <span class="stp-bar"></span>
           </div>
-          <div class="stp-tab">
+          <div class="stp-tab active">
             <div class="stp-row">
               <span class="stp-num">2</span>
               <span class="stp-label">Profile</span>
@@ -287,53 +268,65 @@ html[data-theme='dark'] .signup-divider span { background:rgba(15,22,38,.93); }
         </div>
 
         <div class="text-center mb-4">
-          <h2 style="font-weight:700;letter-spacing:-0.02em;">Create your account</h2> 
-          <p class="text-muted" style="font-size:13.5px;">Step 1 of 3 — Authentication</p>
+          <h2 style="font-weight:700;letter-spacing:-0.02em;">Tell us about you</h2>
+          <p class="text-muted" style="font-size:13.5px;">Step 2 of 3 — Profile details</p>
         </div>
 
         {% if error %}
           <p class="auth-error-message" id="errorMessage">{{ error }}</p>
         {% endif %}
 
-        <a href="{{ url_for('auth.signup_google') }}" class="btn btn-light w-100 border google-signup-btn mb-3">
-          <img src="{{ url_for('static', filename='images/google-logo.svg') }}" alt="Google" class="google-logo-real">
-          Continue with Google
-        </a>
-
-        <div class="signup-divider mb-3"><span>or sign up with email</span></div>
-
-        <form id="signupStep1Form" method="post" action="{{ url_for('auth.signup') }}" novalidate autocomplete="off">
-          <input type="hidden" name="signup_method" value="email">
+        <form id="signupStep2Form" method="post" action="{{ url_for('auth.signup_step2') }}" novalidate>
           <div class="row g-3">
-            <div class="col-12">
-              <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
-              <input id="email" name="email" type="email" class="form-control"
-                autocomplete="off" required
-                pattern="[a-zA-Z0-9._%+-]+@gmail\.com"
-                title="Please enter a valid Gmail address ending with @gmail.com."
-                value="{{ user.email or '' }}">
+            <div class="col-md-6">
+              <label for="firstName" class="form-label">First Name <span class="text-danger">*</span></label>
+              <input id="firstName" name="first_name" type="text" class="form-control" required
+                pattern="[A-Za-z\s]+" title="Only letters allowed."
+                value="{{ user.first_name or '' }}">
+            </div>
+            <div class="col-md-6">
+              <label for="lastName" class="form-label">Last Name <span class="text-danger">*</span></label>
+              <input id="lastName" name="last_name" type="text" class="form-control" required
+                pattern="[A-Za-z\s]+" title="Only letters allowed."
+                value="{{ user.last_name or '' }}">
             </div>
             <div class="col-12">
-              <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
-              <div class="password-input-wrapper">
-                <input id="password" name="password" type="password" class="form-control"
-                  autocomplete="new-password" required minlength="8"
-                  pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}"
-                  title="At least 8 characters with 1 lowercase, 1 uppercase, 1 number, and 1 special character.">
-                <button type="button" class="eye-icon" id="signupEye" aria-label="Show password"></button>
+              <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+              <input id="username" name="username" type="text" class="form-control" required
+                minlength="3" maxlength="20"
+                pattern="[A-Za-z][A-Za-z0-9_]{2,19}"
+                title="3–20 characters. Start with a letter; only letters, numbers, and underscore."
+                value="{{ user.username or '' }}">
+            </div>
+            <div class="col-12">
+              <label for="displayName" class="form-label">Display Name <span class="text-danger">*</span></label>
+              <input id="displayName" name="display_name" type="text" class="form-control" required
+                value="{{ user.display_name or '' }}">
+            </div>
+            <div class="col-12">
+              <label for="phone" class="form-label">Phone Number <small class="text-muted">(Optional)</small></label>
+              <input id="phone" name="phone" type="tel" class="form-control"
+                inputmode="numeric" minlength="8" maxlength="8"
+                pattern="[0-9]{8}" title="Enter an 8-digit number."
+                value="{{ user.phone or '' }}">
+            </div>
+            <div class="col-12">
+              <div class="row g-2 align-items-center">
+                <div class="col-6">
+                  <label for="birthday" class="form-label">Birthday <span class="text-danger">*</span></label>
+                  <input id="birthday" name="birthday" type="date" class="form-control" required
+                    value="{{ user.birthday or '' }}">
+                </div>
+                <div class="col-6">
+                  <label class="form-label">Age Group</label>
+                  <input type="text" class="form-control" value="{{ user.age_category or '' }}" readonly>
+                </div>
               </div>
-            </div>
-            <div class="col-12">
-              <label for="confirmPassword" class="form-label">Confirm Password <span class="text-danger">*</span></label>
-              <input id="confirmPassword" name="confirm_password" type="password" class="form-control"
-                autocomplete="new-password" required minlength="8"
-                pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}"
-                title="At least 8 characters with 1 lowercase, 1 uppercase, 1 number, and 1 special character.">
             </div>
           </div>
 
           <div class="signup-actions">
-            <a class="btn btn-light" href="{{ url_for('auth.login') }}">Sign In</a>
+            <a class="btn btn-light" href="{{ url_for('auth.signup', preserve=1) }}">Back</a>
             <button type="submit" class="btn btn-primary">
               Next
               <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -349,42 +342,56 @@ html[data-theme='dark'] .signup-divider span { background:rgba(15,22,38,.93); }
 
 {% block extra_js %}
 <script>
-  const form = document.getElementById('signupStep1Form');
-  const passwordInput = document.getElementById('password');
-  const passwordEye = document.getElementById('signupEye');
-  const confirmPasswordInput = document.getElementById('confirmPassword');
-  const emailInput = document.getElementById('email');
+  const form = document.getElementById('signupStep2Form');
+  const firstNameInput = document.getElementById('firstName');
+  const lastNameInput  = document.getElementById('lastName');
+  const birthdayInput  = document.getElementById('birthday');
+  const ageGroupInput  = document.querySelector('.col-6 input[readonly].form-control');
 
-  function validatePasswordMatch() {
-    if (confirmPasswordInput.value && passwordInput.value !== confirmPasswordInput.value) {
-      confirmPasswordInput.setCustomValidity('Passwords do not match.');
+  if (birthdayInput) {
+    const today = new Date();
+    const maxDate = new Date(today.getFullYear() - 13, today.getMonth(), today.getDate());
+    birthdayInput.max = maxDate.toISOString().split('T')[0];
+  }
+
+  function validateName(input) {
+    if (/[^A-Za-z\s]/.test(input.value)) {
+      input.setCustomValidity('Only letters are allowed');
+      input.value = input.value.replace(/[^A-Za-z\s]/g, '');
     } else {
-      confirmPasswordInput.setCustomValidity('');
+      input.setCustomValidity('');
     }
   }
 
-  function validateEmail(input) {
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i;
-    input.setCustomValidity(input.value && !emailRegex.test(input.value) ? 'Please enter a valid Gmail address ending with @gmail.com' : '');
+  function getAgeGroup(birthdayStr) {
+    if (!birthdayStr) return '';
+    const birthday = new Date(birthdayStr);
+    const today = new Date();
+    let age = today.getFullYear() - birthday.getFullYear();
+    const m = today.getMonth() - birthday.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthday.getDate())) age--;
+    if (age < 13) return '';
+    if (age < 18) return 'Youth';
+    if (age < 60) return 'Adult';
+    return 'Elderly';
   }
 
-  emailInput.addEventListener('blur', () => validateEmail(emailInput));
-  emailInput.addEventListener('input', () => validateEmail(emailInput));
-  passwordInput.addEventListener('input', validatePasswordMatch);
-  confirmPasswordInput.addEventListener('input', validatePasswordMatch);
-
-  form.addEventListener('submit', e => {
-    validatePasswordMatch();
-    if (!form.checkValidity()) { e.preventDefault(); form.reportValidity(); }
+  birthdayInput && birthdayInput.addEventListener('input', () => {
+    if (ageGroupInput) ageGroupInput.value = getAgeGroup(birthdayInput.value);
   });
 
-  if (passwordEye) {
-    passwordEye.addEventListener('click', () => {
-      const hidden = passwordInput.type === 'password';
-      passwordInput.type = hidden ? 'text' : 'password';
-      passwordEye.classList.toggle('open', hidden);
-      passwordEye.setAttribute('aria-label', hidden ? 'Hide password' : 'Show password');
-    });
-  }
+  firstNameInput.addEventListener('input', () => validateName(firstNameInput));
+  lastNameInput.addEventListener('input',  () => validateName(lastNameInput));
+
+  form.addEventListener('submit', e => {
+    if (birthdayInput && birthdayInput.value && birthdayInput.max && birthdayInput.value > birthdayInput.max) {
+      e.preventDefault();
+      birthdayInput.setCustomValidity('You must be at least 13 years old.');
+      birthdayInput.reportValidity();
+      return;
+    }
+    if (birthdayInput) birthdayInput.setCustomValidity('');
+    if (!form.checkValidity()) { e.preventDefault(); form.reportValidity(); }
+  });
 </script>
 {% endblock %}

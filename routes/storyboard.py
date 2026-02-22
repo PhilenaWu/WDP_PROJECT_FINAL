@@ -15,6 +15,35 @@ storyboard_bp = Blueprint("storyboard", __name__)
 ALLOWED_MEDIA_EXT = {"png","jpg","jpeg","gif","webp","mp4","mov","webm"}
 ALLOWED_AUDIO_EXT = {"mp3","wav","m4a","ogg","webm"}
 
+
+def _avatar_url(raw_value):
+    fallback = url_for("static", filename="uploads/main_topics_images/defaultProfile.webp")
+    profile_picture = str(raw_value or "").strip()
+
+    if profile_picture.lower() in {"", "none", "null", "nil", "undefined", "nan"}:
+        return fallback
+
+    profile_picture = profile_picture.replace("\\", "/")
+    lower_path = profile_picture.lower()
+
+    if lower_path.startswith(("http://", "https://", "data:image/")):
+        return profile_picture
+
+    if "/static/" in lower_path:
+        idx = lower_path.find("/static/") + len("/static/")
+        profile_picture = profile_picture[idx:]
+    elif lower_path.startswith("static/"):
+        profile_picture = profile_picture[len("static/"):]
+
+    profile_picture = profile_picture.lstrip("/")
+
+    if profile_picture.startswith("profile_pics/"):
+        profile_picture = f"uploads/{profile_picture}"
+    elif profile_picture and "/" not in profile_picture:
+        profile_picture = f"uploads/profile_pics/{profile_picture}"
+
+    return url_for("static", filename=profile_picture) if profile_picture else fallback
+
 def _ext_ok(filename: str, allowed: set[str]) -> bool:
     if "." not in filename:
         return False
@@ -55,9 +84,11 @@ def topic_detail(slug):
 
     # Attach media + comments for each story (simple approach for demo)
     for s in stories:
+        s["avatar_url"] = _avatar_url(s.get("profile_pic"))
         s["media"] = get_media(s["id"])
         comments = get_comments(s["id"], current_user.id)
         for c in comments:
+            c["avatar_url"] = _avatar_url(c.get("profile_pic"))
             # Allow delete if current user is comment owner or story owner
             c["can_delete"] = (c["user_id"] == current_user.id) or (s["user_id"] == current_user.id)
         s["comments"] = comments
@@ -80,8 +111,21 @@ def add_story(slug):
     if request.method == "GET":
         return render_template("storyboard/add_story.html", topic=topic)
 
+    from deep_translator import GoogleTranslator
     title = (request.form.get("title") or "").strip()
     body = (request.form.get("body") or "").strip()
+
+    def translate_if_chinese(text):
+        if text:
+            try:
+                if any('\u4e00' <= c <= '\u9fff' for c in text):
+                    return GoogleTranslator(source='auto', target='en').translate(text)
+            except Exception:
+                pass
+        return text
+
+    title = translate_if_chinese(title)
+    body = translate_if_chinese(body)
 
     if not title:
         flash("Title is required.", "warning")

@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 <style>
 /* =============================================
-   SIGNUP 1 — Account
+   SIGNUP 3 — Interests
    ============================================= */
 
 .auth-form-container-large { max-width: 580px !important; }
@@ -31,7 +31,6 @@ html[data-theme='dark'] .signup-vibe-card {
   box-shadow: 0 2px 0 rgba(0,0,0,.35), 0 24px 64px rgba(0,0,0,.52), inset 0 1px 0 rgba(255,255,255,.04) !important;
 }
 
-/* Back button */
 .signup-back-btn {
   display: inline-flex !important;
   align-items: center !important;
@@ -59,10 +58,7 @@ html[data-theme='dark'] .signup-back-btn {
   color: #dbe5f7 !important;
 }
 
-/* ─────────────────────────────────────────────
-   STEPPER  (all elements use spans to avoid
-   Bootstrap div/block resets bleeding in)
-   ───────────────────────────────────────────── */
+/* ── Stepper ── */
 .stp {
   display: grid !important;
   grid-template-columns: 1fr 1fr 1fr !important;
@@ -75,7 +71,6 @@ html[data-theme='dark'] .signup-back-btn {
 }
 html[data-theme='dark'] .stp { background: rgba(255,255,255,.08) !important; }
 
-/* Each tab */
 .stp-tab {
   display: flex !important;
   flex-direction: column !important;
@@ -87,13 +82,11 @@ html[data-theme='dark'] .stp { background: rgba(255,255,255,.08) !important; }
   background: transparent !important;
   cursor: default !important;
   user-select: none !important;
-  transition: background .25s, box-shadow .25s, border-radius .25s !important;
-  /* reset any inherited min-height */
   min-height: 0 !important;
   height: auto !important;
+  transition: background .25s, box-shadow .25s, border-radius .25s !important;
 }
 
-/* Row inside tab */
 .stp-row {
   display: flex !important;
   align-items: center !important;
@@ -101,7 +94,6 @@ html[data-theme='dark'] .stp { background: rgba(255,255,255,.08) !important; }
   min-height: 0 !important;
 }
 
-/* Number bubble — span, hard-reset everything */
 .stp-num {
   display: inline-flex !important;
   align-items: center !important;
@@ -130,7 +122,6 @@ html[data-theme='dark'] .stp-num {
   color: rgba(255,255,255,.30) !important;
 }
 
-/* Label */
 .stp-label {
   display: inline !important;
   font-size: 12.5px !important;
@@ -142,7 +133,6 @@ html[data-theme='dark'] .stp-num {
 }
 html[data-theme='dark'] .stp-label { color: rgba(255,255,255,.28) !important; }
 
-/* Underbar */
 .stp-bar {
   display: block !important;
   width: 44px !important;
@@ -153,13 +143,11 @@ html[data-theme='dark'] .stp-label { color: rgba(255,255,255,.28) !important; }
   transition: background .3s !important;
 }
 
-/* DONE */
 .stp-tab.done .stp-num   { background: #43a047 !important; color: #fff !important; }
 .stp-tab.done .stp-label { color: #43a047 !important; }
 .stp-tab.done .stp-bar   { background: #43a047 !important; }
 html[data-theme='dark'] .stp-tab.done .stp-label { color: #81c784 !important; }
 
-/* ACTIVE */
 .stp-tab.active {
   background: linear-gradient(135deg, #f39a1f 0%, #ff8c61 100%) !important;
   border-radius: 10px !important;
@@ -169,41 +157,119 @@ html[data-theme='dark'] .stp-tab.done .stp-label { color: #81c784 !important; }
 .stp-tab.active .stp-label { color: #fff !important; font-weight: 700 !important; }
 .stp-tab.active .stp-bar   { background: rgba(255,255,255,.55) !important; }
 
-/* ── Form controls ── */
-.signup-vibe-card .form-control {
-  border-radius: 12px !important;
-  min-height: 48px !important;
-  border: 1.5px solid rgba(139,114,96,.20) !important;
-  background: #fdfaf7 !important;
-  font-size: 14px !important;
-  transition: border-color .2s, box-shadow .2s, background .2s;
+/* ── Counter bar ── */
+.interest-counter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
 }
-.signup-vibe-card .form-control:focus {
-  border-color: rgba(243,154,31,.55) !important;
-  box-shadow: 0 0 0 3.5px rgba(243,154,31,.13) !important;
-  background: #fff !important;
+.interest-limit-note { font-size: 13px; color: #999; }
+.interest-count-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(243,154,31,.12);
+  border: 1px solid rgba(243,154,31,.28);
+  font-size: 12px;
+  font-weight: 700;
+  color: #f39a1f;
+  transition: all .25s;
 }
-html[data-theme='dark'] .signup-vibe-card .form-control {
-  background: rgba(23,34,54,.70) !important;
-  border-color: #2f3d59 !important;
-}
-html[data-theme='dark'] .signup-vibe-card .form-control:focus {
-  background: rgba(23,34,54,.95) !important;
+.interest-count-badge.full {
+  background: rgba(67,160,71,.12);
+  border-color: rgba(67,160,71,.35);
+  color: #43a047;
 }
 
+/* ── Tag grid ── */
+.interest-tag-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+  padding: 16px;
+  background: linear-gradient(145deg, #fffdf9, #fff8f0);
+  border: 1.5px solid rgba(243,154,31,.20);
+  border-radius: 18px;
+  max-height: 300px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(243,154,31,.35) transparent;
+}
+.interest-tag-grid::-webkit-scrollbar { width: 5px; }
+.interest-tag-grid::-webkit-scrollbar-thumb { background: rgba(243,154,31,.35); border-radius: 999px; }
+html[data-theme='dark'] .interest-tag-grid {
+  background: linear-gradient(145deg, #111a2b, #152036);
+  border-color: rgba(243,154,31,.20);
+}
+
+.interest-tag { cursor: pointer; user-select: none; }
+.interest-tag input[type="checkbox"] { position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0; }
+
+.interest-tag-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 8px 10px;
+  border-radius: 14px;
+  border: 2px solid #ede8e1;
+  background: #fff;
+  transition: all .22s cubic-bezier(.4,0,.2,1);
+  text-align: center;
+  min-height: 72px;
+  justify-content: center;
+  position: relative;
+}
+html[data-theme='dark'] .interest-tag-inner { background: #172236; border-color: #2a3a56; }
+
+.interest-tag:hover .interest-tag-inner {
+  border-color: rgba(243,154,31,.55);
+  background: #fff9f0;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 16px rgba(243,154,31,.13);
+}
+html[data-theme='dark'] .interest-tag:hover .interest-tag-inner { background: #1e2f4a; }
+
+.interest-tag input:checked + .interest-tag-inner {
+  border-color: #f39a1f;
+  background: linear-gradient(135deg, rgba(243,154,31,.11), rgba(255,140,97,.07));
+  box-shadow: 0 0 0 3px rgba(243,154,31,.16), 0 5px 16px rgba(243,154,31,.16);
+  transform: translateY(-2px);
+}
+.interest-tag input:checked + .interest-tag-inner::after {
+  content: '✓';
+  position: absolute;
+  top: 6px; right: 8px;
+  font-size: 10px; font-weight: 800; color: #f39a1f;
+  background: rgba(243,154,31,.15);
+  border-radius: 50%;
+  width: 16px; height: 16px;
+  display: flex; align-items: center; justify-content: center;
+  line-height: 16px;
+}
+
+.interest-tag-emoji { font-size: 24px; line-height: 1; transition: transform .22s; }
+.interest-tag input:checked + .interest-tag-inner .interest-tag-emoji { transform: scale(1.15); }
+.interest-tag-label { font-size: 11.5px; font-weight: 600; line-height: 1.3; color: #555; }
+html[data-theme='dark'] .interest-tag-label { color: #b0bdd4; }
+.interest-tag input:checked + .interest-tag-inner .interest-tag-label { color: #c97a0a; font-weight: 700; }
+
 /* ── Action buttons ── */
-.signup-actions { display: flex; gap: 12px; margin-top: 24px; }
+.signup-actions { display: flex; gap: 12px; margin-top: 22px; }
 .signup-actions .btn {
   flex: 1;
   padding: 13px 20px;
   border-radius: 12px !important;
   font-weight: 600;
   font-size: 14px;
-  transition: all .22s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 5px;
+  transition: all .22s ease;
 }
 .signup-actions .btn-primary {
   background: linear-gradient(135deg, #f39a1f 0%, #ff8c61 100%) !important;
@@ -224,20 +290,6 @@ html[data-theme='dark'] .signup-vibe-card .form-control:focus {
   border-color: rgba(139,114,96,.38) !important;
   background: rgba(0,0,0,.02) !important;
 }
-
-/* Google btn */
-.google-signup-btn {
-  border-radius: 12px !important;
-  padding: 12px 16px !important;
-  font-weight: 600 !important;
-}
-.google-signup-btn:hover { box-shadow: 0 5px 18px rgba(0,0,0,.09) !important; transform: translateY(-1px); }
-
-/* Divider */
-.signup-divider { position:relative; text-align:center; color:#aaa; font-size:12.5px; }
-.signup-divider::before { content:''; position:absolute; left:0; right:0; top:50%; height:1px; background:#e8e2db; }
-.signup-divider span { position:relative; background:rgba(255,255,255,.94); padding:0 12px; }
-html[data-theme='dark'] .signup-divider span { background:rgba(15,22,38,.93); }
 </style>
 {% endblock %}
 
@@ -245,8 +297,8 @@ html[data-theme='dark'] .signup-divider span { background:rgba(15,22,38,.93); }
 {% block footer %}{% endblock %}
 
 {% block content %}
-<div class="container-fluid vh-100 signup-vibe-shell">
-  <div class="row h-100">
+<div class="container-fluid signup-vibe-shell" style="min-height:100vh;">
+  <div class="row" style="min-height:100vh;">
     <div class="col-md-4 d-none d-md-flex align-items-center justify-content-center login-banner signup-vibe-banner">
       <div class="text-center">
         <img src="{{ url_for('static', filename='uploads/profile_pics/logo.png') }}" alt="Genlink Logo" class="auth-logo-large">
@@ -256,28 +308,32 @@ html[data-theme='dark'] .signup-divider span { background:rgba(15,22,38,.93); }
     <div class="col-md-8 d-flex align-items-center justify-content-center py-4">
       <div class="w-100 auth-form-container-large signup-vibe-card">
 
-        <a href="{{ url_for('index') }}" class="btn signup-back-btn">
+        <a href="{{ url_for('auth.signup_step2') }}" class="btn signup-back-btn">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7L9 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Back
         </a>
 
-        <!-- Stepper — step 1 active -->
+        <!-- Stepper — steps 1 & 2 done, step 3 active -->
         <div class="stp">
-          <div class="stp-tab active">
+          <div class="stp-tab done">
             <div class="stp-row">
-              <span class="stp-num">1</span>
+              <span class="stp-num">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
               <span class="stp-label">Account</span>
             </div>
             <span class="stp-bar"></span>
           </div>
-          <div class="stp-tab">
+          <div class="stp-tab done">
             <div class="stp-row">
-              <span class="stp-num">2</span>
+              <span class="stp-num">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
               <span class="stp-label">Profile</span>
             </div>
             <span class="stp-bar"></span>
           </div>
-          <div class="stp-tab">
+          <div class="stp-tab active">
             <div class="stp-row">
               <span class="stp-num">3</span>
               <span class="stp-label">Interests</span>
@@ -286,57 +342,49 @@ html[data-theme='dark'] .signup-divider span { background:rgba(15,22,38,.93); }
           </div>
         </div>
 
-        <div class="text-center mb-4">
-          <h2 style="font-weight:700;letter-spacing:-0.02em;">Create your account</h2> 
-          <p class="text-muted" style="font-size:13.5px;">Step 1 of 3 — Authentication</p>
+        <div class="text-center mb-3">
+          <h2 style="font-weight:700;letter-spacing:-0.02em;">Pick your interests</h2>
+          <p class="text-muted" style="font-size:13.5px;">Step 3 of 3 — Choose 1 to 3 categories</p>
         </div>
 
         {% if error %}
           <p class="auth-error-message" id="errorMessage">{{ error }}</p>
         {% endif %}
 
-        <a href="{{ url_for('auth.signup_google') }}" class="btn btn-light w-100 border google-signup-btn mb-3">
-          <img src="{{ url_for('static', filename='images/google-logo.svg') }}" alt="Google" class="google-logo-real">
-          Continue with Google
-        </a>
+        <form method="post" action="{{ url_for('auth.signup_step3') }}" id="signupStep3Form">
 
-        <div class="signup-divider mb-3"><span>or sign up with email</span></div>
-
-        <form id="signupStep1Form" method="post" action="{{ url_for('auth.signup') }}" novalidate autocomplete="off">
-          <input type="hidden" name="signup_method" value="email">
-          <div class="row g-3">
-            <div class="col-12">
-              <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
-              <input id="email" name="email" type="email" class="form-control"
-                autocomplete="off" required
-                pattern="[a-zA-Z0-9._%+-]+@gmail\.com"
-                title="Please enter a valid Gmail address ending with @gmail.com."
-                value="{{ user.email or '' }}">
-            </div>
-            <div class="col-12">
-              <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
-              <div class="password-input-wrapper">
-                <input id="password" name="password" type="password" class="form-control"
-                  autocomplete="new-password" required minlength="8"
-                  pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}"
-                  title="At least 8 characters with 1 lowercase, 1 uppercase, 1 number, and 1 special character.">
-                <button type="button" class="eye-icon" id="signupEye" aria-label="Show password"></button>
-              </div>
-            </div>
-            <div class="col-12">
-              <label for="confirmPassword" class="form-label">Confirm Password <span class="text-danger">*</span></label>
-              <input id="confirmPassword" name="confirm_password" type="password" class="form-control"
-                autocomplete="new-password" required minlength="8"
-                pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}"
-                title="At least 8 characters with 1 lowercase, 1 uppercase, 1 number, and 1 special character.">
-            </div>
+          <div class="interest-counter-bar">
+            <span class="interest-limit-note">Tap a card to select</span>
+            <span class="interest-count-badge" id="interestCountBadge">
+              <span id="countText">0 / 3 selected</span>
+            </span>
           </div>
 
+          <div class="interest-tag-grid" id="interestTagGrid">
+            {% for topic in topic_options %}
+            <label class="interest-tag">
+              <input type="checkbox" name="interests_ui" value="{{ topic.slug }}"
+                {% if topic.slug in selected_interests %}checked{% endif %}>
+              <div class="interest-tag-inner">
+                <span class="interest-tag-emoji">{{ topic.emoji if topic.emoji else '✨' }}</span>
+                <span class="interest-tag-label">{{ topic.title }}</span>
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+
+          <!-- Hidden select synced by JS — backend unchanged -->
+          <select id="interestsDropdown" name="interests" multiple aria-hidden="true" tabindex="-1" style="display:none!important;">
+            {% for topic in topic_options %}
+              <option value="{{ topic.slug }}" {% if topic.slug in selected_interests %}selected{% endif %}>{{ topic.title }}</option>
+            {% endfor %}
+          </select>
+
           <div class="signup-actions">
-            <a class="btn btn-light" href="{{ url_for('auth.login') }}">Sign In</a>
+            <a class="btn btn-light" href="{{ url_for('auth.signup_step2') }}">Back</a>
             <button type="submit" class="btn btn-primary">
-              Next
-              <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Create Account
+              <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 7.5h11M9 3l4.5 4.5L9 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
           </div>
         </form>
@@ -349,42 +397,35 @@ html[data-theme='dark'] .signup-divider span { background:rgba(15,22,38,.93); }
 
 {% block extra_js %}
 <script>
-  const form = document.getElementById('signupStep1Form');
-  const passwordInput = document.getElementById('password');
-  const passwordEye = document.getElementById('signupEye');
-  const confirmPasswordInput = document.getElementById('confirmPassword');
-  const emailInput = document.getElementById('email');
+  const form      = document.getElementById('signupStep3Form');
+  const dropdown  = document.getElementById('interestsDropdown');
+  const grid      = document.getElementById('interestTagGrid');
+  const badge     = document.getElementById('interestCountBadge');
+  const countText = document.getElementById('countText');
+  const MAX = 3;
 
-  function validatePasswordMatch() {
-    if (confirmPasswordInput.value && passwordInput.value !== confirmPasswordInput.value) {
-      confirmPasswordInput.setCustomValidity('Passwords do not match.');
-    } else {
-      confirmPasswordInput.setCustomValidity('');
-    }
+  function syncDropdown() {
+    const checked = [...grid.querySelectorAll('input[type="checkbox"]:checked')].map(cb => cb.value);
+    [...dropdown.options].forEach(opt => { opt.selected = checked.includes(opt.value); });
+    const n = checked.length;
+    countText.textContent = `${n} / ${MAX} selected`;
+    badge.classList.toggle('full', n >= MAX);
   }
 
-  function validateEmail(input) {
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i;
-    input.setCustomValidity(input.value && !emailRegex.test(input.value) ? 'Please enter a valid Gmail address ending with @gmail.com' : '');
-  }
-
-  emailInput.addEventListener('blur', () => validateEmail(emailInput));
-  emailInput.addEventListener('input', () => validateEmail(emailInput));
-  passwordInput.addEventListener('input', validatePasswordMatch);
-  confirmPasswordInput.addEventListener('input', validatePasswordMatch);
-
-  form.addEventListener('submit', e => {
-    validatePasswordMatch();
-    if (!form.checkValidity()) { e.preventDefault(); form.reportValidity(); }
+  grid.addEventListener('change', e => {
+    const checkedBoxes = [...grid.querySelectorAll('input[type="checkbox"]:checked')];
+    if (checkedBoxes.length > MAX) e.target.checked = false;
+    syncDropdown();
   });
 
-  if (passwordEye) {
-    passwordEye.addEventListener('click', () => {
-      const hidden = passwordInput.type === 'password';
-      passwordInput.type = hidden ? 'text' : 'password';
-      passwordEye.classList.toggle('open', hidden);
-      passwordEye.setAttribute('aria-label', hidden ? 'Hide password' : 'Show password');
-    });
-  }
+  syncDropdown();
+
+  form.addEventListener('submit', e => {
+    const selected = [...dropdown.selectedOptions];
+    if (selected.length < 1 || selected.length > MAX) {
+      e.preventDefault();
+      alert('Please select between 1 and 3 interests.');
+    }
+  });
 </script>
 {% endblock %}
