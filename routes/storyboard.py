@@ -1,3 +1,4 @@
+
 # routes/storyboard.py
 import os
 from uuid import uuid4
@@ -39,6 +40,22 @@ def _save_file(file_obj, folder_rel: str) -> str:
 
     return f"{folder_rel}/{new_name}"
 
+@storyboard_bp.route("/story/<int:story_id>")
+@login_required
+def view_story(story_id):
+    story = get_story(story_id)
+    if not story:
+        flash("Story not found.", "danger")
+        return redirect(url_for("main.storyboard"))
+    # Get topic slug
+    topic_row = execute_query("SELECT slug FROM topics WHERE id=%s", (story['topic_id'],), fetch_one=True)
+    if not topic_row or not topic_row.get('slug'):
+        flash("Topic not found.", "danger")
+        return redirect(url_for("main.storyboard"))
+    slug = topic_row['slug']
+    # Redirect to topic detail with anchor
+    return redirect(url_for("storyboard.topic_detail", slug=slug) + f"#story-{story_id}")
+
 @storyboard_bp.route("/topic/<slug>")
 @login_required
 def topic_detail(slug):
@@ -54,19 +71,35 @@ def topic_detail(slug):
     stories = get_stories(topic["id"], current_user.id, feed)
 
     # Attach media + comments for each story (simple approach for demo)
+    from connections_service import get_connection_ids
+    connected_ids = get_connection_ids(current_user.id)
+    # Get connection usernames for sharing
+    connection_users = []
+    if connected_ids:
+        placeholders = ','.join(['%s'] * len(connected_ids))
+        sql = f"SELECT id, username FROM users WHERE id IN ({placeholders})"
+        connection_users = execute_query(sql, tuple(connected_ids), fetch_all=True) or []
     for s in stories:
         s["media"] = get_media(s["id"])
         comments = get_comments(s["id"], current_user.id)
         for c in comments:
             # Allow delete if current user is comment owner or story owner
             c["can_delete"] = (c["user_id"] == current_user.id) or (s["user_id"] == current_user.id)
+            # Set rel_status for modal logic
+            if c["user_id"] == current_user.id:
+                c["rel_status"] = "self"
+            elif c["user_id"] in connected_ids:
+                c["rel_status"] = "connected"
+            else:
+                c["rel_status"] = "none"
         s["comments"] = comments
 
     return render_template(
         "storyboard/topic_detail.html",
         topic=topic,
         feed=feed,
-        stories=stories
+        stories=stories,
+        connections=connection_users
     )
 
 @storyboard_bp.route("/topic/<slug>/add", methods=["GET","POST"])

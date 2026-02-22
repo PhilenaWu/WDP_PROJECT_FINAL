@@ -6,26 +6,79 @@
 
   <div class="card border-0 shadow-sm rounded-4 p-4">
 
-    <h3 class="fw-bold mb-1">Share Your Story</h3>
-    <p class="text-muted mb-4">
-      Topic: <strong>{{ topic.title }}</strong>
-    </p>
+    <div class="d-flex justify-content-between align-items-start gap-3">
+      <div>
+        <h3 class="fw-bold mb-1">Share Your Story</h3>
+        <p class="text-muted mb-0">
+          Topic: <strong>{{ topic.title }}</strong>
+        </p>
+      </div>
+
+      <!-- Speech-to-text language + status -->
+      <div class="text-end" style="min-width: 240px;">
+        <label class="form-label fw-semibold mb-1 small">Dictation Language</label>
+        <select id="sttLang" class="form-select form-select-sm rounded-3">
+          <option value="en-SG" selected>English (Singapore)</option>
+          <option value="ms-MY">Malay</option>
+          <option value="ta-IN">Tamil</option>
+          <option value="zh-SG">Chinese</option>
+        </select>
+
+        <div class="mt-2">
+          <span id="sttStatus" class="badge text-bg-secondary d-none">🎙️ Listening…</span>
+        </div>
+      </div>
+    </div>
+
+    <hr class="my-4">
 
     <form method="POST" enctype="multipart/form-data">
 
-      <!-- Title -->
+      <!-- Title (mic inside input) -->
       <div class="mb-3">
         <label class="form-label fw-semibold">Title</label>
-        <input class="form-control rounded-3" name="title" required>
+
+        <div class="stt-input-wrap">
+          <input class="form-control rounded-3 stt-input"
+                 name="title"
+                 id="titleInput"
+                 required>
+
+          <button type="button"
+                  class="btn btn-outline-secondary stt-mic-btn"
+                  id="micTitleBtn"
+                  title="Dictate title">
+            🎙️
+          </button>
+        </div>
+
+        <div class="form-text text-muted">
+          Click the mic, speak, click again to stop.
+        </div>
       </div>
 
-      <!-- Text -->
+      <!-- Story Text (mic inside textarea) -->
       <div class="mb-3">
         <label class="form-label fw-semibold">Story Text</label>
-        <textarea class="form-control rounded-3"
-                  name="body"
-                  rows="5"
-                  placeholder="Write your story..."></textarea>
+
+        <div class="stt-textarea-wrap">
+          <textarea class="form-control rounded-3 stt-textarea"
+                    name="body"
+                    id="bodyInput"
+                    rows="6"
+                    placeholder="Write your story..."></textarea>
+
+          <button type="button"
+                  class="btn btn-outline-secondary stt-mic-btn"
+                  id="micBodyBtn"
+                  title="Dictate story">
+            🎙️
+          </button>
+        </div>
+
+        <div class="form-text text-muted">
+          Tip: say “comma”, “full stop”, “new line” while dictating.
+        </div>
       </div>
 
       <!-- ================= VOICE RECORDING ================= -->
@@ -101,7 +154,183 @@
   </div>
 </div>
 
+<style>
+  /* Shared mic-in-field styling */
+.stt-mic-btn {
+  position: absolute;
+  bottom: .6rem;
+  right: .6rem;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: .6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  padding: 0;
+  z-index: 3;
+}
+
+/* Input wrapper */
+.stt-input-wrap{
+  position: relative;
+}
+.stt-input{
+  padding-right: 3rem;
+  padding-bottom: 2.2rem; /* prevent overlap */
+}
+
+/* Textarea wrapper */
+.stt-textarea-wrap{
+  position: relative;
+}
+.stt-textarea{
+  padding-right: 3rem;
+  padding-bottom: 2.5rem; /* prevent overlap */
+}
+</style>
+
 <script>
+/* ================= SPEECH TO TEXT (Web Speech API) ================= */
+
+(function () {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  const sttLang     = document.getElementById("sttLang");
+  const sttStatus   = document.getElementById("sttStatus");
+
+  const micTitleBtn = document.getElementById("micTitleBtn");
+  const micBodyBtn  = document.getElementById("micBodyBtn");
+  const titleInput  = document.getElementById("titleInput");
+  const bodyInput   = document.getElementById("bodyInput");
+
+  if (!SpeechRecognition) {
+    micTitleBtn.disabled = true;
+    micBodyBtn.disabled  = true;
+    micTitleBtn.title = "Speech-to-text not supported in this browser";
+    micBodyBtn.title  = "Speech-to-text not supported in this browser";
+    return;
+  }
+
+  let recognition = null;
+  let isListening = false;
+  let activeTarget = null;
+  let activeButton = null;
+
+  function setListeningUI(listening) {
+    if (listening) {
+      sttStatus.classList.remove("d-none");
+      sttStatus.classList.remove("text-bg-secondary");
+      sttStatus.classList.add("text-bg-danger");
+      sttStatus.textContent = "🎙️ Listening…";
+    } else {
+      sttStatus.classList.add("d-none");
+      sttStatus.classList.remove("text-bg-danger");
+      sttStatus.classList.add("text-bg-secondary");
+      sttStatus.textContent = "🎙️ Listening…";
+    }
+  }
+
+  function buttonOn(btn) {
+    btn.classList.remove("btn-outline-secondary");
+    btn.classList.add("btn-danger");
+    btn.textContent = "⏺";
+  }
+
+  function buttonOff(btn) {
+    btn.classList.remove("btn-danger");
+    btn.classList.add("btn-outline-secondary");
+    btn.textContent = "🎙️";
+  }
+
+  function stopRecognition() {
+    if (recognition) recognition.stop();
+  }
+
+  function startDictation(targetEl, buttonEl) {
+    // Toggle off if already listening
+    if (isListening) {
+      stopRecognition();
+      return;
+    }
+
+    recognition = new SpeechRecognition();
+    recognition.lang = sttLang.value || "en-SG";
+    recognition.interimResults = true;
+    recognition.continuous = true;
+
+    activeTarget = targetEl;
+    activeButton = buttonEl;
+    isListening = true;
+
+    // For body append mode: snapshot base before dictation
+    if (activeTarget === bodyInput) {
+      bodyInput.dataset.baseText = bodyInput.value || "";
+    }
+
+    buttonOn(activeButton);
+    setListeningUI(true);
+
+    let finalTranscript = "";
+
+    recognition.onresult = (event) => {
+      let interimTranscript = "";
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const text = event.results[i][0].transcript;
+        if (event.results[i].isFinal) finalTranscript += text;
+        else interimTranscript += text;
+      }
+
+      // Title: overwrite (short)
+      if (activeTarget === titleInput) {
+        activeTarget.value = (finalTranscript + interimTranscript).trim();
+      }
+      // Body: append to base (long)
+      else {
+        const base = activeTarget.dataset.baseText ?? "";
+        const combined = (base + " " + finalTranscript + interimTranscript)
+          .replace(/\s+/g, " ")
+          .trim();
+        activeTarget.value = combined;
+      }
+    };
+
+    recognition.onerror = (e) => {
+      console.warn("SpeechRecognition error:", e.error);
+      cleanup();
+    };
+
+    recognition.onend = () => {
+      // commit base for next round
+      if (activeTarget === bodyInput) {
+        bodyInput.dataset.baseText = bodyInput.value || "";
+      }
+      cleanup();
+    };
+
+    recognition.start();
+  }
+
+  function cleanup() {
+    isListening = false;
+    setListeningUI(false);
+    if (activeButton) buttonOff(activeButton);
+    activeTarget = null;
+    activeButton = null;
+    recognition = null;
+  }
+
+  micTitleBtn.addEventListener("click", () => startDictation(titleInput, micTitleBtn));
+  micBodyBtn.addEventListener("click",  () => startDictation(bodyInput,  micBodyBtn));
+
+  // If language changed while listening, stop so it applies next time
+  sttLang.addEventListener("change", () => {
+    if (isListening) stopRecognition();
+  });
+})();
+
+
 /* ================= VOICE RECORDING ================= */
 
 let mediaRecorder;
@@ -159,6 +388,7 @@ deleteBtn.onclick = () => {
   deleteBtn.disabled = true;
 };
 
+
 /* ================= MEDIA PREVIEW + 10 FILE LIMIT ================= */
 
 const mediaInput = document.getElementById("mediaInput");
@@ -212,6 +442,3 @@ mediaInput.addEventListener("change", function() {
 </script>
 
 {% endblock %}
-
-
-

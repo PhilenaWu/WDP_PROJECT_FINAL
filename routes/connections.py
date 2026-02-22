@@ -1,3 +1,5 @@
+
+
 from flask import Blueprint, render_template, request, jsonify, g
 from flask_login import login_required, current_user
 import mysql.connector
@@ -5,6 +7,11 @@ from config import Config
 from database import execute_query
 
 connections_bp = Blueprint("connections", __name__, url_prefix="/connections")
+
+@connections_bp.route("/request", methods=["POST"])
+@login_required
+def request_connection():
+    return send_request()
 
 
 # =========================================================
@@ -250,17 +257,14 @@ def connections():
 @login_required
 def send_request():
     uid = current_user.id
-    target_id = (request.get_json(silent=True) or {}).get("target_id")
-
+    data = request.get_json(silent=True) or {}
+    target_id = data.get("user_id")
     try:
         target_id = int(target_id)
     except Exception:
         return fail("Invalid user")
-
     if target_id == uid:
         return fail("Cannot connect to yourself")
-
-    # Prevent duplicates (pending/accepted)
     row = select_one("""
         SELECT COUNT(*) AS cnt
         FROM connections
@@ -268,16 +272,13 @@ def send_request():
             OR (requester_id=%s AND receiver_id=%s))
           AND status IN ('pending','accepted')
     """, (uid, target_id, target_id, uid))
-
     if row and int(row.get("cnt", 0)) > 0:
         return fail("Request already exists", 409)
-
     execute_query("""
         INSERT INTO connections (requester_id, receiver_id, status)
         VALUES (%s, %s, 'pending')
     """, (uid, target_id), commit=True)
-
-    return ok("Request sent")
+    return jsonify({"success": True, "message": "Request sent"})
 
 
 # =========================================================
