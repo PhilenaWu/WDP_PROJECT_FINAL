@@ -595,6 +595,68 @@ def admin_review_submission(submission_id):
     return render_template('events/admin_review.html', submission=submission)
 
 
+@events_bp.route('/admin/submissions/<int:submission_id>/update-status', methods=['POST'])
+@login_required
+def update_submission_status(submission_id):
+    """AJAX endpoint to update submission status via drag-and-drop"""
+    if current_user.user_type != 'admin':
+        return jsonify({'success': False, 'error': 'Admin access required'}), 403
+    
+    try:
+        data = request.get_json()
+        new_status = data.get('status')
+        
+        if new_status not in ['pending', 'approved', 'rejected']:
+            return jsonify({'success': False, 'error': 'Invalid status'}), 400
+        
+        submission = EventSubmission.get_by_id(submission_id)
+        if not submission:
+            return jsonify({'success': False, 'error': 'Submission not found'}), 404
+        
+        old_status = submission['status']
+        
+        # Update the status
+        admin_notes = f'Status changed from {old_status} to {new_status} via drag-and-drop'
+        EventSubmission.update_status(submission_id, new_status, current_user.id, admin_notes)
+        
+        # Handle status-specific actions
+        if new_status == 'approved' and old_status != 'approved':
+            # Create event from approved submission
+            try:
+                Event.create({
+                    'title': submission['event_title'],
+                    'description': submission['event_summary'],
+                    'event_date': submission['preferred_date'],
+                    'start_time': '09:00:00',
+                    'end_time': '17:00:00',
+                    'location': submission['organizer_location'] or 'TBA',
+                    'location_address': submission['organizer_location'],
+                    'latitude': None,
+                    'longitude': None,
+                    'image_url': submission.get('image_url'),
+                    'max_participants': 50,
+                    'event_type': submission['event_type'],
+                    'age_group': submission['organizer_age_group'],
+                    'created_by': current_user.id
+                })
+            except Exception as e:
+                print(f"Event creation error: {e}")
+                return jsonify({'success': True, 'warning': 'Status updated but event creation failed'}), 200
+        
+        elif new_status == 'pending' and old_status == 'approved':
+            # Revoke: Delete the event if it exists
+            Event.delete_by_title_and_date(
+                submission['event_title'],
+                submission['preferred_date']
+            )
+        
+        return jsonify({'success': True, 'status': new_status}), 200
+        
+    except Exception as e:
+        print(f"Error updating submission status: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @events_bp.route('/api/generate-ai-image', methods=['POST'])
 @login_required
 def generate_ai_image():
