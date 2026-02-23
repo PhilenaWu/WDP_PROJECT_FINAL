@@ -465,8 +465,13 @@ body::after {
         {% if contacts %}
           {% for contact in contacts %}
           <a href="{{ url_for('messaging.chat_direct', contact_id=contact.contact_user_id) }}" class="sb-item">
-            <div class="sc-avatar sm">{{ (contact.contact_display_name or '?')[0].upper() }}</div>
-            <div>
+            <div class="sc-avatar sm">
+              {% if contact.contact_profile_picture %}
+                <img src="{{ url_for('static', filename=contact.contact_profile_picture.replace('static/', '').replace('\\', '/')) }}" alt="Profile" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+              {% else %}
+                {{ (contact.contact_display_name or '?')[0].upper() }}
+              {% endif %}
+            </div>            <div>
               <div class="sb-item-name">
                 {{ contact.nickname or contact.contact_display_name }}
                 {% if contact.is_favorite %}<span style="color:var(--orange);">★</span>{% endif %}
@@ -556,12 +561,18 @@ body::after {
           {% if contacts %}
             {% for contact in contacts %}
             <div class="contact-row" style="animation-delay:{{ loop.index0 * 0.06 }}s;">
-              <div class="sc-avatar lg">{{ (contact.contact_display_name or '?')[0].upper() }}</div>
-              <div class="contact-info">
-                <div class="contact-name">
-                  {{ contact.nickname or contact.contact_display_name }}
-                  {% if contact.is_favorite %}<span style="color:var(--orange);margin-left:3px;">★</span>{% endif %}
-                </div>
+                <div class="sc-avatar lg">
+                    {% if contact.contact_profile_picture %}
+                    <img src="{{ url_for('static', filename=contact.contact_profile_picture.replace('static/', '').replace('\\', '/')) }}" alt="Profile" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+                    {% else %}
+                    {{ (contact.contact_display_name or '?')[0].upper() }}
+                    {% endif %}
+                </div>              
+                <div class="contact-info">
+                    <div class="contact-name">
+                    {{ contact.nickname or contact.contact_display_name }}
+                    {% if contact.is_favorite %}<span style="color:var(--orange);margin-left:3px;">★</span>{% endif %}
+                    </div>
                 <div class="contact-meta">
                   @{{ contact.contact_username }}
                   {% if contact.contact_age_group %}

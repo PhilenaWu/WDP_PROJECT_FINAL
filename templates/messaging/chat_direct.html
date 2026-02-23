@@ -164,8 +164,13 @@
                     <a href="{{ url_for('messaging.chat_direct', contact_id=c.contact_user_id) }}"
                        class="sb-item {% if c.contact_user_id == contact.id %}active{% endif %}"
                        data-name="{{ (c.nickname or c.contact_display_name)|lower }}">
-                        <div class="sb-avatar">{{ (c.contact_display_name or '?')[0].upper() }}</div>
-                        <div class="sb-info">
+                        <div class="sb-avatar">
+                            {% if c.contact_profile_picture %}
+                                <img src="{{ url_for('static', filename=c.contact_profile_picture.replace('static/', '').replace('\\', '/')) }}" alt="Profile" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                            {% else %}
+                                {{ (c.contact_display_name or '?')[0].upper() }}
+                            {% endif %}
+                        </div>                        <div class="sb-info">
                             <div class="d-flex align-items-center justify-content-between gap-2">
                                 <div class="sb-name">
                                     {{ c.nickname or c.contact_display_name }}

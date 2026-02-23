@@ -175,7 +175,7 @@ def edit_contact(contact_id):
         nickname = request.form.get('nickname', '').strip()
         is_favorite_raw = (request.form.get('is_favorite') or '').strip().lower()
         is_favorite = is_favorite_raw in ('on', '1', 'true', 'yes')
-        
+
         if nickname and (len(nickname) < 2 or len(nickname) > 50):
             flash('Nickname must be between 2 and 50 characters', 'error')
             return render_template('messaging/edit_contact.html', contact=contact)
@@ -430,6 +430,7 @@ def chat_direct(contact_id):
             u.display_name AS contact_display_name,
             u.username     AS contact_username,
             u.age_group    AS contact_age_group,
+            u.profile_picture AS contact_profile_picture,
             latest_msg.content AS last_message,
             latest_msg.sender_id AS last_message_sender_id,
             latest_msg.created_at AS last_message_time
@@ -457,7 +458,12 @@ def chat_direct(contact_id):
         WHERE c.user_id = %s
         ORDER BY c.is_favorite DESC, latest_msg.created_at DESC, u.display_name ASC
     """, (user_id, user_id, user_id), fetch_all=True) or []
-
+    # Fix profile picture path for template (like contacts/group chat)
+    for c in all_contacts:
+        pfp = c.get('contact_profile_picture')
+        if pfp and not pfp.startswith('uploads/') and not pfp.startswith('static/'):
+            c['contact_profile_picture'] = f"uploads/profile_pics/{pfp}"
+            
     all_groups = execute_query("""
         SELECT g.*,
             (SELECT COUNT(*) FROM group_members WHERE group_id = g.id) AS member_count
