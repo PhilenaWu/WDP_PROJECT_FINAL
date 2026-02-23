@@ -177,6 +177,13 @@ def register_socketio_events(socketio, app):
         join_room(f'chess_{game_id}')
         emit('chess_joined', {'game_id': game_id})
 
+    @socketio.on('chess_lobby_join')
+    def handle_chess_lobby_join():
+        if not current_user.is_authenticated:
+            return
+        join_room(f'chess_lobby_{current_user.id}')
+        emit('chess_lobby_joined', {'user_id': current_user.id})
+
     @socketio.on('chess_leave')
     def handle_chess_leave(data):
         if not current_user.is_authenticated:

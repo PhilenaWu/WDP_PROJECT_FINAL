@@ -19,9 +19,9 @@ from database import execute_query, init_db
 from models import User
 
 if sys.platform == 'win32':
-    socketio = SocketIO(async_mode="threading")  # Windows-safe backend
+    socketio = SocketIO(async_mode="threading", cors_allowed_origins="*")  # Windows-safe backend
 else:
-    socketio = SocketIO(async_mode="eventlet")
+    socketio = SocketIO(async_mode="eventlet", cors_allowed_origins="*")
 
 
 def create_app():

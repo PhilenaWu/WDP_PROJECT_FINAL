@@ -18,22 +18,46 @@
 
     const socket = window.io ? window.io() : null;
 
-    if (socket && state.gameId) {
-        socket.on('connect', () => {
+    function joinGameRoom() {
+        if (socket && state.gameId) {
             socket.emit('chess_join', { game_id: state.gameId });
+        }
+    }
+
+    if (socket && state.gameId) {
+        // Join room on connect
+        socket.on('connect', () => {
+            console.log('Socket connected, joining game room');
+            joinGameRoom();
         });
 
+        // Join room immediately if already connected
+        if (socket.connected) {
+            console.log('Socket already connected, immediately joining game room');
+            joinGameRoom();
+        }
+
+        // Listen for real-time game updates from opponent
         socket.on('chess_update', (payload) => {
+            console.log('Received chess update:', payload);
             if (!payload || payload.game_id !== state.gameId) {
                 return;
             }
             applyUpdate(payload);
         });
 
+        socket.on('chess_joined', (payload) => {
+            console.log('Successfully joined game room:', payload);
+        });
+
         socket.on('chess_error', (payload) => {
             if (payload && payload.message) {
                 setStatus(payload.message);
             }
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Socket disconnected');
         });
     }
 
@@ -330,6 +354,43 @@
         updateMoves(state.moves || []);
         setInfo(`You are playing as ${state.playerColor}.`);
         setStatus(state.turn === state.playerColor ? 'Your move.' : 'Opponent turn.');
+
+        // Fallback polling: Check for updates every 3 seconds if socket updates are delayed
+        const pollInterval = setInterval(() => {
+            if (!state.gameId) {
+                clearInterval(pollInterval);
+                return;
+            }
+
+            fetch(`/chess/api/game/${state.gameId}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            })
+                .then((res) => res.json())
+                .then((payload) => {
+                    if (!payload.ok || !payload.game) {
+                        return;
+                    }
+
+                    const game = payload.game;
+                    // Only update if the board state has changed
+                    if (game.fen !== state.fen) {
+                        console.log('Detected board change via polling, updating...');
+                        state.fen = game.fen;
+                        state.moves = payload.moves || [];
+                        state.status = game.status;
+                        state.result = game.result;
+                        state.turn = game.turn;
+                        renderBoard();
+                        updateMoves(state.moves);
+                        const statusMsg = state.turn === state.playerColor ? 'Your move.' : 'Opponent turn.';
+                        setStatus(statusMsg);
+                    }
+                })
+                .catch(() => {
+                    console.log('Polling check failed, will retry');
+                });
+        }, 3000);
     }
 
     init();

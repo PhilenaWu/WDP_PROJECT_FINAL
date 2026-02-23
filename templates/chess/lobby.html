@@ -171,6 +171,7 @@ body::after {
             <div class="chess-card">
                 <span class="chess-tag">Incoming</span>
                 <h5 class="chess-card-title">Incoming Invites</h5>
+                <div id="chess-lobby-incoming">
                 {% if incoming_invites and incoming_invites|length > 0 %}
                     <ul class="invite-list">
                         {% for invite in incoming_invites %}
@@ -193,17 +194,19 @@ body::after {
                 {% else %}
                     <p class="text-muted mb-0">No incoming invites.</p>
                 {% endif %}
+                </div>
             </div>
 
             <div class="chess-card">
                 <span class="chess-tag">Active</span>
                 <h5 class="chess-card-title">Active Games</h5>
+                <div id="chess-lobby-active">
                 {% if active_games and active_games|length > 0 %}
                     <ul class="invite-list">
                         {% for game in active_games %}
                             <li class="invite-item">
                                 <div class="invite-meta">
-                                    <strong>Game #{{ game.id }}</strong>
+                                    <strong>Match {{ game.id }}</strong>
                                     <small>Status: {{ game.status }}</small>
                                 </div>
                                 <a class="btn-ghost" href="{{ url_for('chess.game', game_id=game.id) }}">Open</a>
@@ -213,11 +216,13 @@ body::after {
                 {% else %}
                     <p class="text-muted mb-0">No active games yet.</p>
                 {% endif %}
+                </div>
             </div>
 
             <div class="chess-card">
                 <span class="chess-tag">Outgoing</span>
                 <h5 class="chess-card-title">Outgoing Invites</h5>
+                <div id="chess-lobby-outgoing">
                 {% if outgoing_invites and outgoing_invites|length > 0 %}
                     <ul class="invite-list">
                         {% for invite in outgoing_invites %}
@@ -233,8 +238,12 @@ body::after {
                 {% else %}
                     <p class="text-muted mb-0">No outgoing invites.</p>
                 {% endif %}
+                </div>
             </div>
         </div>
     </div>
 </section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.min.js"></script>
+<script src="{{ url_for('static', filename='js/chess_lobby.js') }}"></script>
 {% endblock %}

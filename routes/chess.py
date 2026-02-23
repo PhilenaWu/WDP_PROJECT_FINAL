@@ -260,6 +260,15 @@ def invite_contact():
         commit=True,
     )
 
+    # Emit socket event to update lobby in real-time
+    socketio = current_app.extensions.get("socketio")
+    if socketio:
+        socketio.emit(
+            "chess_lobby_update",
+            {"type": "invite_sent", "to_user_id": contact_id, "from_user_id": user_id},
+            room=f"user_{contact_id}",
+        )
+
     flash("Invite sent.", "success")
     return redirect(url_for("chess.lobby"))
 
@@ -305,9 +314,14 @@ def accept_invite(invite_id):
     socketio = current_app.extensions.get("socketio")
     if socketio:
         socketio.emit(
-            "chess_invite_accepted",
-            {"game_id": game_id, "invite_id": invite_id},
+            "chess_lobby_update",
+            {"type": "invite_accepted", "game_id": game_id, "invite_id": invite_id},
             room=f"user_{invite['from_user_id']}",
+        )
+        socketio.emit(
+            "chess_lobby_update",
+            {"type": "invite_accepted", "game_id": game_id, "invite_id": invite_id},
+            room=f"user_{user_id}",
         )
 
     return redirect(url_for("chess.game", game_id=game_id))
@@ -332,6 +346,15 @@ def decline_invite(invite_id):
         (invite_id,),
         commit=True,
     )
+
+    # Emit socket event to update lobby in real-time
+    socketio = current_app.extensions.get("socketio")
+    if socketio:
+        socketio.emit(
+            "chess_lobby_update",
+            {"type": "invite_declined", "invite_id": invite_id},
+            room=f"user_{invite['from_user_id']}",
+        )
 
     flash("Invite declined.", "success")
     return redirect(url_for("chess.lobby"))
@@ -564,6 +587,32 @@ def api_move():
     return jsonify(payload)
 
 
+@chess_bp.route("/api/game/<int:game_id>", methods=["GET"])
+@login_required
+def api_get_game(game_id):
+    """Get current game state for polling/real-time updates"""
+    user_id = current_user.id
+    game_row = _get_game(game_id)
+
+    if not game_row or not _is_user_in_game(game_row, user_id):
+        return jsonify({"ok": False, "message": "Game not found."}), 404
+
+    player_color = _user_color(game_row, user_id)
+    board = chess.Board(game_row.get("fen"))
+
+    return jsonify({
+        "ok": True,
+        "game": {
+            "id": game_id,
+            "fen": board.fen(),
+            "status": game_row.get("status"),
+            "result": game_row.get("result"),
+            "turn": "white" if board.turn == chess.WHITE else "black",
+        },
+        "moves": _parse_moves(game_row.get("moves")),
+    })
+
+
 @chess_bp.route("/forfeit/<int:game_id>", methods=["POST"])
 @login_required
 def forfeit_game(game_id):
@@ -614,3 +663,168 @@ def forfeit_game(game_id):
 
     flash("You forfeited the game.", "warning")
     return redirect(url_for("chess.lobby"))
+
+
+@chess_bp.route("/api/lobby/<section>", methods=["GET"])
+@login_required
+def api_lobby_section(section):
+    """API endpoint to fetch updated lobby sections (incoming, outgoing, active)"""
+    user_id = current_user.id
+    
+    if section == "incoming":
+        invites = execute_query(
+            """
+            SELECT ci.id, u.display_name, u.username, ci.created_at
+            FROM chess_invites ci
+            JOIN users u ON ci.from_user_id = u.id
+            WHERE ci.to_user_id = %s AND ci.status = 'pending'
+            ORDER BY ci.created_at DESC
+            """,
+            (user_id,),
+            fetch_all=True,
+        ) or []
+        html = _render_invite_list_html(invites, "incoming")
+    elif section == "outgoing":
+        invites = execute_query(
+            """
+            SELECT ci.id, u.display_name, u.username, ci.created_at
+            FROM chess_invites ci
+            JOIN users u ON ci.to_user_id = u.id
+            WHERE ci.from_user_id = %s AND ci.status = 'pending'
+            ORDER BY ci.created_at DESC
+            """,
+            (user_id,),
+            fetch_all=True,
+        ) or []
+        html = _render_invite_list_html(invites, "outgoing")
+    elif section == "active":
+        games = execute_query(
+            """
+            SELECT id, status
+            FROM chess_games
+            WHERE (white_id = %s OR black_id = %s)
+              AND status IN ('waiting', 'active')
+            ORDER BY created_at DESC
+            """,
+            (user_id, user_id),
+            fetch_all=True,
+        ) or []
+        html = _render_active_games_html(games)
+    else:
+        return jsonify({"ok": False, "message": "Invalid section"}), 400
+
+    return jsonify({"ok": True, "html": html})
+
+
+@chess_bp.route("/api/lobby/all", methods=["GET"])
+@login_required
+def api_lobby_all():
+    """API endpoint to fetch all lobby sections at once"""
+    user_id = current_user.id
+    
+    # Incoming invites
+    incoming = execute_query(
+        """
+        SELECT ci.id, u.display_name, u.username, ci.created_at
+        FROM chess_invites ci
+        JOIN users u ON ci.from_user_id = u.id
+        WHERE ci.to_user_id = %s AND ci.status = 'pending'
+        ORDER BY ci.created_at DESC
+        """,
+        (user_id,),
+        fetch_all=True,
+    ) or []
+    
+    # Outgoing invites
+    outgoing = execute_query(
+        """
+        SELECT ci.id, u.display_name, u.username, ci.created_at
+        FROM chess_invites ci
+        JOIN users u ON ci.to_user_id = u.id
+        WHERE ci.from_user_id = %s AND ci.status = 'pending'
+        ORDER BY ci.created_at DESC
+        """,
+        (user_id,),
+        fetch_all=True,
+    ) or []
+    
+    # Active games
+    games = execute_query(
+        """
+        SELECT id, status
+        FROM chess_games
+        WHERE (white_id = %s OR black_id = %s)
+          AND status IN ('waiting', 'active')
+        ORDER BY created_at DESC
+        """,
+        (user_id, user_id),
+        fetch_all=True,
+    ) or []
+    
+    return jsonify({
+        "ok": True,
+        "incoming_html": _render_invite_list_html(incoming, "incoming"),
+        "outgoing_html": _render_invite_list_html(outgoing, "outgoing"),
+        "active_html": _render_active_games_html(games),
+    })
+
+
+def _render_invite_list_html(invites, invite_type):
+    """Helper to render invite list HTML"""
+    if not invites:
+        return '<p class="text-muted mb-0">No ' + invite_type.replace('_', ' ') + ' invites.</p>'
+    
+    html = '<ul class="invite-list">'
+    for invite in invites:
+        name = invite.get('display_name') or invite.get('username')
+        if invite_type == "incoming":
+            html += f'''
+            <li class="invite-item">
+                <div class="invite-meta">
+                    <strong>{name}</strong>
+                    <small>Pending invite</small>
+                </div>
+                <div class="d-flex gap-2">
+                    <form method="POST" action="{url_for('chess.accept_invite', invite_id=invite['id'])}">
+                        <button class="btn-orange" type="submit">Accept</button>
+                    </form>
+                    <form method="POST" action="{url_for('chess.decline_invite', invite_id=invite['id'])}">
+                        <button class="btn-ghost" type="submit">Decline</button>
+                    </form>
+                </div>
+            </li>
+            '''
+        else:  # outgoing
+            html += f'''
+            <li class="invite-item">
+                <div class="invite-meta">
+                    <strong>{name}</strong>
+                    <small>Awaiting response</small>
+                </div>
+                <span class="btn-ghost">Pending</span>
+            </li>
+            '''
+    html += '</ul>'
+    return html
+
+
+def _render_active_games_html(games):
+    """Helper to render active games list HTML"""
+    if not games:
+        return '<p class="text-muted mb-0">No active games yet.</p>'
+    
+    html = '<ul class="invite-list">'
+    for game in games:
+        game_id = game.get('id')
+        status = game.get('status')
+        html += f'''
+        <li class="invite-item">
+            <div class="invite-meta">
+                <strong>Match {game_id}</strong>
+                <small>Status: {status}</small>
+            </div>
+            <a class="btn-ghost" href="{url_for('chess.game', game_id=game_id)}">Open</a>
+        </li>
+        '''
+    html += '</ul>'
+    return html
