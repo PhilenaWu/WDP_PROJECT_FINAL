@@ -63,6 +63,11 @@ def view_contacts():
         WHERE c.user_id = %s
         ORDER BY c.is_favorite DESC, u.display_name ASC
     """, (user_id,), fetch_all=True) or []
+    # Fix profile picture path for template (like chat)
+    for c in contacts:
+        pfp = c.get('contact_profile_picture')
+        if pfp and not pfp.startswith('uploads/') and not pfp.startswith('static/'):
+            c['contact_profile_picture'] = f"uploads/profile_pics/{pfp}"
 
     existing_ids = [c['contact_user_id'] for c in contacts]
 
@@ -284,10 +289,15 @@ def create_group():
         return redirect(url_for('messaging.view_contacts'))
 
     contacts = execute_query("""
-        SELECT c.*, u.display_name AS contact_display_name, u.username AS contact_username
+        SELECT c.*, u.display_name AS contact_display_name, u.username AS contact_username, u.profile_picture AS contact_profile_picture
         FROM contacts c JOIN users u ON c.contact_user_id = u.id
         WHERE c.user_id = %s
     """, (user_id,), fetch_all=True) or []
+    # Fix profile picture path for template (like chat/contacts)
+    for c in contacts:
+        pfp = c.get('contact_profile_picture')
+        if pfp and not pfp.startswith('uploads/') and not pfp.startswith('static/'):
+            c['contact_profile_picture'] = f"uploads/profile_pics/{pfp}"
 
     return render_template('messaging/create_group.html', contacts=contacts)
 
@@ -363,13 +373,17 @@ def chat_direct(contact_id):
     """RETRIEVE - View direct messages with a contact"""
     user_id = current_user.id
 
-    contact_user = execute_query("SELECT * FROM users WHERE id = %s", (contact_id,), fetch_one=True)
+    contact_user = execute_query("SELECT *, profile_picture AS contact_profile_picture FROM users WHERE id = %s", (contact_id,), fetch_one=True)
     if not contact_user:
         flash('User not found', 'error')
         return redirect(url_for('messaging.view_contacts'))
+    # Fix profile picture path for template (like contacts)
+    pfp = contact_user.get('contact_profile_picture')
+    if pfp and not pfp.startswith('uploads/') and not pfp.startswith('static/'):
+        contact_user['contact_profile_picture'] = f"uploads/profile_pics/{pfp}"
 
     messages = execute_query("""
-        SELECT m.*, u.display_name AS sender_display_name
+        SELECT m.*, u.display_name AS sender_display_name, u.profile_picture AS sender_profile_picture
         FROM messages m JOIN users u ON m.sender_id = u.id
         WHERE ((m.sender_id = %s AND m.receiver_id = %s)
             OR (m.sender_id = %s AND m.receiver_id = %s))
@@ -475,7 +489,7 @@ def chat_group(group_id):
     group['member_count'] = mc['cnt'] if mc else 0
 
     messages = execute_query("""
-        SELECT m.*, u.display_name AS sender_display_name
+        SELECT m.*, u.display_name AS sender_display_name, u.profile_picture AS sender_profile_picture
         FROM messages m JOIN users u ON m.sender_id = u.id
         WHERE m.group_id = %s AND m.is_deleted = FALSE
         ORDER BY m.created_at ASC
@@ -488,6 +502,7 @@ def chat_group(group_id):
             u.display_name AS contact_display_name,
             u.username     AS contact_username,
             u.age_group    AS contact_age_group,
+            u.profile_picture AS contact_profile_picture,
             latest_msg.content AS last_message,
             latest_msg.sender_id AS last_message_sender_id,
             latest_msg.created_at AS last_message_time
@@ -515,6 +530,11 @@ def chat_group(group_id):
         WHERE c.user_id = %s
         ORDER BY latest_msg.created_at DESC, c.is_favorite DESC, u.display_name ASC
     """, (user_id, user_id, user_id), fetch_all=True) or []
+    # Fix profile picture path for template (like chat/contacts)
+    for c in all_contacts:
+        pfp = c.get('contact_profile_picture')
+        if pfp and not pfp.startswith('uploads/') and not pfp.startswith('static/'):
+            c['contact_profile_picture'] = f"uploads/profile_pics/{pfp}"
     
     all_groups = execute_query("""
         SELECT g.*, (SELECT COUNT(*) FROM group_members WHERE group_id = g.id) AS member_count

@@ -107,7 +107,13 @@
             {% if contacts %}
               {% for contact in contacts %}
               <a href="{{ url_for('messaging.chat_direct', contact_id=contact.contact_user_id) }}" class="gl-contact-mini">
-                <div class="gl-avatar gl-avatar-sm">{{ (contact.contact_display_name or '?')[0].upper() }}</div>
+                <div class="gl-avatar gl-avatar-sm">
+                  {% if contact.contact_profile_picture %}
+                    <img src="{{ url_for('static', filename=contact.contact_profile_picture.replace('static/', '').replace('\\', '/')) }}" alt="Profile" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+                  {% else %}
+                    {{ (contact.contact_display_name or '?')[0].upper() }}
+                  {% endif %}
+                </div>
                 <div>
                   <div class="fw-medium small">
                     {{ contact.nickname or contact.contact_display_name }}
@@ -197,7 +203,13 @@
                 {% if contacts %}
                 {% for contact in contacts %}
                 <div class="d-flex align-items-center gap-3 py-3 gl-contact-row {{ '' if loop.last else 'border-bottom' }}" style="animation-delay: {{ loop.index0 * 0.06 }}s">
-                    <div class="gl-avatar gl-avatar-lg">{{ (contact.contact_display_name or '?')[0].upper() }}</div>
+                    <div class="gl-avatar gl-avatar-lg">
+                      {% if contact.contact_profile_picture %}
+                        <img src="{{ url_for('static', filename=contact.contact_profile_picture.replace('static/', '').replace('\\', '/')) }}" alt="Profile" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">
+                      {% else %}
+                        {{ (contact.contact_display_name or '?')[0].upper() }}
+                      {% endif %}
+                    </div>
                     <div class="flex-grow-1" style="min-width:0;">
                     <div class="fw-semibold">
                         {{ contact.nickname or contact.contact_display_name }}

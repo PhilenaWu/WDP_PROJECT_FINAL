@@ -159,9 +159,15 @@
                 <div class="sb-section-label">Recent</div>
                 {% if all_contacts %}
                     {% for c in all_contacts %}
-                    <a href="{{ url_for('messaging.chat_direct', contact_id=c.contact_user_id) }}"
-                       class="sb-item" data-name="{{ (c.nickname or c.contact_display_name)|lower }}">
-                        <div class="sb-avatar">{{ (c.contact_display_name or '?')[0].upper() }}</div>
+                                        <a href="{{ url_for('messaging.chat_direct', contact_id=c.contact_user_id) }}"
+                                             class="sb-item" data-name="{{ (c.nickname or c.contact_display_name)|lower }}">
+                                                <div class="sb-avatar">
+                                                    {% if c.contact_profile_picture %}
+                                                        <img src="{{ url_for('static', filename=c.contact_profile_picture.replace('static/', '').replace('\\', '/')) }}" alt="Profile" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                                                    {% else %}
+                                                        {{ (c.contact_display_name or '?')[0].upper() }}
+                                                    {% endif %}
+                                                </div>
                         <div class="sb-info">
                             <div class="d-flex align-items-center justify-content-between gap-2">
                                 <div class="sb-name">
@@ -250,6 +256,15 @@
             {% if messages %}
                 {% for message in messages %}
                 <div class="message-group" id="message-{{ message.id }}" style="display: flex; justify-content: {% if message.sender_id == current_user.id %}flex-end{% else %}flex-start{% endif %}">
+                    {% if message.sender_id != current_user.id %}
+                        <div class="sb-avatar" style="margin-right: 10px; align-self: flex-end;">
+                            {% if message.sender_profile_picture %}
+                                <img src="{{ url_for('static', filename=message.sender_profile_picture.replace('static/', '').replace('\\', '/')) }}" alt="Profile" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                            {% else %}
+                                {{ (message.sender_display_name or '?')[0].upper() }}
+                            {% endif %}
+                        </div>
+                    {% endif %}
                     <div class="message-bubble {% if message.sender_id == current_user.id %}message-sent{% else %}message-received{% endif %}">
                         <div class="message-sender">{{ message.sender_display_name }}</div>
                         {% if message.message_type == 'text' %}

@@ -12,9 +12,15 @@
                 <div style="max-height:300px;overflow-y:auto;border:2px solid #e0e0e0;border-radius:8px;">
                     {% if contacts %}{% for c in contacts %}
                     <label style="display:flex;align-items:center;gap:1rem;padding:1rem;cursor:pointer;border-bottom:1px solid #e0e0e0;">
-                        <input type="checkbox" name="members" value="{{ c.contact_user_id }}" style="width:18px;height:18px;">
-                        <div style="width:40px;height:40px;background:#ff6b35;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;">{{ (c.contact_display_name or '?')[0].upper() }}</div>
-                        <div><div style="font-weight:500;">{{ c.nickname or c.contact_display_name }}</div><div style="font-size:0.85rem;color:#666;">@{{ c.contact_username }}</div></div>
+                                                <input type="checkbox" name="members" value="{{ c.contact_user_id }}" style="width:18px;height:18px;">
+                                                <div style="width:40px;height:40px;background:#ff6b35;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;overflow:hidden;">
+                                                    {% if c.contact_profile_picture %}
+                                                        <img src="{{ url_for('static', filename=c.contact_profile_picture.replace('static/', '').replace('\\', '/')) }}" alt="Profile" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                                                    {% else %}
+                                                        {{ (c.contact_display_name or '?')[0].upper() }}
+                                                    {% endif %}
+                                                </div>
+                                                <div><div style="font-weight:500;">{{ c.nickname or c.contact_display_name }}</div><div style="font-size:0.85rem;color:#666;">@{{ c.contact_username }}</div></div>
                     </label>
                     {% endfor %}{% else %}<p style="color:#999;text-align:center;padding:2rem;">Add contacts first. <a href="{{ url_for('messaging.view_contacts') }}">Go to Contacts</a></p>{% endif %}
                 </div>

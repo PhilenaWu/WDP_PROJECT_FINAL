@@ -221,7 +221,13 @@
 
         <!-- Chat Header -->
         <div class="chat-header">
-            <div class="chat-avatar">{{ (contact.display_name or contact.username)[0].upper() }}</div>
+                        <div class="gl-avatar gl-avatar-lg" style="width:44px;height:44px;">
+                            {% if contact.contact_profile_picture %}
+                                <img src="{{ url_for('static', filename=contact.contact_profile_picture.replace('static/', '').replace('\\', '/')) }}" alt="Profile" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover;">
+                            {% else %}
+                                {{ (contact.display_name or contact.username)[0].upper() }}
+                            {% endif %}
+                        </div>
             <div class="chat-info">
                 <h3>{{ contact.display_name or contact.username }}</h3>
                 <p>
@@ -256,6 +262,15 @@
                 {% for message in messages %}
                     {% set justify = 'flex-end' if message.sender_id == current_user.id else 'flex-start' %}
                     <div class="message-group" id="message-{{ message.id }}" style="display:flex; justify-content: {{ justify }};">
+                        {% if message.sender_id != current_user.id %}
+                        <div class="sb-avatar" style="margin-right: 10px; align-self: flex-end;">
+                            {% if message.sender_profile_picture %}
+                                <img src="{{ url_for('static', filename=message.sender_profile_picture.replace('static/', '').replace('\\', '/')) }}" alt="Profile" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                            {% else %}
+                                {{ (message.sender_display_name or '?')[0].upper() }}
+                            {% endif %}
+                        </div>
+                        {% endif %}
                         <div class="message-bubble {% if message.sender_id == current_user.id %}message-sent{% else %}message-received{% endif %}">
 
                             {# ---------- CONTENT ---------- #}
