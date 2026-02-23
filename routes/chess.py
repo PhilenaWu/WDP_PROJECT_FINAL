@@ -608,6 +608,7 @@ def forfeit_game(game_id):
         "status": "finished",
         "result": winner_color,
         "turn": "white" if board.turn == chess.WHITE else "black",
+        "message": "Opponent forfeited. You win!",
     }
     _emit_game_update(game_id, payload)
 

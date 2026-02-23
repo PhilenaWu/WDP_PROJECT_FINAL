@@ -280,17 +280,49 @@
         renderBoard();
         updateMoves(state.moves);
 
-        if (state.status === 'finished') {
+        let statusMsg = '';
+        if (payload.message) {
+            statusMsg = payload.message;
+        } else if (state.status === 'finished') {
             if (state.result === 'draw') {
-                setStatus('Game over: Draw.');
+                statusMsg = 'Game over: Draw.';
             } else if (state.result) {
-                setStatus(`Game over: ${state.result} wins.`);
+                statusMsg = `Game over: ${state.result} wins.`;
             } else {
-                setStatus('Game over.');
+                statusMsg = 'Game over.';
             }
         } else {
-            setStatus(state.turn === state.playerColor ? 'Your move.' : 'Opponent turn.');
+            statusMsg = state.turn === state.playerColor ? 'Your move.' : 'Opponent turn.';
         }
+        setStatus(statusMsg);
+
+        // Show toast for forfeit
+        if (payload.message && payload.message.includes('forfeited')) {
+            showToast(payload.message, 'success');
+        }
+    }
+
+    function showToast(message, type = 'info') {
+        const toastContainer = document.getElementById('chess-toast-container') || (() => {
+            const container = document.createElement('div');
+            container.id = 'chess-toast-container';
+            container.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;';
+            document.body.appendChild(container);
+            return container;
+        })();
+
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type === 'success' ? 'success' : 'info'} alert-dismissible fade show`;
+        toast.style.cssText = 'min-width: 280px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+        toast.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        toastContainer.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove();
+        }, 4000);
     }
 
     function init() {
