@@ -1,3 +1,4 @@
+
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from database import execute_query
@@ -13,6 +14,34 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'mp3', 'wav', 'mp4', 'mov', '
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@messaging_bp.route('/messages/share_story', methods=['POST'])
+
+@login_required
+def share_story():
+    data = request.get_json(silent=True) or {}
+    receiver_id = data.get('recipient_id')
+    story_id = data.get('story_id')
+    if not receiver_id or not story_id:
+        return {'success': False, 'message': 'Missing receiver or story'}, 400
+
+    # Fetch topic slug using story_id
+    topic_row = execute_query(
+        "SELECT t.slug FROM stories s JOIN topics t ON s.topic_id = t.id WHERE s.id = %s",
+        (story_id,), fetch_one=True
+    )
+    if not topic_row or not topic_row.get('slug'):
+        return {'success': False, 'message': 'Could not find topic for story'}, 400
+    slug = topic_row['slug']
+    link = url_for('storyboard.topic_detail', slug=slug, _external=True) + f"#story-{story_id}"
+    message = f"I wanted to share this storyboard with you: <a href='{link}'>View Storyboard</a>"
+    execute_query(
+        "INSERT INTO messages (sender_id, receiver_id, message_type, content, created_at) VALUES (%s, %s, %s, %s, NOW())",
+        (current_user.id, receiver_id, 'story_share', message), commit=True
+    )
+    return {'success': True}
+
 
 
 # ==================== CONTACTS CRUD ====================
@@ -348,6 +377,30 @@ def chat_direct(contact_id):
         ORDER BY m.created_at ASC
     """, (user_id, contact_id, contact_id, user_id), fetch_all=True) or []
 
+    # Fetch story details for story_share messages
+    from story_service import get_story, get_media
+    story_previews = {}
+    import re
+    for msg in messages:
+        if msg.get('message_type') == 'story_share' and msg.get('content'):
+            m = re.search(r'#story-(\d+)', msg['content'])
+            if m:
+                story_id = int(m.group(1))
+                msg['story_id'] = story_id
+                story = get_story(story_id)
+                media = get_media(story_id)
+                topic_slug = None
+                if story and 'topic_id' in story:
+                    topic_row = execute_query("SELECT slug FROM topics WHERE id=%s", (story['topic_id'],), fetch_one=True)
+                    if topic_row and 'slug' in topic_row:
+                        topic_slug = topic_row['slug']
+                # Fallback: slugify story title if topic_slug is missing
+                if not topic_slug and story and 'title' in story:
+                    import re
+                    topic_slug = re.sub(r'[^a-zA-Z0-9]+', '-', story['title']).strip('-').lower()
+                if story:
+                    story_previews[story_id] = {'story': story, 'media': media, 'topic_slug': topic_slug}
+
     execute_query(
         "UPDATE messages SET is_read = TRUE WHERE sender_id = %s AND receiver_id = %s AND is_read = FALSE",
         (contact_id, user_id), commit=True
@@ -386,6 +439,7 @@ def chat_direct(contact_id):
         WHERE c.user_id = %s
         ORDER BY latest_msg.created_at DESC, c.is_favorite DESC, u.display_name ASC
     """, (user_id, user_id, user_id), fetch_all=True) or []
+    return render_template('messaging/chat_direct.html', contact=contact_user, messages=messages, story_previews=story_previews)
 
     all_groups = execute_query("""
         SELECT g.*,

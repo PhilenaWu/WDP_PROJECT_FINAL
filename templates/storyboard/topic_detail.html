@@ -2,8 +2,8 @@
 {% block title %}{{ topic.title }}{% endblock %}
 
 {% block content %}
+<!-- Header and main content inside container -->
 <div class="container py-5">
-
   <!-- Header -->
   <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
@@ -11,7 +11,6 @@
         <h2 class="fw-bold mb-1">{{ topic.title }}</h2>
         <div class="text-muted">Explore stories shared by the community.</div>
       </div>
-
       <a class="btn btn-orange rounded-pill px-4 shadow-sm"
          href="{{ url_for('storyboard.add_story', slug=topic.slug) }}">
         + Add Story
@@ -44,9 +43,7 @@
   <!-- Stories -->
   {% for s in stories %}
     <div class="card border-0 shadow-sm rounded-4 mb-4">
-
       <div class="card-body">
-
         <!-- Header -->
         <div class="d-flex justify-content-between align-items-start mb-3">
           <div class="d-flex align-items-center gap-3">
@@ -159,15 +156,16 @@
           </div>
         {% endif %}
 
-        <!-- Like -->
+        <!-- Like and Share -->
         <div class="d-flex align-items-center gap-3 mb-3">
           <form method="POST" action="{{ url_for('storyboard.toggle_story_like', story_id=s.id) }}">
             <button class="btn btn-sm rounded-pill {% if s.liked_by_me %}btn-danger{% else %}btn-outline-danger{% endif %}">
               ♥ {{ s.like_count }}
             </button>
           </form>
-
           <span class="text-muted small">💬 {{ s.comment_count }}</span>
+          <!-- Share Button -->
+          <button class="btn btn-sm btn-outline-primary rounded-pill" onclick="openShareModal({{ s.id }})">Share</button>
         </div>
 
         <!-- Comments -->
@@ -183,11 +181,16 @@
             {% for c in s.comments %}
               <div class="d-flex align-items-start gap-3 mb-3">
                 <img
-                  src="{{ c.avatar_url }}"
-                  onerror="this.onerror=null;this.src='{{ url_for('static', filename='uploads/main_topics_images/defaultProfile.webp') }}';"
-                  class="rounded-circle"
-                  style="width:32px;height:32px;object-fit:cover;"
-                  alt="avatar">
+                  src="{% if c.profile_pic %}{{ url_for('static', filename=c.profile_pic) }}{% else %}{{ url_for('static', filename='uploads/main_topics_images/default_pfp.png') }}{% endif %}"
+                  class="rounded-circle commentor-profile-pic"
+                  style="width:32px;height:32px;object-fit:cover;cursor:pointer;"
+                  alt="avatar"
+                  data-username="{{ c.username }}"
+                  data-age-group="{{ c.age_group }}"
+                  data-profile-pic="{% if c.profile_pic %}{{ url_for('static', filename=c.profile_pic) }}{% else %}{{ url_for('static', filename='uploads/main_topics_images/default_pfp.png') }}{% endif %}"
+                  data-user-id="{{ c.user_id }}"
+                  data-rel-status="{{ c.rel_status if c.rel_status is defined else 'none' }}"
+                >
                 <div class="flex-grow-1 bg-light rounded-3 p-2 d-flex align-items-center justify-content-between">
                   <div>
                     <div class="small fw-semibold">{{ c.username }}</div>
@@ -221,6 +224,134 @@
       </div>
     </div>
   {% endfor %}
-
 </div>
+<!-- Modal and script OUTSIDE container so footer is full width -->
+<!-- Profile Modal -->
+<div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="profileModalLabel">User Profile</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img id="modalProfilePic" src="" class="rounded-circle mb-3" style="width:64px;height:64px;object-fit:cover;" alt="avatar">
+        <p><strong>Username:</strong> <span id="modalUsername"></span></p>
+        <p><strong>Age Category:</strong> <span id="modalAgeGroup"></span></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="connectBtn">Connect</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <span id="connectedStatus" style="display:none;font-weight:bold;color:green;">Connected</span>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  let selectedUserId = null;
+  let selectedRelStatus = 'none';
+  // Listen for clicks on all commentor profile pics
+  document.querySelectorAll('.commentor-profile-pic').forEach(function(img) {
+    img.addEventListener('click', function() {
+      selectedUserId = img.getAttribute('data-user-id');
+      selectedRelStatus = img.getAttribute('data-rel-status');
+      document.getElementById('modalProfilePic').src = img.getAttribute('data-profile-pic');
+      document.getElementById('modalUsername').textContent = img.getAttribute('data-username');
+      document.getElementById('modalAgeGroup').textContent = img.getAttribute('data-age-group');
+      // Show/hide connect button and connected status
+      if (selectedRelStatus === 'connected') {
+        document.getElementById('connectBtn').style.display = 'none';
+        document.getElementById('connectedStatus').style.display = 'inline-block';
+      } else {
+        document.getElementById('connectBtn').style.display = 'inline-block';
+        document.getElementById('connectedStatus').style.display = 'none';
+      }
+      var modal = new bootstrap.Modal(document.getElementById('profileModal'));
+      modal.show();
+    });
+  });
+
+  // Handle connect button click
+  document.getElementById('connectBtn').addEventListener('click', function() {
+    if (!selectedUserId) return;
+    fetch('/connections/request', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ user_id: selectedUserId })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success || data.ok) {
+        alert('Connection request sent!');
+        var modal = bootstrap.Modal.getInstance(document.getElementById('profileModal'));
+        if (modal) modal.hide();
+      } else {
+        alert('Failed to send request: ' + (data.message || 'Unknown error'));
+      }
+    })
+    .catch(() => {
+      alert('Error sending request.');
+    });
+  });
+});
+</script>
+
+<!-- Share Modal -->
+<div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="shareModalLabel">Share Storyboard</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <label for="recipientSelect">Send to:</label>
+        <select id="recipientSelect" class="form-select">
+          {% for conn in connections %}
+            <option value="{{ conn.id }}">{{ conn.username }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="sendShareBtn">Send</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let shareStoryId = null;
+function openShareModal(storyId) {
+  shareStoryId = storyId;
+  var modal = new bootstrap.Modal(document.getElementById('shareModal'));
+  modal.show();
+}
+document.getElementById('sendShareBtn').addEventListener('click', function() {
+  const recipientId = document.getElementById('recipientSelect').value;
+  if (!recipientId || !shareStoryId) return;
+  fetch('/messages/share_story', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ recipient_id: recipientId, story_id: shareStoryId })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert('Storyboard shared!');
+      var modal = bootstrap.Modal.getInstance(document.getElementById('shareModal'));
+      if (modal) modal.hide();
+    } else {
+      alert('Failed to share: ' + (data.message || 'Unknown error'));
+    }
+  })
+  .catch(() => {
+    alert('Error sharing storyboard.');
+  });
+});
+</script>
+
 {% endblock %}
