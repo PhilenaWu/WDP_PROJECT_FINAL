@@ -456,8 +456,7 @@ def chat_direct(contact_id):
         WHERE c.user_id = %s
         ORDER BY latest_msg.created_at DESC, c.is_favorite DESC, u.display_name ASC
     """, (user_id, user_id, user_id), fetch_all=True) or []
-    return render_template('messaging/chat_direct.html', contact=contact_user, messages=messages, story_previews=story_previews)
-
+    
     all_groups = execute_query("""
         SELECT g.*,
             (SELECT COUNT(*) FROM group_members WHERE group_id = g.id) AS member_count
@@ -467,7 +466,9 @@ def chat_direct(contact_id):
         ORDER BY g.name
     """, (user_id,), fetch_all=True) or []
 
-    return render_template('messaging/chat_direct.html', contact=contact_user, messages=messages, all_contacts=all_contacts, all_groups=all_groups)
+    return render_template('messaging/chat_direct.html', contact=contact_user, 
+        messages=messages, all_contacts=all_contacts, all_groups=all_groups, 
+        story_previews=story_previews)
 
 @messaging_bp.route('/chat/group/<int:group_id>')
 @login_required
