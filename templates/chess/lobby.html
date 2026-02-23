@@ -204,9 +204,14 @@ body::after {
                 {% if active_games and active_games|length > 0 %}
                     <ul class="invite-list">
                         {% for game in active_games %}
+                            {% if current_user.id == game.white_id %}
+                                {% set opponent_name = game.black_name or game.black_username %}
+                            {% else %}
+                                {% set opponent_name = game.white_name or game.white_username %}
+                            {% endif %}
                             <li class="invite-item">
                                 <div class="invite-meta">
-                                    <strong>Match {{ game.id }}</strong>
+                                    <strong>Match with {{ opponent_name }}</strong>
                                     <small>Status: {{ game.status }}</small>
                                 </div>
                                 <a class="btn-ghost" href="{{ url_for('chess.game', game_id=game.id) }}">Open</a>

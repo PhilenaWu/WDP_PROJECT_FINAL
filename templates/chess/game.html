@@ -73,6 +73,11 @@ body::after {
 .btn-orange:hover { transform: scale(1.03) translateY(-1px); box-shadow: 0 10px 28px var(--glow-strong); }
 
 .chess-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+@keyframes slideIn {
+  from { transform: translateX(400px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
 </style>
 {% endblock %}
 

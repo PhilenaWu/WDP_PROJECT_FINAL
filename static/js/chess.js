@@ -320,9 +320,38 @@
         }
         setStatus(statusMsg);
 
-        // Show toast for forfeit
-        if (payload.message && payload.message.includes('forfeited')) {
-            showToast(payload.message, 'success');
+        // Show toast for game end (win/loss/draw or forfeit)
+        if (state.status === 'finished') {
+            if (payload.message && payload.message.includes('forfeited')) {
+                // Forfeit - opponent gave up, you win
+                showToast(payload.message, 'victory');
+            } else if (state.result) {
+                // Regular game end
+                if (state.result === state.playerColor) {
+                    // You won!
+                    const victoryMessages = [
+                        'Congratulations! You won! 🎉',
+                        'You crushed it! Great game! 💪',
+                        'Victory! Well played! 🏆',
+                        'Fantastic win! You\'re on fire! 🔥'
+                    ];
+                    const randomVictory = victoryMessages[Math.floor(Math.random() * victoryMessages.length)];
+                    showToast(randomVictory, 'victory');
+                } else if (state.result === 'draw') {
+                    // Draw
+                    showToast("It's a draw! Well fought! 🤝", 'draw');
+                } else {
+                    // You lost
+                    const encouragementMessages = [
+                        'Good effort! Better luck next time! 💪',
+                        'You played well! Keep practicing! 📚',
+                        'Great match! You\'ll get them next time! 🎯',
+                        'Don\'t worry, you\'re improving! Keep it up! 📈'
+                    ];
+                    const randomEncouragement = encouragementMessages[Math.floor(Math.random() * encouragementMessages.length)];
+                    showToast(randomEncouragement, 'loss');
+                }
+            }
         }
     }
 
@@ -330,23 +359,48 @@
         const toastContainer = document.getElementById('chess-toast-container') || (() => {
             const container = document.createElement('div');
             container.id = 'chess-toast-container';
-            container.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;';
+            container.style.cssText = 'position: fixed; top: 60px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 12px;';
             document.body.appendChild(container);
             return container;
         })();
 
+        // Determine colors and duration based on type
+        let bgColor, duration;
+        if (type === 'victory' || type === 'forfeit') {
+            // Green for victories and forfeits
+            bgColor = 'background: linear-gradient(135deg, #28a745 0%, #20c997 100%); border: 1px solid #20c997;';
+            duration = 5000;
+        } else if (type === 'loss') {
+            // Blue for losses (encouraging)
+            bgColor = 'background: linear-gradient(135deg, #0dcaf0 0%, #0dd5ce 100%); border: 1px solid #0dd5ce;';
+            duration = 5000;
+        } else if (type === 'draw') {
+            // Purple for draws
+            bgColor = 'background: linear-gradient(135deg, #6f42c1 0%, #7952b3 100%); border: 1px solid #7952b3;';
+            duration = 5000;
+        } else {
+            // Cyan for other messages
+            bgColor = 'background: linear-gradient(135deg, #0dcaf0 0%, #0dd5ce 100%); border: 1px solid #0dd5ce;';
+            duration = 4000;
+        }
+        
         const toast = document.createElement('div');
-        toast.className = `alert alert-${type === 'success' ? 'success' : 'info'} alert-dismissible fade show`;
-        toast.style.cssText = 'min-width: 280px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
-        toast.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        `;
+        toast.className = 'fade show';
+        toast.style.cssText = 'min-width: 320px; padding: 16px 20px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.25); color: #fff; font-weight: 600; ' + bgColor + 'display: flex; justify-content: space-between; align-items: center; animation: slideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);';
+        toast.innerHTML = '<span>' + message + '</span><button type="button" style="background: none; border: none; color: #fff; cursor: pointer; font-size: 1.2rem; padding: 0; margin-left: 12px;" aria-label="Close">&times;</button>';
+        
+        const closeBtn = toast.querySelector('button');
+        closeBtn.addEventListener('click', () => {
+            toast.remove();
+        });
+        
         toastContainer.appendChild(toast);
 
         setTimeout(() => {
-            toast.remove();
-        }, 4000);
+            if (toast.parentElement) {
+                toast.remove();
+            }
+        }, duration);
     }
 
     function init() {

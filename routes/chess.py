@@ -657,7 +657,7 @@ def forfeit_game(game_id):
         "status": "finished",
         "result": winner_color,
         "turn": "white" if board.turn == chess.WHITE else "black",
-        "message": "Opponent forfeited. You win!",
+        "message": "You win! Opponent forfeited!",
     }
     _emit_game_update(game_id, payload)
 
@@ -700,16 +700,20 @@ def api_lobby_section(section):
     elif section == "active":
         games = execute_query(
             """
-            SELECT id, status
-            FROM chess_games
-            WHERE (white_id = %s OR black_id = %s)
-              AND status IN ('waiting', 'active')
-            ORDER BY created_at DESC
+            SELECT cg.id, cg.status, cg.white_id, cg.black_id,
+                   w.display_name as white_name, w.username as white_username,
+                   b.display_name as black_name, b.username as black_username
+            FROM chess_games cg
+            LEFT JOIN users w ON cg.white_id = w.id
+            LEFT JOIN users b ON cg.black_id = b.id
+            WHERE (cg.white_id = %s OR cg.black_id = %s)
+              AND cg.status IN ('waiting', 'active')
+            ORDER BY cg.created_at DESC
             """,
             (user_id, user_id),
             fetch_all=True,
         ) or []
-        html = _render_active_games_html(games)
+        html = _render_active_games_html(games, user_id)
     else:
         return jsonify({"ok": False, "message": "Invalid section"}), 400
 
@@ -751,11 +755,15 @@ def api_lobby_all():
     # Active games
     games = execute_query(
         """
-        SELECT id, status
-        FROM chess_games
-        WHERE (white_id = %s OR black_id = %s)
-          AND status IN ('waiting', 'active')
-        ORDER BY created_at DESC
+        SELECT cg.id, cg.status, cg.white_id, cg.black_id,
+               w.display_name as white_name, w.username as white_username,
+               b.display_name as black_name, b.username as black_username
+        FROM chess_games cg
+        LEFT JOIN users w ON cg.white_id = w.id
+        LEFT JOIN users b ON cg.black_id = b.id
+        WHERE (cg.white_id = %s OR cg.black_id = %s)
+          AND cg.status IN ('waiting', 'active')
+        ORDER BY cg.created_at DESC
         """,
         (user_id, user_id),
         fetch_all=True,
@@ -765,7 +773,7 @@ def api_lobby_all():
         "ok": True,
         "incoming_html": _render_invite_list_html(incoming, "incoming"),
         "outgoing_html": _render_invite_list_html(outgoing, "outgoing"),
-        "active_html": _render_active_games_html(games),
+        "active_html": _render_active_games_html(games, user_id),
     })
 
 
@@ -808,8 +816,8 @@ def _render_invite_list_html(invites, invite_type):
     return html
 
 
-def _render_active_games_html(games):
-    """Helper to render active games list HTML"""
+def _render_active_games_html(games, current_user_id=None):
+    """Helper to render active games list HTML with opponent names"""
     if not games:
         return '<p class="text-muted mb-0">No active games yet.</p>'
     
@@ -817,10 +825,21 @@ def _render_active_games_html(games):
     for game in games:
         game_id = game.get('id')
         status = game.get('status')
+        white_id = game.get('white_id')
+        black_id = game.get('black_id')
+        
+        # Determine opponent name
+        opponent_name = "Unknown"
+        if current_user_id:
+            if current_user_id == white_id:
+                opponent_name = game.get('black_name') or game.get('black_username') or "Unknown"
+            else:
+                opponent_name = game.get('white_name') or game.get('white_username') or "Unknown"
+        
         html += f'''
         <li class="invite-item">
             <div class="invite-meta">
-                <strong>Match {game_id}</strong>
+                <strong>Match with {opponent_name}</strong>
                 <small>Status: {status}</small>
             </div>
             <a class="btn-ghost" href="{url_for('chess.game', game_id=game_id)}">Open</a>
