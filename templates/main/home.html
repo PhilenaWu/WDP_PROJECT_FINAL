@@ -7,262 +7,739 @@
 
 {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-        <div class="container-fluid mt-3 px-3">
+        <div class="gl-alerts">
             {% for category, message in messages %}
-                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show {% if message == 'Please log in to access this page.' %}login-required-alert{% endif %}" role="alert">
+                <div class="gl-alert gl-alert-{{ 'danger' if category == 'error' else category }} {% if message == 'Please log in to access this page.' %}login-required-alert{% endif %}">
                     {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <button class="gl-alert-close" onclick="this.parentElement.remove()">×</button>
                 </div>
             {% endfor %}
         </div>
     {% endif %}
 {% endwith %}
 
-<!-- Main Content -->
-<div class="container py-4">
-    <!-- Welcome Message -->
-    <div class="alert alert-success mt-4" role="alert">
-        <h4 class="alert-heading">Welcome, {{ user.username }}! 🎉</h4>
-        <p>Your profile is complete. Start exploring events and connecting with others!</p>
-        <hr>
-        <p class="mb-0">
-            <strong>Age Group:</strong> {{ user.age_group.capitalize() if user.age_group else 'N/A' }}
-        </p>
+<!-- WELCOME HERO BANNER -->
+<section class="gl-welcome-hero">
+  <div class="gl-blob gl-blob-a"></div>
+  <div class="gl-blob gl-blob-b"></div>
+  <div class="gl-dotgrid"></div>
+
+  <div class="gl-welcome-inner">
+    <div class="gl-welcome-text">
+      <div class="gl-pill">
+        <span class="gl-pill-dot"></span>
+        Welcome back
+      </div>
+      <h1 class="gl-welcome-title">Hey, {{ user.username }}! 🎉</h1>
+      <p class="gl-welcome-sub">Your profile is complete. Start exploring events and connecting with others!</p>
+      <div class="gl-welcome-meta">
+        <span class="gl-badge">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          {{ user.age_group.capitalize() if user.age_group else 'N/A' }}
+        </span>
+        {% if pending_count is defined and pending_count|int > 0 %}
+          <span class="gl-badge gl-badge-warn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            {{ pending_count }} incoming request{{ 's' if pending_count|int != 1 else '' }}
+          </span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="gl-welcome-actions">
+      <a href="{{ url_for('connections.connections') }}" class="gl-btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Find Connections
+      </a>
+      <a href="{{ url_for('events.events_home') }}" class="gl-btn-ghost">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Browse Events
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- MAIN CONTENT -->
+<div class="gl-container">
+
+  <!-- STORY UPLOAD BANNER -->
+  <div class="gl-story-banner reveal">
+    <div class="gl-story-banner-left">
+      <span class="gl-story-icon">🎙️</span>
+      <div>
+        <h3 class="gl-story-title">Story Upload</h3>
+        <p class="gl-story-sub">Share your stories with the community through voice recordings</p>
+      </div>
+    </div>
+    <a href="{{ url_for('main.storyboard') }}" class="gl-btn-white">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+      Upload Story
+    </a>
+  </div>
+
+  <!-- ANNOUNCEMENTS -->
+  <div class="gl-section reveal">
+    <div class="gl-section-header">
+      <h2 class="gl-section-title">Latest Announcements</h2>
     </div>
 
-    <!-- Voice Story Upload Banner -->
-    <div class="card mb-4 banner-gradient">
-        <div class="card-body p-4">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h3><i class="bi bi-mic-fill"></i> Story Upload</h3>
-                    <p class="mb-0">Share your stories with the community through voice recordings</p>
-                </div>
-                <div class="col-md-4 text-end">
-                    <a href="{{ url_for('main.storyboard') }}" class="btn btn-light">
-                        <i class="bi bi-upload"></i> Upload Story
-                    </a>
-                </div>
-            </div>
+    <div class="gl-carousel-wrap">
+      <div class="gl-carousel">
+        <div class="gl-carousel-track" id="carouselTrack">
+
+          <div class="gl-ann-card">
+            <div class="gl-ann-icon">📢</div>
+            <h4 class="gl-ann-title">New Topic Uploaded!</h4>
+            <p class="gl-ann-text">In light of Racial Harmony Day, we have uploaded a new "Culture and Traditions" topic. Find out more in Storyboard and share your experiences today!</p>
+            <a href="{{ url_for('main.storyboard') }}" class="gl-ann-link">Learn More →</a>
+          </div>
+
+          <div class="gl-ann-card">
+            <div class="gl-ann-icon">✏️</div>
+            <h4 class="gl-ann-title">Profile Settings Updates</h4>
+            <p class="gl-ann-text">Check out our latest feature that allows you to edit your profile details. Update your profile now to let others know more about you!</p>
+            <a href="{{ url_for('profile.profile') }}" class="gl-ann-link">Explore →</a>
+          </div>
+
+          <div class="gl-ann-card">
+            <div class="gl-ann-icon">🌊</div>
+            <h4 class="gl-ann-title">New Event — Clean the Beach</h4>
+            <p class="gl-ann-text">Join the latest event to help clean up our beaches and make a positive impact on the environment!</p>
+            <a href="{{ url_for('events.signup_event', event_id=6) }}" class="gl-ann-link">Join →</a>
+          </div>
+
         </div>
+      </div>
+
+      <div class="gl-carousel-controls">
+        <button class="gl-carr-btn" id="prevBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="gl-dots" id="annDots">
+          <span class="gl-dot active" data-idx="0"></span>
+          <span class="gl-dot" data-idx="1"></span>
+          <span class="gl-dot" data-idx="2"></span>
+        </div>
+        <button class="gl-carr-btn" id="nextBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EVENTS + CALENDAR -->
+  <div class="gl-two-col">
+
+    <!-- Upcoming Events -->
+    <div class="reveal">
+      <div class="gl-section-header">
+        <h2 class="gl-section-title">Upcoming Events</h2>
+        <a href="{{ url_for('events.events_home') }}" class="gl-view-all">View all →</a>
+      </div>
+      <div class="gl-events-grid">
+        {% if upcoming_events and upcoming_events|length > 0 %}
+          {% for e in upcoming_events %}
+            <div class="gl-event-card">
+              {% if e.image_url %}
+                <img src="{{ e.image_url }}" class="gl-event-img" alt="Event image">
+              {% endif %}
+              <div class="gl-event-body">
+                <div class="gl-event-tags">
+                  {% if e.event_type %}<span class="gl-tag gl-tag-orange">{{ e.event_type }}</span>{% endif %}
+                  {% if e.location %}
+                    <span class="gl-tag gl-tag-muted">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                      {{ e.location }}
+                    </span>
+                  {% endif %}
+                </div>
+                <h4 class="gl-event-title">{{ e.title }}</h4>
+                <p class="gl-event-date">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  {% if e.event_date %}{{ e.event_date.strftime('%d %b %Y') }}{% endif %}{% if e.start_time %} · {{ e.start_time|fmt_time }}{% endif %}
+                </p>
+                <a class="gl-event-link" href="#">View Details</a>
+                {% if e.max_participants %}
+                  {% set joined = e.current_participants or 0 %}
+                  {% set maxp = e.max_participants or 0 %}
+                  {% set pct = (joined * 100 / maxp) if maxp > 0 else 0 %}
+                  <div class="gl-progress-wrap">
+                    <div class="gl-progress">
+                    <div class="gl-progress-bar" style="--pct: {{ pct|round(0)|int }}%;"></div></div>
+                    <small class="gl-progress-label">{{ joined }} / {{ maxp }} joined</small>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="gl-empty-state">
+            <span>🗓️</span><p>No upcoming events right now.</p>
+          </div>
+        {% endif %}
+      </div>
     </div>
 
-    <!-- Announcements Carousel -->
-    <div class="mb-3">
-        <h3 class="mb-2 fw-bold">Latest Announcements</h3>
-        <div class="carousel-wrapper position-relative">
-            <div id="announcementsCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
-                <div class="carousel-inner">
-
-                    <!-- Announcement 1 -->
-                    <div class="carousel-item active">
-                        <div class="card bg-light border-1">
-                            <div class="card-body p-4">
-                                <div class="text-center">
-                                    <h5 class="card-title mb-2">New Topic Uploaded!</h5>
-                                    <p class="card-text text-muted mb-3">
-                                        In light of Racial Harmony Day, we have uploaded a new "Culture and Traditions" topic. Find out more in Storyboard and share you experiences today!
-                                    </p>
-                                    <a href="{{ url_for('main.storyboard') }}" class="btn btn-sm btn-primary">Learn More</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Announcement 2 -->
-                    <div class="carousel-item">
-                        <div class="card bg-light border-1">
-                            <div class="card-body p-4">
-                                <div class="text-center">
-                                    <h5 class="card-title mb-2">Profile Settings Updates - Edit Profile Details</h5>
-                                    <p class="card-text text-muted mb-3">
-                                        Check out our latest feature that will allow you to edit your profile details. Update your profile now to let others know more about you!
-                                    </p>
-                                    <a href="{{ url_for('profile.profile') }}" class="btn btn-sm btn-primary">Explore</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Announcement 3 -->
-                    <div class="carousel-item">
-                        <div class="card bg-light border-1">
-                            <div class="card-body p-4">
-                                <div class="text-center">
-                                    <h5 class="card-title mb-2">New Event - Clean the Beach</h5>
-                                    <p class="card-text text-muted mb-3">
-                                        Join the latest event to help clean up our beaches and make a positive impact on the environment!
-                                    </p>
-                                    <a href="{{ url_for('events.signup_event', event_id=6) }}" class="btn btn-sm btn-primary">Join</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
+    <!-- Calendar -->
+    <div class="reveal">
+      <div class="gl-section-header">
+        <h2 class="gl-section-title">Calendar</h2>
+      </div>
+      <div class="gl-cal-card">
+        <select id="calendarFilter" class="gl-cal-select">
+          <option value="all"   {{ 'selected' if cal_filter=='all' else '' }}>All Items</option>
+          <option value="week"  {{ 'selected' if cal_filter=='week' else '' }}>Next 7 days</option>
+          <option value="month" {{ 'selected' if cal_filter=='month' else '' }}>Next 30 days</option>
+        </select>
+        <div class="gl-cal-list" id="calendarList">
+          {% if my_calendar_events and my_calendar_events|length > 0 %}
+            {% for e in my_calendar_events %}
+              <div class="gl-cal-item">
+                <div class="gl-cal-date">
+                  <div class="gl-cal-day">{{ e.event_date.strftime('%d') }}</div>
+                  <div class="gl-cal-mon">{{ e.event_date.strftime('%b')|upper }}</div>
                 </div>
-
-                <!-- arrows -->
-                <div class="carousel-arrows d-flex justify-content-between align-items-center mt-4 pt-3 px-3">
-                    <button class="carousel-control-prev announcement-carousel-control" type="button"
-                            data-bs-target="#announcementsCarousel" data-bs-slide="prev">
-                        <span class="carousel-arrow-icon" aria-hidden="true"><i class="bi bi-chevron-left"></i></span>
-                        <span class="visually-hidden">Previous</span>
-                    </button>
-
-                    <button class="carousel-control-next announcement-carousel-control" type="button"
-                            data-bs-target="#announcementsCarousel" data-bs-slide="next">
-                        <span class="carousel-arrow-icon" aria-hidden="true"><i class="bi bi-chevron-right"></i></span>
-                        <span class="visually-hidden">Next</span>
-                    </button>
+                <div class="gl-cal-info">
+                  <div class="gl-cal-title">{{ e.title }}</div>
+                  <div class="gl-cal-time">{% if e.start_time %}{{ e.start_time|fmt_time }}{% endif %}{% if e.end_time %} – {{ e.end_time|fmt_time }}{% endif %}</div>
                 </div>
-
-                <!-- dots -->
-                <div class="carousel-indicators mt-1">
-                    <button type="button" data-bs-target="#announcementsCarousel" data-bs-slide-to="0"
-                            class="active" aria-current="true" aria-label="Slide 1"></button>
-                    <button type="button" data-bs-target="#announcementsCarousel" data-bs-slide-to="1"
-                            aria-label="Slide 2"></button>
-                    <button type="button" data-bs-target="#announcementsCarousel" data-bs-slide-to="2"
-                            aria-label="Slide 3"></button>
-                </div>
-
-            </div>
+                <span class="gl-cal-pill">{{ e.event_type or 'Event' }}</span>
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="gl-cal-empty">No registered upcoming events yet.</div>
+          {% endif %}
         </div>
+      </div>
     </div>
+  </div>
 
-
-    <!-- Connections Section -->
-    <div class="row g-4 mt-3">
-    
-        <!-- Your Connections -->
-         <h3 class="mb-2 fw-bold">Connections</h3>
-        <div class="col-lg-6">
-            <div class="card h-100 shadow-sm d-flex flex-column">
-                <div class="card-header bg-light border-bottom">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-people"></i> Your Connections
-                    </h5>
-                </div>
-
-                <div class="card-body d-flex flex-column">
-
-                    <!-- Dynamic Connections -->
-                    <div class="d-flex flex-column gap-3 flex-grow-1">
-                        {% if current and current|length > 0 %}
-                            {% for u in current %}
-                                <div class="d-flex align-items-center">
-                                    <img
-                                        src="{% if u.profile_picture and u.profile_picture != 'None' and u.profile_picture != '' %}{{ url_for('static', filename=u.profile_picture) }}{% else %}{{ url_for('static', filename='uploads/main_topics_images/default_pfp.png') }}{% endif %}"
-                                        alt="User"
-                                        class="rounded-circle me-3"
-                                        style="width: 50px; height: 50px; object-fit: cover;"
-                                    >
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-1">{{ u.name }}</h6>
-                                        <small class="text-muted">{{ u.age_group|capitalize }}</small>
-                                    </div>
-                                    <button class="btn btn-sm btn-outline-secondary" disabled>Message</button>
-                                </div>
-                            {% endfor %}
-                        {% else %}
-                            <p class="text-muted mb-0">No connections yet. Start connecting with others!</p>
-                        {% endif %}
-                    </div>
-
-                    <!-- View All Button -->
-                    <div class="mt-3">
-                        <a href="{{ url_for('connections.connections') }}" class="btn btn-primary w-100">
-                            <i class="bi bi-arrow-right"></i> View All Connections
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Suggested Connections -->
-        <div class="col-lg-6">
-            <div class="card h-100 shadow-sm d-flex flex-column">
-                <div class="card-header bg-light border-bottom">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-person-plus"></i> Suggested Connections
-                    </h5>
-                </div>
-
-                <div class="card-body d-flex flex-column">
-
-                    {% if suggestions and suggestions|length > 0 %}
-                        {% for u in suggestions %}
-                            <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
-                                <img
-                                    src="{% if u.profile_picture and u.profile_picture != 'None' and u.profile_picture != '' %}{{ url_for('static', filename=u.profile_picture) }}{% else %}{{ url_for('static', filename='uploads/main_topics_images/default_pfp.png') }}{% endif %}"
-                                    alt="User"
-                                    class="rounded-circle me-3"
-                                    style="width: 50px; height: 50px; object-fit: cover;"
-                                >
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">{{ u.name }}</h6>
-                                    <small class="text-muted">
-                                        {{ u.age_group|capitalize }}
-                                        {% if u.mutual_count is not none %}
-                                            • {{ u.mutual_count }} mutual connections
-                                        {% endif %}
-                                    </small>
-                                </div>
-
-                                <!-- IMPORTANT: safe JS (no Jinja inside function args) -->
-                                <button class="btn btn-sm btn-primary"
-                                        data-id="{{ u.id }}"
-                                        onclick="sendRequest(this)">
-                                    Add
-                                </button>
-                            </div>
-                        {% endfor %}
-                    {% else %}
-                        <p class="text-muted mb-0">No suggestions right now.</p>
-                    {% endif %}
-
-                    <!-- View More Button -->
-                    <div class="mt-3">
-                        <a class="btn btn-outline-primary w-100" href="{{ url_for('connections.connections') }}">
-                            <i class="bi bi-arrow-right"></i> View More Suggestions
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <!-- STORYBOARD PREVIEW -->
+  <div class="gl-section reveal">
+    <div class="gl-section-header">
+      <h2 class="gl-section-title">From your connections</h2>
+      <a href="{{ url_for('main.storyboard') }}" class="gl-view-all">View storyboard →</a>
     </div>
+    <div class="gl-stories-grid">
+      {% if storyboard_preview and storyboard_preview|length > 0 %}
+        {% for t in storyboard_preview %}
+          <div class="gl-story-card">
+            <div class="gl-story-header">
+              <img src="{{ url_for('static', filename=(t.profile_picture if t.profile_picture else 'images/default-avatar.png')) }}" alt="avatar" class="gl-story-avatar">
+              <div>
+                <div class="gl-story-name">{{ t.display_name or t.username }}</div>
+                <div class="gl-story-date">{{ t.created_at }}</div>
+              </div>
+            </div>
+            <h4 class="gl-story-post-title">{{ t.title or "Storyboard post" }}</h4>
+            {% if t.topic_title %}<div class="gl-story-topic">{{ t.topic_title }}</div>{% endif %}
+            {% if t.audio_path %}
+              <audio controls class="gl-story-audio"><source src="{{ url_for('static', filename=t.audio_path) }}"></audio>
+            {% endif %}
+            {% if t.image_path %}
+              <img src="{{ url_for('static', filename=t.image_path) }}" alt="story media" class="gl-story-media">
+            {% endif %}
+            {% if t.body %}<p class="gl-story-body">{{ t.body }}</p>{% endif %}
+            <div class="gl-story-actions">
+              <form method="POST" action="{{ url_for('storyboard.toggle_story_like', story_id=t.id) }}">
+                <button type="submit" class="gl-story-btn gl-story-btn-like">♥ {{ t.like_count or 0 }}</button>
+              </form>
+              <a class="gl-story-btn" href="{{ url_for('storyboard.topic_detail', slug=t.topic_slug) }}">💬 {{ t.comment_count or 0 }}</a>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="gl-empty-state" style="grid-column:1/-1;">
+          <span>💬</span><p>No storyboard updates from your connections yet.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- CONNECTIONS -->
+  <div class="gl-section reveal">
+    <div class="gl-section-header">
+      <h2 class="gl-section-title">Connections</h2>
+    </div>
+    <div class="gl-connections-grid">
+
+      <div class="gl-conn-card">
+        <div class="gl-conn-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Your Connections
+        </div>
+        <div class="gl-conn-body">
+          {% if current and current|length > 0 %}
+            {% for u in current %}
+              <div class="gl-user-row">
+                <img src="{% if u.profile_picture and u.profile_picture != 'None' and u.profile_picture != '' %}{{ url_for('static', filename=u.profile_picture) }}{% else %}{{ url_for('static', filename='uploads/main_topics_images/default_pfp.png') }}{% endif %}" alt="User" class="gl-user-avatar">
+                <div class="gl-user-info">
+                  <div class="gl-user-name">{{ u.name }}</div>
+                  <div class="gl-user-meta">{{ u.age_group|capitalize }}</div>
+                </div>
+                <button class="gl-btn-sm" disabled>Message</button>
+              </div>
+            {% endfor %}
+          {% else %}
+            <p class="gl-empty-text">No connections yet. Start connecting with others!</p>
+          {% endif %}
+        </div>
+        <div class="gl-conn-footer">
+          <a href="{{ url_for('connections.connections') }}" class="gl-btn-primary gl-btn-full">
+            View All Connections
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div class="gl-conn-card">
+        <div class="gl-conn-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+          Suggested Connections
+        </div>
+        <div class="gl-conn-body">
+          {% if suggestions and suggestions|length > 0 %}
+            {% for u in suggestions %}
+              <div class="gl-user-row">
+                <img src="{% if u.profile_picture and u.profile_picture != 'None' and u.profile_picture != '' %}{{ url_for('static', filename=u.profile_picture) }}{% else %}{{ url_for('static', filename='uploads/main_topics_images/default_pfp.png') }}{% endif %}" alt="User" class="gl-user-avatar">
+                <div class="gl-user-info">
+                  <div class="gl-user-name">{{ u.name }}</div>
+                  <div class="gl-user-meta">{{ u.age_group|capitalize }}{% if u.mutual_count is not none %} · {{ u.mutual_count }} mutual{% endif %}</div>
+                </div>
+                <button class="gl-btn-add" data-id="{{ u.id }}" onclick="sendRequest(this)">Add</button>
+              </div>
+            {% endfor %}
+          {% else %}
+            <p class="gl-empty-text">No suggestions right now.</p>
+          {% endif %}
+        </div>
+        <div class="gl-conn-footer">
+          <a href="{{ url_for('connections.connections') }}" class="gl-btn-ghost gl-btn-full">
+            View More Suggestions
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
 </div>
 
-<!-- JS for Add button -->
+<!-- ===================== STYLES ===================== -->
+<style>
+:root {
+  --gl-orange:      #f39a1f;
+  --gl-orange-deep: #d97f06;
+  --gl-coral:       #ff8c61;
+  --gl-cream:       #fbf8f5;
+  --gl-text:        #1c1209;
+  --gl-muted:       #8a7260;
+  --gl-glow:        rgba(243,154,31,0.28);
+  --gl-glow-strong: rgba(243,154,31,0.48);
+  --gl-border:      rgba(243,154,31,0.14);
+}
+
+/* ALERTS */
+.gl-alerts { padding:16px 48px 0; display:flex; flex-direction:column; gap:8px; }
+.gl-alert {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 18px; border-radius:12px; font-size:0.875rem; font-weight:500;
+  background:rgba(243,154,31,0.1); border:1px solid rgba(243,154,31,0.25); color:var(--gl-orange-deep);
+}
+.gl-alert-danger  { background:rgba(239,68,68,.08); border-color:rgba(239,68,68,.22); color:#b91c1c; }
+.gl-alert-success { background:rgba(22,163,74,.08); border-color:rgba(22,163,74,.22); color:#15803d; }
+.gl-alert-close { background:none; border:none; cursor:pointer; font-size:1.2rem; color:inherit; opacity:.65; }
+.gl-alert-close:hover { opacity:1; }
+
+/* WELCOME HERO */
+.gl-welcome-hero {
+  position:relative; overflow:hidden;
+  background:var(--gl-cream);
+  border-bottom:1px solid var(--gl-border);
+  padding:52px 48px 44px;
+}
+.gl-blob { position:absolute; border-radius:50%; filter:blur(80px); pointer-events:none; }
+.gl-blob-a {
+  width:540px; height:540px;
+  background:radial-gradient(circle,rgba(243,154,31,0.18),transparent 70%);
+  top:-160px; right:-120px;
+  animation:gl-drift 9s ease-in-out infinite alternate;
+}
+.gl-blob-b {
+  width:380px; height:380px;
+  background:radial-gradient(circle,rgba(255,140,97,0.15),transparent 70%);
+  bottom:-100px; left:-80px;
+  animation:gl-drift 12s ease-in-out infinite alternate-reverse;
+}
+.gl-dotgrid {
+  position:absolute; inset:0; pointer-events:none;
+  background-image:radial-gradient(circle,rgba(243,154,31,0.09) 1px,transparent 1px);
+  background-size:40px 40px;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 20%,transparent 100%);
+}
+@keyframes gl-drift { from{transform:translate(0,0) scale(1);} to{transform:translate(22px,-18px) scale(1.06);} }
+
+.gl-welcome-inner {
+  position:relative; z-index:2; max-width:1180px; margin:0 auto;
+  display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap;
+}
+.gl-pill {
+  display:inline-flex; align-items:center; gap:7px;
+  background:rgba(243,154,31,0.1); border:1px solid rgba(243,154,31,0.28);
+  border-radius:999px; padding:5px 14px 5px 9px;
+  font-size:0.68rem; font-weight:700; color:var(--gl-orange-deep);
+  letter-spacing:0.07em; text-transform:uppercase; margin-bottom:14px;
+}
+.gl-pill-dot {
+  width:7px; height:7px; background:var(--gl-orange); border-radius:50%;
+  animation:gl-blink 2s ease-in-out infinite;
+}
+@keyframes gl-blink { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.5;transform:scale(1.4);} }
+.gl-welcome-title {
+  font-family:'Playfair Display',serif;
+  font-size:clamp(1.9rem,3.5vw,2.9rem); font-weight:900; line-height:1.1;
+  margin:0 0 8px; color:var(--gl-text);
+}
+.gl-welcome-sub { color:var(--gl-muted); font-size:0.97rem; margin:0; line-height:1.65; }
+.gl-welcome-meta { display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; }
+.gl-badge {
+  display:inline-flex; align-items:center; gap:7px; padding:7px 14px; border-radius:999px;
+  background:rgba(255,255,255,0.85); border:1px solid rgba(243,154,31,0.2);
+  font-size:0.78rem; font-weight:600; color:var(--gl-text);
+  box-shadow:0 2px 10px rgba(243,154,31,0.08);
+}
+.gl-badge-warn { background:rgba(255,193,7,0.15); border-color:rgba(255,193,7,0.38); color:#92600a; }
+.gl-welcome-actions { display:flex; gap:10px; flex-wrap:wrap; }
+
+/* BUTTONS */
+.gl-btn-primary {
+  display:inline-flex; align-items:center; gap:8px; padding:11px 26px; border-radius:999px;
+  background:linear-gradient(135deg,var(--gl-orange),var(--gl-coral));
+  color:#fff; text-decoration:none; font-weight:700; font-size:0.88rem;
+  box-shadow:0 5px 20px var(--gl-glow); border:none; cursor:pointer;
+  transition:transform 0.3s cubic-bezier(.34,1.56,.64,1),box-shadow 0.3s;
+  font-family:'Poppins',sans-serif;
+}
+.gl-btn-primary:hover { transform:translateY(-2px) scale(1.03); box-shadow:0 10px 28px var(--gl-glow-strong); color:#fff; }
+.gl-btn-ghost {
+  display:inline-flex; align-items:center; gap:8px; padding:10px 24px; border-radius:999px;
+  background:transparent; color:var(--gl-text); text-decoration:none;
+  font-weight:600; font-size:0.88rem; border:2px solid rgba(28,18,9,0.16);
+  transition:all 0.25s; cursor:pointer; font-family:'Poppins',sans-serif;
+}
+.gl-btn-ghost:hover { border-color:var(--gl-orange); color:var(--gl-orange); background:rgba(243,154,31,0.05); transform:translateY(-2px); }
+.gl-btn-white {
+  display:inline-flex; align-items:center; gap:8px; padding:11px 24px; border-radius:999px;
+  background:rgba(255,255,255,0.22); backdrop-filter:blur(10px);
+  border:1.5px solid rgba(255,255,255,0.45); color:#fff;
+  font-weight:700; font-size:0.88rem; text-decoration:none; cursor:pointer;
+  transition:background 0.25s,transform 0.25s; font-family:'Poppins',sans-serif;
+}
+.gl-btn-white:hover { background:rgba(255,255,255,0.38); transform:translateY(-2px); color:#fff; }
+.gl-btn-full { width:100%; justify-content:center; }
+.gl-btn-sm {
+  padding:6px 16px; border-radius:999px; font-size:0.76rem; font-weight:600;
+  border:1.5px solid rgba(28,18,9,0.14); background:transparent; color:var(--gl-muted);
+  cursor:pointer; transition:all 0.2s; font-family:'Poppins',sans-serif;
+}
+.gl-btn-sm:hover:not(:disabled) { border-color:var(--gl-orange); color:var(--gl-orange); }
+.gl-btn-sm:disabled { opacity:0.45; cursor:not-allowed; }
+.gl-btn-add {
+  padding:7px 18px; border-radius:999px; font-size:0.78rem; font-weight:700;
+  background:linear-gradient(135deg,var(--gl-orange),var(--gl-coral));
+  color:#fff; border:none; cursor:pointer;
+  box-shadow:0 3px 12px var(--gl-glow);
+  transition:transform 0.25s,box-shadow 0.25s; font-family:'Poppins',sans-serif;
+}
+.gl-btn-add:hover { transform:translateY(-1px); box-shadow:0 6px 18px var(--gl-glow-strong); }
+
+/* CONTAINER */
+.gl-container { max-width:1180px; margin:0 auto; padding:40px 48px 72px; }
+
+/* STORY BANNER */
+.gl-story-banner {
+  display:flex; align-items:center; justify-content:space-between; gap:20px;
+  padding:28px 32px; border-radius:22px; margin-bottom:40px;
+  background:linear-gradient(135deg,var(--gl-orange),var(--gl-coral));
+  box-shadow:0 8px 32px var(--gl-glow); position:relative; overflow:hidden;
+}
+.gl-story-banner::before {
+  content:''; position:absolute; inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.06'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");
+}
+.gl-story-banner-left { display:flex; align-items:center; gap:18px; position:relative; z-index:1; }
+.gl-story-icon { font-size:2.4rem; filter:drop-shadow(0 3px 8px rgba(0,0,0,0.2)); }
+.gl-story-title { font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:900; color:#fff; margin:0 0 4px; }
+.gl-story-sub { color:rgba(255,255,255,0.85); font-size:0.84rem; margin:0; }
+.gl-story-banner .gl-btn-white { position:relative; z-index:1; flex-shrink:0; }
+
+/* SECTION LAYOUT */
+.gl-section { margin-bottom:52px; }
+.gl-section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+.gl-section-title {
+  font-family:'Playfair Display',serif;
+  font-size:clamp(1.3rem,2.5vw,1.75rem); font-weight:900; color:var(--gl-text); margin:0;
+}
+.gl-view-all { font-size:0.82rem; font-weight:700; color:var(--gl-orange); text-decoration:none; transition:color 0.2s; }
+.gl-view-all:hover { color:var(--gl-orange-deep); }
+
+/* ANNOUNCEMENTS CAROUSEL */
+.gl-carousel-wrap { position:relative; }
+.gl-carousel { overflow:hidden; border-radius:20px; }
+.gl-carousel-track { display:flex; transition:transform 0.48s cubic-bezier(.16,1,.3,1); }
+.gl-ann-card {
+  min-width:100%; padding:40px 44px;
+  background:#fff; border:1px solid var(--gl-border);
+  display:flex; flex-direction:column; align-items:center; text-align:center;
+}
+.gl-ann-icon { font-size:2.8rem; margin-bottom:14px; }
+.gl-ann-title {
+  font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:900;
+  color:var(--gl-text); margin:0 0 10px;
+}
+.gl-ann-text { color:var(--gl-muted); font-size:0.89rem; line-height:1.72; margin:0 0 20px; max-width:560px; }
+.gl-ann-link {
+  font-weight:700; font-size:0.85rem; color:var(--gl-orange); text-decoration:none;
+  padding:9px 24px; border-radius:999px; border:1.5px solid rgba(243,154,31,0.35);
+  transition:all 0.25s;
+}
+.gl-ann-link:hover { background:var(--gl-orange); color:#fff; border-color:var(--gl-orange); }
+.gl-carousel-controls { display:flex; align-items:center; justify-content:center; gap:14px; margin-top:18px; }
+.gl-carr-btn {
+  width:34px; height:34px; border-radius:50%;
+  background:rgba(243,154,31,0.08); border:1.5px solid rgba(243,154,31,0.25);
+  color:var(--gl-orange); cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition:all 0.25s;
+}
+.gl-carr-btn:hover { background:var(--gl-orange); color:#fff; border-color:var(--gl-orange); }
+.gl-dots { display:flex; gap:7px; }
+.gl-dot {
+  width:8px; height:8px; border-radius:50%;
+  background:rgba(243,154,31,0.22); cursor:pointer; transition:all 0.35s;
+}
+.gl-dot.active { background:var(--gl-orange); width:24px; border-radius:999px; }
+
+/* TWO-COL LAYOUT */
+.gl-two-col { display:grid; grid-template-columns:1fr 380px; gap:28px; margin-bottom:52px; }
+
+/* EVENT CARDS */
+.gl-events-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.gl-event-card {
+  background:#fff; border-radius:18px; overflow:hidden;
+  border:1px solid var(--gl-border); box-shadow:0 4px 18px rgba(28,18,9,0.05);
+  transition:transform 0.3s cubic-bezier(.34,1.56,.64,1),box-shadow 0.3s;
+}
+.gl-event-card:hover { transform:translateY(-6px); box-shadow:0 16px 40px rgba(243,154,31,0.12); }
+.gl-event-img { width:100%; height:150px; object-fit:cover; }
+.gl-event-body { padding:16px 18px 20px; }
+.gl-event-tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+.gl-tag {
+  display:inline-flex; align-items:center; gap:4px;
+  padding:3px 11px; border-radius:999px; font-size:0.67rem; font-weight:700;
+}
+.gl-tag-orange { background:rgba(243,154,31,0.12); color:var(--gl-orange-deep); }
+.gl-tag-muted  { background:rgba(28,18,9,0.06); color:var(--gl-muted); }
+.gl-event-title { font-weight:700; font-size:0.92rem; margin:0 0 7px; color:var(--gl-text); }
+.gl-event-date { display:flex; align-items:center; gap:5px; font-size:0.74rem; color:var(--gl-muted); margin-bottom:12px; }
+.gl-event-link {
+  display:inline-flex; padding:7px 18px; border-radius:999px;
+  font-size:0.76rem; font-weight:700; text-decoration:none;
+  border:1.5px solid rgba(243,154,31,0.35); color:var(--gl-orange);
+  transition:all 0.2s;
+}
+.gl-event-link:hover { background:var(--gl-orange); color:#fff; }
+.gl-progress-wrap { margin-top:13px; }
+.gl-progress { height:6px; background:rgba(243,154,31,0.12); border-radius:999px; overflow:hidden; margin-bottom:5px; }
+.gl-progress-bar { height:100%; background:linear-gradient(90deg,var(--gl-orange),var(--gl-coral)); border-radius:999px; transition:width 0.6s ease; }
+.gl-progress-label { font-size:0.7rem; color:var(--gl-muted); }
+
+/* CALENDAR */
+.gl-cal-card {
+  background:#fff; border-radius:20px; padding:18px;
+  border:1px solid var(--gl-border); box-shadow:0 4px 18px rgba(28,18,9,0.05);
+}
+.gl-cal-select {
+  width:100%; padding:10px 16px; border-radius:999px;
+  border:1.5px solid rgba(243,154,31,0.2); background:var(--gl-cream);
+  font-size:0.83rem; font-weight:600; color:var(--gl-text);
+  font-family:'Poppins',sans-serif; margin-bottom:16px; cursor:pointer; transition:border-color 0.2s;
+}
+.gl-cal-select:focus { outline:none; border-color:var(--gl-orange); }
+.gl-cal-list { display:flex; flex-direction:column; gap:10px; }
+.gl-cal-item {
+  display:flex; align-items:center; gap:12px; padding:12px 14px;
+  border-radius:14px; border:1px solid rgba(243,154,31,0.12); background:var(--gl-cream);
+  transition:border-color 0.25s,box-shadow 0.25s;
+}
+.gl-cal-item:hover { border-color:rgba(243,154,31,0.35); box-shadow:0 4px 14px rgba(243,154,31,0.08); }
+.gl-cal-date { min-width:48px; text-align:center; padding-right:12px; border-right:1.5px solid rgba(243,154,31,0.18); }
+.gl-cal-day {
+  font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:900; line-height:1;
+  background:linear-gradient(135deg,var(--gl-orange),var(--gl-coral));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+}
+.gl-cal-mon { font-size:0.64rem; font-weight:800; color:var(--gl-muted); letter-spacing:0.06em; margin-top:2px; }
+.gl-cal-info { flex:1; min-width:0; }
+.gl-cal-title { font-weight:700; font-size:0.84rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.gl-cal-time { font-size:0.71rem; color:var(--gl-muted); margin-top:3px; }
+.gl-cal-pill {
+  padding:4px 11px; border-radius:999px; font-size:0.65rem; font-weight:700;
+  background:rgba(243,154,31,0.1); color:var(--gl-orange-deep); white-space:nowrap; flex-shrink:0;
+}
+.gl-cal-empty { padding:14px; font-size:0.83rem; color:var(--gl-muted); text-align:center; }
+
+/* STORIES */
+.gl-stories-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+.gl-story-card {
+  background:#fff; border-radius:18px; padding:20px;
+  border:1px solid var(--gl-border); box-shadow:0 4px 18px rgba(28,18,9,0.05);
+  transition:transform 0.3s cubic-bezier(.34,1.56,.64,1),box-shadow 0.3s;
+  display:flex; flex-direction:column;
+}
+.gl-story-card:hover { transform:translateY(-5px); box-shadow:0 14px 36px rgba(243,154,31,0.1); }
+.gl-story-header { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.gl-story-avatar { width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid rgba(243,154,31,0.2); flex-shrink:0; }
+.gl-story-name { font-weight:700; font-size:0.86rem; line-height:1.2; }
+.gl-story-date { font-size:0.7rem; color:var(--gl-muted); }
+.gl-story-post-title { font-weight:700; font-size:0.9rem; margin:0 0 4px; }
+.gl-story-topic { font-size:0.72rem; color:var(--gl-orange-deep); margin-bottom:10px; font-weight:600; }
+.gl-story-audio { width:100%; height:36px; margin-bottom:10px; }
+.gl-story-media { width:100%; height:160px; object-fit:cover; border-radius:10px; margin-bottom:10px; }
+.gl-story-body{ font-size: 0.82rem; color: #555; line-height: 1.65; margin: 0 0 12px; flex: 1; overflow: hidden; display: -webkit-box;
+  -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3;
+}
+.gl-story-actions { display:flex; gap:8px; margin-top:auto; }
+.gl-story-btn {
+  display:inline-flex; align-items:center; gap:5px; padding:6px 14px;
+  border-radius:999px; font-size:0.76rem; font-weight:700;
+  border:1.5px solid rgba(28,18,9,0.1); background:transparent;
+  color:var(--gl-muted); cursor:pointer; text-decoration:none;
+  transition:all 0.2s; font-family:'Poppins',sans-serif;
+}
+.gl-story-btn:hover { border-color:var(--gl-orange); color:var(--gl-orange); }
+.gl-story-btn-like:hover { border-color:#e11d48; color:#e11d48; }
+
+/* CONNECTIONS */
+.gl-connections-grid { display:grid; grid-template-columns:1fr 1fr; gap:22px; }
+.gl-conn-card {
+  background:#fff; border-radius:20px;
+  border:1px solid var(--gl-border); box-shadow:0 4px 18px rgba(28,18,9,0.05);
+  display:flex; flex-direction:column; overflow:hidden;
+}
+.gl-conn-header {
+  display:flex; align-items:center; gap:9px; padding:16px 22px;
+  border-bottom:1px solid rgba(243,154,31,0.1);
+  font-weight:800; font-size:0.9rem; color:var(--gl-text);
+  background:rgba(243,154,31,0.04);
+}
+.gl-conn-body { padding:18px 22px; flex:1; display:flex; flex-direction:column; gap:14px; }
+.gl-conn-footer { padding:14px 22px; border-top:1px solid rgba(243,154,31,0.1); }
+.gl-user-row { display:flex; align-items:center; gap:12px; }
+.gl-user-avatar { width:46px; height:46px; border-radius:50%; object-fit:cover; border:2px solid rgba(243,154,31,0.18); flex-shrink:0; }
+.gl-user-info { flex:1; min-width:0; }
+.gl-user-name { font-weight:700; font-size:0.88rem; }
+.gl-user-meta { font-size:0.72rem; color:var(--gl-muted); margin-top:2px; }
+.gl-empty-text { font-size:0.85rem; color:var(--gl-muted); margin:0; }
+
+/* EMPTY STATE */
+.gl-empty-state {
+  text-align:center; padding:40px 20px; background:#fff;
+  border-radius:18px; border:1.5px dashed rgba(243,154,31,0.25);
+}
+.gl-empty-state span { font-size:2.5rem; display:block; margin-bottom:10px; }
+.gl-empty-state p { color:var(--gl-muted); font-size:0.87rem; margin:0; }
+
+/* SCROLL REVEAL */
+.reveal { opacity:0; transform:translateY(24px); transition:opacity 0.6s ease,transform 0.6s cubic-bezier(.16,1,.3,1); }
+.reveal.visible { opacity:1; transform:translateY(0); }
+
+/* RESPONSIVE */
+@media (max-width:1100px) {
+  .gl-two-col { grid-template-columns:1fr; }
+}
+@media (max-width:900px) {
+  .gl-container { padding:24px 24px 52px; }
+  .gl-welcome-hero { padding:36px 24px; }
+  .gl-welcome-inner { flex-direction:column; align-items:flex-start; }
+  .gl-stories-grid { grid-template-columns:1fr 1fr; }
+  .gl-events-grid { grid-template-columns:1fr; }
+  .gl-connections-grid { grid-template-columns:1fr; }
+  .gl-alerts { padding:14px 24px 0; }
+}
+@media (max-width:600px) {
+  .gl-stories-grid { grid-template-columns:1fr; }
+  .gl-story-banner { flex-direction:column; align-items:flex-start; }
+}
+</style>
+
+<!-- SCRIPTS -->
 <script>
+/* Carousel */
+(function(){
+  const track = document.getElementById('carouselTrack');
+  const dots  = document.querySelectorAll('.gl-dot');
+  if (!track) return;
+  let idx = 0, total = 3;
+  function go(n){
+    idx = (n + total) % total;
+    track.style.transform = `translateX(-${idx * 100}%)`;
+    dots.forEach((d,i) => d.classList.toggle('active', i===idx));
+  }
+  document.getElementById('prevBtn').addEventListener('click', () => go(idx-1));
+  document.getElementById('nextBtn').addEventListener('click', () => go(idx+1));
+  dots.forEach(d => d.addEventListener('click', () => go(+d.dataset.idx)));
+  setInterval(() => go(idx+1), 5000);
+})();
+
+/* Scroll reveal */
+const ro = new IntersectionObserver((entries) => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting){ setTimeout(() => e.target.classList.add('visible'), i * 70); ro.unobserve(e.target); }
+  });
+}, { threshold:0.1 });
+document.querySelectorAll('.reveal').forEach(el => ro.observe(el));
+
+/* Connection request */
 function postJSON(url, data){
-  return fetch(url, {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify(data)
-  }).then(r => r.json());
+  return fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) }).then(r=>r.json());
 }
-
 function sendRequest(btn){
-  const id = Number(btn.dataset.id);
-  btn.disabled = true;
-
-  postJSON("/connections/api/send", { target_id: id })
+  const id = Number(btn.dataset.id); btn.disabled = true;
+  postJSON('/connections/api/send', {target_id:id})
     .then(res => {
-      if (!res.ok) {
-        btn.disabled = false;
-        alert(res.msg || "Failed");
-        return;
-      }
-      btn.textContent = "Pending";
-      btn.classList.remove("btn-primary");
-      btn.classList.add("btn-secondary");
+      if (!res.ok){ btn.disabled=false; alert(res.msg||'Failed'); return; }
+      btn.textContent='Pending'; btn.style.background='rgba(28,18,9,0.08)'; btn.style.color='var(--gl-muted)'; btn.style.boxShadow='none';
     })
-    .catch(() => {
-      btn.disabled = false;
-      alert("Network error");
-    });
+    .catch(() => { btn.disabled=false; alert('Network error'); });
 }
+
+/* Calendar filter */
+(function(){
+  const select = document.getElementById('calendarFilter');
+  const list   = document.getElementById('calendarList');
+  if (!select||!list) return;
+  function esc(s){ return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
+  function render(items){
+    if (!items||!items.length) return '<div class="gl-cal-empty">No registered upcoming events yet.</div>';
+    return items.map(e=>`
+      <div class="gl-cal-item">
+        <div class="gl-cal-date"><div class="gl-cal-day">${e.day||''}</div><div class="gl-cal-mon">${e.mon||''}</div></div>
+        <div class="gl-cal-info"><div class="gl-cal-title">${esc(e.title||'Event')}</div><div class="gl-cal-time">${esc(e.time||'')}</div></div>
+        <span class="gl-cal-pill">${esc(e.event_type||'Event')}</span>
+      </div>`).join('');
+  }
+  async function refresh(val){
+    list.style.opacity='0.5';
+    try {
+      const res=await fetch(`/api/calendar?cal=${encodeURIComponent(val)}`,{headers:{'Accept':'application/json'}});
+      const data=await res.json();
+      list.innerHTML=(data&&data.ok)?render(data.items):'<div class="gl-cal-empty">No registered upcoming events yet.</div>';
+      const url=new URL(window.location.href); url.searchParams.set('cal',val); window.history.replaceState({},'',url);
+    }catch(e){console.error(e);}
+    list.style.opacity='1';
+  }
+  select.addEventListener('change', ()=>refresh(select.value));
+})();
 </script>
 
 {% endblock %}

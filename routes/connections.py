@@ -260,22 +260,44 @@ def send_request():
     if target_id == uid:
         return fail("Cannot connect to yourself")
 
-    # Prevent duplicates (pending/accepted)
-    row = select_one("""
-        SELECT COUNT(*) AS cnt
+    low = min(uid, target_id)
+    high = max(uid, target_id)
+
+    existing = select_one("""
+        SELECT id, status, requester_id, receiver_id
         FROM connections
-        WHERE ((requester_id=%s AND receiver_id=%s)
-            OR (requester_id=%s AND receiver_id=%s))
-          AND status IN ('pending','accepted')
-    """, (uid, target_id, target_id, uid))
+        WHERE user_low=%s AND user_high=%s
+        LIMIT 1
+    """, (low, high))
 
-    if row and int(row.get("cnt", 0)) > 0:
-        return fail("Request already exists", 409)
+    if existing:
+        status = existing["status"]
 
-    execute_query("""
-        INSERT INTO connections (requester_id, receiver_id, status)
-        VALUES (%s, %s, 'pending')
-    """, (uid, target_id), commit=True)
+        if status in ("pending", "accepted"):
+            return fail("Request already exists", 409)
+
+        execute_query("""
+            UPDATE connections
+            SET requester_id=%s,
+                receiver_id=%s,
+                status='pending',
+                updated_at=NOW()
+            WHERE id=%s
+        """, (uid, target_id, existing["id"]), commit=True)
+
+        return ok("Request sent")
+
+    try:
+        execute_query("""
+            INSERT INTO connections (requester_id, receiver_id, user_low, user_high, status, created_at, updated_at)
+            VALUES (%s, %s, %s, %s, 'pending', NOW(), NOW())
+        """, (uid, target_id, low, high), commit=True)
+
+    except mysql.connector.IntegrityError as e:
+        # Handles race condition (two inserts at same time)
+        if e.errno == 1062:
+            return fail("Request already exists", 409)
+        raise
 
     return ok("Request sent")
 
