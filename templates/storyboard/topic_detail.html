@@ -230,15 +230,28 @@ body::after {
 .carousel-control-next:hover { background: rgba(243,154,31,0.7); }
 
 .carousel-indicators {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 10px !important;
   bottom: 8px;
 }
 .carousel-indicators button {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.5);
-  border: none;
+  width: 14px !important;
+  height: 14px !important;
+  border-radius: 50% !important;
+  background: rgba(255,255,255,0.5) !important;
+  border: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: inline-block !important;
+  box-shadow: none !important;
+  transition: background 0.2s, transform 0.2s !important;
 }
-.carousel-indicators button.active { background: var(--orange); }
+.carousel-indicators button.active {
+  background: var(--orange) !important;
+  transform: scale(1.2) !important;
+}
 
 /* actions row */
 .actions-row {
@@ -645,12 +658,13 @@ body::after {
 
           {% for c in s.comments %}
           <div class="comment-item">
-            <img src="{% if c.profile_pic %}{{ url_for('static', filename=c.profile_pic) }}{% else %}{{ url_for('static', filename='uploads/main_topics_images/default_pfp.png') }}{% endif %}"
+            <img src="{{ c.avatar_url }}"
+                 onerror="this.onerror=null;this.src='{{ url_for('static', filename='uploads/main_topics_images/default_pfp.png') }}';"
                  class="comment-avatar commentor-profile-pic"
                  alt="avatar"
                  data-username="{{ c.username }}"
                  data-age-group="{{ c.age_group }}"
-                 data-profile-pic="{% if c.profile_pic %}{{ url_for('static', filename=c.profile_pic) }}{% else %}{{ url_for('static', filename='uploads/main_topics_images/default_pfp.png') }}{% endif %}"
+                 data-profile-pic="{{ c.avatar_url }}"
                  data-user-id="{{ c.user_id }}"
                  data-rel-status="{{ c.rel_status if c.rel_status is defined else 'none' }}">
 
@@ -701,9 +715,10 @@ body::after {
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body text-center">
-        <img id="modalProfilePic" src="" class="modal-avatar" alt="avatar">
+        <img id="modalProfilePic" src="" class="modal-avatar" alt="avatar"
+             onerror="this.onerror=null;this.src='{{ url_for('static', filename='uploads/main_topics_images/defaultProfile.webp') }}';">
         <p style="font-weight:700;font-size:1rem;margin-bottom:6px;" id="modalUsername"></p>
-        <p style="font-size:0.82rem;color:var(--muted);">Age Group: <span id="modalAgeGroup"></span></p>
+        <p style="font-size:0.82rem;color:var(--muted);">Age Group: <span id="modalAgeGroup">N/A</span></p>
       </div>
       <div class="modal-footer justify-content-center gap-10" style="gap:10px;">
         <button class="btn-sc-connect" id="connectBtn">Connect</button>
