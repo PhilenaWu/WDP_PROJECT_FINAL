@@ -173,8 +173,9 @@ def edit_contact(contact_id):
 
     if request.method == 'POST':
         nickname = request.form.get('nickname', '').strip()
-        is_favorite = request.form.get('is_favorite') == 'on'
-
+        is_favorite_raw = (request.form.get('is_favorite') or '').strip().lower()
+        is_favorite = is_favorite_raw in ('on', '1', 'true', 'yes')
+        
         if nickname and (len(nickname) < 2 or len(nickname) > 50):
             flash('Nickname must be between 2 and 50 characters', 'error')
             return render_template('messaging/edit_contact.html', contact=contact)
@@ -454,9 +455,9 @@ def chat_direct(contact_id):
             OR (latest_msg.sender_id = c.contact_user_id AND latest_msg.receiver_id = %s)
         )
         WHERE c.user_id = %s
-        ORDER BY latest_msg.created_at DESC, c.is_favorite DESC, u.display_name ASC
+        ORDER BY c.is_favorite DESC, latest_msg.created_at DESC, u.display_name ASC
     """, (user_id, user_id, user_id), fetch_all=True) or []
-    
+
     all_groups = execute_query("""
         SELECT g.*,
             (SELECT COUNT(*) FROM group_members WHERE group_id = g.id) AS member_count
@@ -532,7 +533,7 @@ def chat_group(group_id):
             OR (latest_msg.sender_id = c.contact_user_id AND latest_msg.receiver_id = %s)
         )
         WHERE c.user_id = %s
-        ORDER BY latest_msg.created_at DESC, c.is_favorite DESC, u.display_name ASC
+        ORDER BY c.is_favorite DESC, latest_msg.created_at DESC, u.display_name ASC
     """, (user_id, user_id, user_id), fetch_all=True) or []
     # Fix profile picture path for template (like chat/contacts)
     for c in all_contacts:

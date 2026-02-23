@@ -172,7 +172,7 @@
 
       <div class="section-divider"></div>
 
-      <label class="fav-toggle {% if contact.is_favorite %}active{% endif %}" id="favToggle" onclick="toggleFav()">
+      <label class="fav-toggle {% if contact.is_favorite %}active{% endif %}" id="favToggle" for="is_favorite">
         <input type="checkbox" name="is_favorite" id="is_favorite" {% if contact.is_favorite %}checked{% endif %}>
         <span class="fav-star">⭐</span>
         <div>
@@ -192,12 +192,17 @@
 
 {% block extra_js %}
 <script>
-  function toggleFav() {
+  (function () {
     var toggle = document.getElementById('favToggle');
     var checkbox = document.getElementById('is_favorite');
-    // The label click will fire before this runs, so we read the upcoming state
-    toggle.classList.toggle('active', !checkbox.checked);
-  }
+
+    function syncFavState() {
+      toggle.classList.toggle('active', checkbox.checked);
+    }
+
+    checkbox.addEventListener('change', syncFavState);
+    syncFavState();
+})();
 </script>
 {% endblock %}
 
