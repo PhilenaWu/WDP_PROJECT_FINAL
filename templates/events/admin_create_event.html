@@ -1,429 +1,723 @@
 {% extends "base.html" %}
 
-{% block title %}Create Event - Admin - StoryConnect{% endblock %}
+{% block title %}Create Event - Admin - Genlink{% endblock %}
 
 {% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
 <style>
-    .create-event-container {
-        max-width: 900px;
-        margin: 30px auto;
-        padding: 0 20px;
-    }
-    
-    .create-event-header {
-        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-        color: white;
-        padding: 30px;
-        border-radius: 15px;
-        margin-bottom: 30px;
-    }
-    
-    .form-section {
-        background: white;
-        border-radius: 15px;
-        padding: 40px;
-        box-shadow: 0 3px 20px rgba(0,0,0,0.08);
-    }
-    
-    .form-label {
-        font-weight: 600;
-        color: #555;
-    }
-    
-    .form-control, .form-select {
-        border-radius: 8px;
-        border: 2px solid #e0e0e0;
-        padding: 12px;
-    }
-    
-    .form-control:focus, .form-select:focus {
-        border-color: #f0ad4e;
-        box-shadow: 0 0 0 0.2rem rgba(240, 173, 78, 0.25);
-    }
-    
-    .submit-btn {
-        background: #f0ad4e;
-        color: white;
-        padding: 15px 40px;
-        border-radius: 30px;
-        border: none;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-    
-    .submit-btn:hover {
-        background: #ec971f;
-        transform: translateY(-2px);
-    }
-    
-    .image-upload-section {
-        background: #f8f9fa;
-        border: 2px dashed #dee2e6;
-        border-radius: 10px;
-        padding: 20px;
-        margin-bottom: 20px;
-    }
-    
-    .ai-section {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-radius: 10px;
-        padding: 20px;
-        margin-top: 15px;
-    }
-    
-    .ai-btn {
-        background: white;
-        color: #667eea;
-        padding: 10px 25px;
-        border-radius: 20px;
-        border: none;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-    
-    .ai-btn:hover {
-        background: #f0f0f0;
-        transform: scale(1.05);
-    }
-    
-    .ai-btn:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
-    
-    .image-preview {
-        max-width: 300px;
-        margin-top: 15px;
-        border-radius: 8px;
-        display: none;
-    }
-    
-    .generating-spinner {
-        display: none;
-    }
+  :root {
+    --orange: #f39a1f;
+    --orange-deep: #d97f06;
+    --coral: #ff8c61;
+    --cream: #fbf8f5;
+    --text: #1c1209;
+    --muted: #8a7260;
+    --glow: rgba(243,154,31,0.3);
+    --glow-strong: rgba(243,154,31,0.5);
+    --white: #ffffff;
+  }
 
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+  }
+
+  /* ── Background blobs ── */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -160px; right: -180px;
+    width: 580px; height: 580px;
+    background: radial-gradient(circle, rgba(243,154,31,0.16), transparent 70%);
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -100px; left: -120px;
+    width: 420px; height: 420px;
+    background: radial-gradient(circle, rgba(255,140,97,0.12), transparent 70%);
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Page wrapper ── */
+  .create-event-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── Header ── */
+  .page-header { margin-bottom: 32px; }
+
+  .header-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(243,154,31,0.1);
+    border: 1px solid rgba(243,154,31,0.28);
+    border-radius: 999px;
+    padding: 5px 16px 5px 10px;
+    font-size: 0.7rem; font-weight: 700;
+    color: var(--orange-deep);
+    letter-spacing: 0.08em; text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .header-eyebrow-dot {
+    width: 8px; height: 8px;
+    background: var(--orange);
+    border-radius: 50%;
+    animation: blink 2s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.5;transform:scale(1.4);} }
+
+  .page-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+  .page-header h2 em {
+    font-style: italic;
+    background: linear-gradient(135deg, var(--orange), var(--coral));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .page-header p { color: var(--muted); font-size: 0.9rem; }
+
+  /* ── Submission alert banner ── */
+  .submission-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(243,154,31,0.08);
+    border: 1.5px solid rgba(243,154,31,0.28);
+    border-left: 4px solid var(--orange);
+    border-radius: 14px;
+    padding: 14px 18px;
+    margin-bottom: 28px;
+    font-size: 0.86rem;
+    color: var(--text);
+  }
+  .submission-banner i { color: var(--orange); font-size: 1.1rem; }
+  .submission-banner strong { color: var(--orange-deep); }
+
+  /* ── Form card ── */
+  .form-card {
+    background: var(--white);
+    border-radius: 22px;
+    padding: 40px;
+    border: 1px solid rgba(243,154,31,0.13);
+    position: relative;
+    overflow: hidden;
+  }
+  .form-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--orange), var(--coral), transparent);
+    border-radius: 22px 22px 0 0;
+  }
+
+  /* ── Section headers inside form ── */
+  .form-section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: var(--text);
+    margin: 28px 0 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(243,154,31,0.13);
+  }
+  .form-section-title:first-of-type { margin-top: 0; }
+  .form-section-title i {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, rgba(243,154,31,0.15), rgba(255,140,97,0.12));
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--orange); font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+
+  /* ── Labels ── */
+  .form-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 7px;
+    display: block;
+  }
+  .form-label .required { color: var(--coral); margin-left: 2px; }
+
+  /* ── Inputs / Selects / Textareas ── */
+  .form-control,
+  .form-select {
+    width: 100%;
+    border: 2px solid rgba(139,114,96,0.18);
+    border-radius: 12px;
+    padding: 11px 14px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.88rem;
+    color: var(--text);
+    background: var(--cream);
+    outline: none;
+    transition: border-color 0.25s, box-shadow 0.25s;
+    appearance: none;
+  }
+  .form-control:focus,
+  .form-select:focus {
+    border-color: var(--orange);
+    box-shadow: 0 0 0 4px rgba(243,154,31,0.12);
+    background: var(--white);
+  }
+  .form-control::placeholder { color: rgba(139,114,96,0.55); }
+
+  textarea.form-control {
+    resize: vertical;
+    min-height: 110px;
+    line-height: 1.65;
+  }
+
+  /* Select arrow */
+  .select-wrap { position: relative; }
+  .select-wrap::after {
+    content: '';
+    position: absolute;
+    right: 14px; top: 50%;
+    transform: translateY(-50%);
+    width: 0; height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid var(--muted);
+    pointer-events: none;
+  }
+  .select-wrap select { padding-right: 36px; }
+
+  /* Bootstrap validation overrides */
+  .was-validated .form-control:invalid,
+  .was-validated .form-select:invalid,
+  .form-control.is-invalid,
+  .form-select.is-invalid {
+    border-color: #dc2626;
+    box-shadow: 0 0 0 4px rgba(220,38,38,0.08);
+  }
+  .was-validated .form-control:valid,
+  .was-validated .form-select:valid {
+    border-color: #16a34a;
+    box-shadow: 0 0 0 4px rgba(22,163,74,0.08);
+  }
+  .invalid-feedback {
+    font-size: 0.75rem;
+    color: #dc2626;
+    margin-top: 5px;
+    display: none;
+  }
+  .was-validated .form-control:invalid ~ .invalid-feedback,
+  .was-validated .form-select:invalid ~ .invalid-feedback,
+  .form-control.is-invalid ~ .invalid-feedback,
+  .form-select.is-invalid ~ .invalid-feedback { display: block; }
+
+  .field-hint {
+    font-size: 0.73rem;
+    color: var(--muted);
+    margin-top: 5px;
+  }
+
+  /* ── Row grid ── */
+  .form-row {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .form-row.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .form-row.cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .form-group { margin-bottom: 16px; }
+
+  /* ── Image upload zone ── */
+  .image-upload-zone {
+    background: var(--cream);
+    border: 2px dashed rgba(243,154,31,0.3);
+    border-radius: 16px;
+    padding: 24px;
+    margin-top: 4px;
+    transition: border-color 0.25s, background 0.25s;
+  }
+  .image-upload-zone:hover {
+    border-color: rgba(243,154,31,0.55);
+    background: rgba(243,154,31,0.03);
+  }
+  .upload-zone-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 14px;
+  }
+  .upload-zone-header i { color: var(--orange); }
+
+  /* ── AI generation box ── */
+  .ai-box {
+    background: linear-gradient(135deg, #1c1209 0%, #3d2408 100%);
+    border-radius: 14px;
+    padding: 20px 22px;
+    margin-top: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .ai-box::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 70% 80% at 90% 50%, rgba(243,154,31,0.18), transparent 70%);
+  }
+  .ai-box-inner { position: relative; z-index: 1; }
+  .ai-box-title {
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .ai-box-title i { color: var(--orange); }
+  .ai-box-subtitle {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 14px;
+  }
+
+  .ai-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    background: linear-gradient(135deg, var(--orange), var(--coral));
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 16px var(--glow);
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s, opacity 0.2s;
+  }
+  .ai-btn:hover {
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 8px 26px var(--glow-strong);
+  }
+  .ai-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .ai-spinner {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    color: rgba(255,255,255,0.8);
+    font-size: 0.78rem;
+    margin-top: 12px;
+  }
+  .ai-spinner.visible { display: flex; }
+
+  .spinner-ring {
+    width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.25);
+    border-top-color: var(--orange);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Image preview ── */
+  .image-preview-wrap {
+    display: none;
+    margin-top: 16px;
+  }
+  .image-preview-wrap.visible { display: block; }
+  .image-preview-wrap img {
+    max-width: 280px;
+    width: 100%;
+    border-radius: 14px;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.1);
+    border: 2px solid rgba(243,154,31,0.2);
+  }
+  .preview-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 8px;
+  }
+
+  /* ── Submit button ── */
+  .submit-row {
+    margin-top: 32px;
+    padding-top: 28px;
+    border-top: 1px solid rgba(243,154,31,0.13);
+  }
+
+  .submit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 44px;
+    background: linear-gradient(135deg, var(--orange), var(--coral));
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 24px var(--glow);
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s;
+  }
+  .submit-btn:hover {
+    transform: translateY(-3px) scale(1.04);
+    box-shadow: 0 12px 36px var(--glow-strong);
+  }
+
+  @media (max-width: 700px) {
+    .create-event-container { padding: 24px 14px 60px; }
+    .form-card { padding: 24px 18px; }
+    .form-row.cols-3 { grid-template-columns: 1fr; }
+    .form-row.cols-2 { grid-template-columns: 1fr; }
+  }
 </style>
 {% endblock %}
 
 
-
 {% block content %}
-<div class="container create-event-container">
-    <div class="create-event-header">
-        <h2><i class="bi bi-plus-circle"></i> Create New Event</h2>
-        <p>Drop your event details here to create a new event</p>
-    </div>
-    
-    <div class="form-section">
-        {% if submission %}
-        <div class="alert alert-info">
-            <strong>Creating from submission:</strong> {{ submission.event_title }} by {{ submission.organizer_name }}
-        </div>
-        {% endif %}
-        
-        <form method="POST" action="{{ url_for('events.admin_create_event') }}" enctype="multipart/form-data" novalidate>
-            <div class="mb-3">
-                <label for="title" class="form-label">Event Title <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="title" name="title" 
-                       value="{{ submission.event_title if submission else form_data.title or '' }}" 
-                       minlength="3" required>
-                <div class="invalid-feedback">Please enter an event title (at least 3 characters).</div>
-            </div>
-            
-            <div class="mb-3">
-                <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
-                <textarea class="form-control" id="description" name="description" 
-                          rows="4" minlength="10" required>{{ submission.event_summary if submission else form_data.description or '' }}</textarea>
-                <div class="invalid-feedback">Please enter a description (at least 10 characters).</div>
-            </div>
-            
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label for="event_date" class="form-label">Event Date <span class="text-danger">*</span></label>
-                    <input type="date" class="form-control" id="event_date" name="event_date" 
-                           value="{{ submission.preferred_date if submission else form_data.event_date or '' }}" required>
-                    <div class="invalid-feedback">Please select an event date.</div>
-                </div>
-                
-                <div class="col-md-4 mb-3">
-                    <label for="start_time" class="form-label">Start Time <span class="text-danger">*</span></label>
-                    <input type="time" class="form-control" id="start_time" name="start_time" 
-                           value="{{ form_data.start_time or '' }}" required>
-                    <div class="invalid-feedback">Please select a start time.</div>
-                </div>
-                
-                <div class="col-md-4 mb-3">
-                    <label for="end_time" class="form-label">End Time <span class="text-danger">*</span></label>
-                    <input type="time" class="form-control" id="end_time" name="end_time" 
-                           value="{{ form_data.end_time or '' }}" required onchange="validateTimes()">
-                    <div class="invalid-feedback">Please select an end time (must be after start time).</div>
-                </div>
-            </div>
-            
-            <div class="mb-3">
-                <label for="location" class="form-label">Location <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="location" name="location" 
-                       value="{{ submission.organizer_location if submission else form_data.location or '' }}" 
-                       placeholder="e.g. Community Center" minlength="2" required>
-                <div class="invalid-feedback">Please enter a location.</div>
-            </div>
-            
-            <div class="mb-3">
-                <label for="location_address" class="form-label">Full Address <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="location_address" name="location_address" 
-                       value="{{ form_data.location_address or '' }}" 
-                       placeholder="Full address for Google Maps navigation" minlength="5" required>
-                <div class="invalid-feedback">Please enter a complete address.</div>
-            </div>
-            
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="event_type" class="form-label">Event Type <span class="text-danger">*</span></label>
-                    <select class="form-select" id="event_type" name="event_type" required>
-                        <option value="">Select type</option>
-                        <option value="Social" {% if (submission and submission.event_type == 'Social') or form_data.event_type == 'Social' %}selected{% endif %}>Social</option>
-                        <option value="Educational" {% if (submission and submission.event_type == 'Educational') or form_data.event_type == 'Educational' %}selected{% endif %}>Educational</option>
-                        <option value="Cultural" {% if (submission and submission.event_type == 'Cultural') or form_data.event_type == 'Cultural' %}selected{% endif %}>Cultural</option>
-                        <option value="Community" {% if (submission and submission.event_type == 'Community') or form_data.event_type == 'Community' %}selected{% endif %}>Community</option>
-                        <option value="Sports" {% if (submission and submission.event_type == 'Sports') or form_data.event_type == 'Sports' %}selected{% endif %}>Sports</option>
-                        <option value="Arts & Crafts" {% if (submission and submission.event_type == 'Arts & Crafts') or form_data.event_type == 'Arts & Crafts' %}selected{% endif %}>Arts & Crafts</option>
-                        <option value="Technology" {% if (submission and submission.event_type == 'Technology') or form_data.event_type == 'Technology' %}selected{% endif %}>Technology</option>
-                    </select>
-                    <div class="invalid-feedback">Please select an event type.</div>
-                </div>
-                
-                <div class="col-md-6 mb-3">
-                    <label for="max_participants" class="form-label">Max Participants</label>
-                    <input type="number" class="form-control" id="max_participants" name="max_participants" 
-                           value="{{ form_data.max_participants or '' }}" 
-                           min="1" placeholder="Leave empty for unlimited">
-                    <div class="invalid-feedback">Please enter a valid number of participants.</div>
-                </div>
-            </div>
-            
-            <!-- Image Upload and AI Generation Section -->
-            <div class="image-upload-section">
-                <h5><i class="bi bi-image"></i> Event Image <span class="text-danger">*</span></h5>
-                
-                <!-- Manual Upload -->
-                <div class="mb-3">
-                    <label for="image" class="form-label">Upload Image</label>
-                    <input type="file" class="form-control" id="image" name="image" 
-                           accept="image/png,image/jpeg,image/jpg,image/gif" 
-                           onchange="validateFileSize(this)">
-                    <div class="invalid-feedback" id="fileSizeError">File size must be less than 5MB.</div>
-                    <div class="invalid-feedback" id="imageRequiredError">Please upload an image or generate one using AI.</div>
-                    <small class="text-muted">Max 5MB. Formats: PNG, JPG, JPEG, GIF</small>
-                </div>
-                
-                <!-- AI Generation -->
-                <div class="ai-section">
-                    <h6><i class="bi bi-stars"></i> AI Image Generation</h6>
-                    <p class="mb-3 small">Generate an image using AI based on the event title and type</p>
-                    <button type="button" class="ai-btn" id="generateAiImage">
-                        <i class="bi bi-magic"></i> Generate Image with AI
-                    </button>
-                    <div class="generating-spinner mt-2" id="aiSpinner">
-                        <div class="spinner-border spinner-border-sm text-white" role="status">
-                            <span class="visually-hidden">Generating...</span>
-                        </div>
-                        <span class="ms-2">Generating image...</span>
-                    </div>
-                    <input type="hidden" id="ai_image_url" name="ai_image_url" value="">
-                </div>
-                
-                <!-- Image Preview -->
-                <img id="imagePreview" class="image-preview" alt="Image preview">
-            </div>
-            
-            <button type="submit" class="submit-btn">
-                <i class="bi bi-check-circle"></i> Create Event
-            </button>
-        </form>
-    </div>
-</div>
+<div class="create-event-container">
 
+  <!-- ── Page Header ── -->
+  <div class="page-header">
+    <div class="header-eyebrow">
+      <span class="header-eyebrow-dot"></span>
+      Admin Panel
+    </div>
+    <h2>Create <em>New Event</em></h2>
+    <p>Fill in the details below to publish a new event to the Genlink community.</p>
+  </div>
+
+  <!-- ── Submission Banner ── -->
+  {% if submission %}
+  <div class="submission-banner">
+    <i class="bi bi-link-45deg"></i>
+    <span>Creating from submission: <strong>{{ submission.event_title }}</strong> by {{ submission.organizer_name }}</span>
+  </div>
+  {% endif %}
+
+  <!-- ── Form Card ── -->
+  <div class="form-card">
+    <form method="POST" action="{{ url_for('events.admin_create_event') }}" enctype="multipart/form-data" novalidate>
+
+      <!-- Event Details -->
+      <div class="form-section-title">
+        <i class="bi bi-calendar-event"></i>
+        Event Details
+      </div>
+
+      <div class="form-group">
+        <label for="title" class="form-label">Event Title <span class="required">*</span></label>
+        <input type="text" class="form-control" id="title" name="title"
+               value="{{ submission.event_title if submission else form_data.title or '' }}"
+               minlength="3" required placeholder="e.g. Kopi & Conversations Morning">
+        <div class="invalid-feedback">Please enter an event title (at least 3 characters).</div>
+      </div>
+
+      <div class="form-group">
+        <label for="description" class="form-label">Description <span class="required">*</span></label>
+        <textarea class="form-control" id="description" name="description"
+                  minlength="10" required
+                  placeholder="Describe what attendees can expect…">{{ submission.event_summary if submission else form_data.description or '' }}</textarea>
+        <div class="invalid-feedback">Please enter a description (at least 10 characters).</div>
+      </div>
+
+      <div class="form-row cols-3">
+        <div>
+          <label for="event_date" class="form-label">Event Date <span class="required">*</span></label>
+          <input type="date" class="form-control" id="event_date" name="event_date"
+                 value="{{ submission.preferred_date if submission else form_data.event_date or '' }}" required>
+          <div class="invalid-feedback">Please select a date.</div>
+        </div>
+        <div>
+          <label for="start_time" class="form-label">Start Time <span class="required">*</span></label>
+          <input type="time" class="form-control" id="start_time" name="start_time"
+                 value="{{ form_data.start_time or '' }}" required>
+          <div class="invalid-feedback">Please select a start time.</div>
+        </div>
+        <div>
+          <label for="end_time" class="form-label">End Time <span class="required">*</span></label>
+          <input type="time" class="form-control" id="end_time" name="end_time"
+                 value="{{ form_data.end_time or '' }}" required>
+          <div class="invalid-feedback">End time must be after start time.</div>
+        </div>
+      </div>
+
+      <!-- Location -->
+      <div class="form-section-title">
+        <i class="bi bi-geo-alt"></i>
+        Location
+      </div>
+
+      <div class="form-group">
+        <label for="location" class="form-label">Venue Name <span class="required">*</span></label>
+        <input type="text" class="form-control" id="location" name="location"
+               value="{{ submission.organizer_location if submission else form_data.location or '' }}"
+               placeholder="e.g. Geylang Serai Community Club" minlength="2" required>
+        <div class="invalid-feedback">Please enter a venue name.</div>
+      </div>
+
+      <div class="form-group">
+        <label for="location_address" class="form-label">Full Address <span class="required">*</span></label>
+        <input type="text" class="form-control" id="location_address" name="location_address"
+               value="{{ form_data.location_address or '' }}"
+               placeholder="Full address for Google Maps navigation" minlength="5" required>
+        <div class="invalid-feedback">Please enter a complete address.</div>
+      </div>
+
+      <!-- Settings -->
+      <div class="form-section-title">
+        <i class="bi bi-sliders"></i>
+        Event Settings
+      </div>
+
+      <div class="form-row cols-2">
+        <div>
+          <label for="event_type" class="form-label">Event Type <span class="required">*</span></label>
+          <div class="select-wrap">
+            <select class="form-select" id="event_type" name="event_type" required>
+              <option value="">Select type…</option>
+              <option value="Social"      {% if (submission and submission.event_type == 'Social')      or form_data.event_type == 'Social'      %}selected{% endif %}>Social</option>
+              <option value="Educational" {% if (submission and submission.event_type == 'Educational') or form_data.event_type == 'Educational' %}selected{% endif %}>Educational</option>
+              <option value="Cultural"    {% if (submission and submission.event_type == 'Cultural')    or form_data.event_type == 'Cultural'    %}selected{% endif %}>Cultural</option>
+              <option value="Community"   {% if (submission and submission.event_type == 'Community')   or form_data.event_type == 'Community'   %}selected{% endif %}>Community</option>
+              <option value="Sports"      {% if (submission and submission.event_type == 'Sports')      or form_data.event_type == 'Sports'      %}selected{% endif %}>Sports</option>
+              <option value="Arts & Crafts" {% if (submission and submission.event_type == 'Arts & Crafts') or form_data.event_type == 'Arts & Crafts' %}selected{% endif %}>Arts &amp; Crafts</option>
+              <option value="Technology"  {% if (submission and submission.event_type == 'Technology')  or form_data.event_type == 'Technology'  %}selected{% endif %}>Technology</option>
+            </select>
+          </div>
+          <div class="invalid-feedback">Please select an event type.</div>
+        </div>
+        <div>
+          <label for="max_participants" class="form-label">Max Participants</label>
+          <input type="number" class="form-control" id="max_participants" name="max_participants"
+                 value="{{ form_data.max_participants or '' }}"
+                 min="1" placeholder="Leave blank for unlimited">
+          <div class="invalid-feedback">Please enter a valid number.</div>
+        </div>
+      </div>
+
+      <!-- Image -->
+      <div class="form-section-title">
+        <i class="bi bi-image"></i>
+        Event Image <span style="color:var(--coral);margin-left:2px;">*</span>
+      </div>
+
+      <div class="image-upload-zone">
+        <div class="upload-zone-header">
+          <i class="bi bi-cloud-upload"></i> Upload an image
+        </div>
+
+        <label for="image" class="form-label">Choose file</label>
+        <input type="file" class="form-control" id="image" name="image"
+               accept="image/png,image/jpeg,image/jpg,image/gif"
+               onchange="validateFileSize(this)">
+        <div class="invalid-feedback" id="fileSizeError">File size must be less than 5MB.</div>
+        <div class="invalid-feedback" id="imageRequiredError">Please upload an image or generate one with AI.</div>
+        <div class="field-hint">Max 5 MB &nbsp;·&nbsp; PNG, JPG, JPEG, GIF</div>
+
+        <!-- AI box -->
+        <div class="ai-box">
+          <div class="ai-box-inner">
+            <div class="ai-box-title"><i class="bi bi-stars"></i> AI Image Generation</div>
+            <div class="ai-box-subtitle">Generate a unique event image instantly based on the title &amp; type above.</div>
+            <button type="button" class="ai-btn" id="generateAiImage">
+              <i class="bi bi-magic"></i> Generate with AI
+            </button>
+            <div class="ai-spinner" id="aiSpinner">
+              <div class="spinner-ring"></div>
+              Generating your image…
+            </div>
+            <input type="hidden" id="ai_image_url" name="ai_image_url" value="">
+          </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="image-preview-wrap" id="previewWrap">
+          <div class="preview-label">Preview</div>
+          <img id="imagePreview" alt="Event image preview">
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <div class="submit-row">
+        <button type="submit" class="submit-btn">
+          <i class="bi bi-check-circle-fill"></i> Create Event
+        </button>
+      </div>
+
+    </form>
+  </div><!-- /form-card -->
+
+</div><!-- /create-event-container -->
 {% endblock %}
+
 
 {% block extra_js %}
 <script>
-    // File size validation - expose globally for onchange handler
-    function validateFileSize(input) {
-        const file = input.files[0];
-        const maxSize = 5 * 1024 * 1024; // 5MB in bytes
-        const errorDiv = document.getElementById('fileSizeError');
-        
-        if (file && file.size > maxSize) {
-            input.classList.add('is-invalid');
-            if (errorDiv) errorDiv.style.display = 'block';
-            input.setCustomValidity('File size must be less than 5MB');
-        } else {
-            input.classList.remove('is-invalid');
-            if (errorDiv) errorDiv.style.display = 'none';
-            input.setCustomValidity('');
-        }
+  /* ── File size validation ── */
+  function validateFileSize(input) {
+    const file = input.files[0];
+    const maxSize = 5 * 1024 * 1024;
+    const errorDiv = document.getElementById('fileSizeError');
+    if (file && file.size > maxSize) {
+      input.classList.add('is-invalid');
+      if (errorDiv) errorDiv.style.display = 'block';
+      input.setCustomValidity('File too large');
+    } else {
+      input.classList.remove('is-invalid');
+      if (errorDiv) errorDiv.style.display = 'none';
+      input.setCustomValidity('');
+    }
+  }
+
+  (function () {
+    'use strict';
+
+    const form          = document.querySelector('form');
+    const fileInput     = document.getElementById('image');
+    const aiUrlInput    = document.getElementById('ai_image_url');
+    const preview       = document.getElementById('imagePreview');
+    const previewWrap   = document.getElementById('previewWrap');
+
+    /* ── Image required check ── */
+    function validateImageInput() {
+      const hasFile    = fileInput.files && fileInput.files.length > 0;
+      const hasAiImage = aiUrlInput.value.trim() !== '';
+      const errEl      = document.getElementById('imageRequiredError');
+      if (!hasFile && !hasAiImage) {
+        fileInput.classList.add('is-invalid');
+        if (errEl) errEl.style.display = 'block';
+        fileInput.setCustomValidity('Image required');
+        return false;
+      }
+      fileInput.classList.remove('is-invalid');
+      if (errEl) errEl.style.display = 'none';
+      fileInput.setCustomValidity('');
+      return true;
     }
 
-    (function() {
-        'use strict';
-        const form = document.querySelector('form');
-        const fileInput = document.getElementById('image');
-        const aiImageUrlInput = document.getElementById('ai_image_url');
-        
-        // Validate that either file or AI image is provided
-        function validateImageInput() {
-            const hasFile = fileInput.files && fileInput.files.length > 0;
-            const hasAiImage = aiImageUrlInput.value && aiImageUrlInput.value.trim() !== '';
-            const imageRequiredError = document.getElementById('imageRequiredError');
-            
-            if (!hasFile && !hasAiImage) {
-                fileInput.classList.add('is-invalid');
-                if (imageRequiredError) imageRequiredError.style.display = 'block';
-                fileInput.setCustomValidity('Please upload an image or generate one using AI');
-                return false;
-            } else {
-                fileInput.classList.remove('is-invalid');
-                if (imageRequiredError) imageRequiredError.style.display = 'none';
-                fileInput.setCustomValidity('');
-                return true;
-            }
+    /* ── Time validation ── */
+    function validateTimes() {
+      const s = document.getElementById('start_time').value;
+      const e = document.getElementById('end_time').value;
+      const endEl = document.getElementById('end_time');
+      if (s && e) {
+        if (e <= s) {
+          endEl.setCustomValidity('End time must be after start time');
+          endEl.classList.add('is-invalid');
+        } else {
+          endEl.setCustomValidity('');
+          endEl.classList.remove('is-invalid');
         }
-        
-        form.addEventListener('submit', function(event) {
-            // Check image input
-            if (!validateImageInput()) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-            
-            // Check built-in validity
-            if (!form.checkValidity()) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-            
-            form.classList.add('was-validated');
-        }, false);
-        
-        // Manual Upload Preview
-        document.getElementById('image').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const preview = document.getElementById('imagePreview');
-                    preview.src = event.target.result;
-                    preview.style.display = 'block';
-                    // Clear AI hidden field if manual upload is chosen
-                    document.getElementById('ai_image_url').value = '';
-                };
-                reader.readAsDataURL(file);
-            }
+      }
+    }
+    document.getElementById('start_time').addEventListener('change', validateTimes);
+    document.getElementById('end_time').addEventListener('change', validateTimes);
+
+    /* ── Manual upload preview ── */
+    fileInput.addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (ev) {
+        preview.src = ev.target.result;
+        previewWrap.classList.add('visible');
+        aiUrlInput.value = '';
+      };
+      reader.readAsDataURL(file);
+    });
+
+    /* ── Form submit ── */
+    form.addEventListener('submit', function (e) {
+      validateTimes();
+      const imgOk = validateImageInput();
+      if (!form.checkValidity() || !imgOk) {
+        e.preventDefault();
+        e.stopPropagation();
+        const first = form.querySelector(':invalid');
+        if (first) { first.scrollIntoView({ behavior: 'smooth', block: 'center' }); first.focus(); }
+      }
+      form.classList.add('was-validated');
+    }, false);
+
+    /* ── AI image generation ── */
+    document.getElementById('generateAiImage').addEventListener('click', async function () {
+      const title     = document.getElementById('title').value;
+      const eventType = document.getElementById('event_type').value;
+      const eventDate = document.getElementById('event_date').value;
+      const startTime = document.getElementById('start_time').value;
+      const endTime   = document.getElementById('end_time').value;
+      const location  = document.getElementById('location').value;
+
+      if (!title) { alert('Please enter an event title first.'); return; }
+
+      const btn     = this;
+      const spinner = document.getElementById('aiSpinner');
+      btn.disabled  = true;
+      spinner.classList.add('visible');
+
+      try {
+        const res  = await fetch('{{ url_for("events.generate_ai_image") }}', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, event_type: eventType, event_date: eventDate, start_time: startTime, end_time: endTime, location })
         });
-        
-        // Time validation function
-        function validateTimes() {
-            const startTime = document.getElementById('start_time').value;
-            const endTime = document.getElementById('end_time').value;
-            const endTimeInput = document.getElementById('end_time');
-            
-            if (startTime && endTime) {
-                if (endTime <= startTime) {
-                    endTimeInput.setCustomValidity('End time must be after start time');
-                    endTimeInput.classList.add('is-invalid');
-                } else {
-                    endTimeInput.setCustomValidity('');
-                    endTimeInput.classList.remove('is-invalid');
-                }
-            }
+        const data = await res.json();
+
+        if (data.success) {
+          aiUrlInput.value = data.image_url;
+          preview.src      = data.image_url;
+          previewWrap.classList.add('visible');
+          fileInput.value  = '';
+          alert('Image generated successfully!');
+        } else {
+          alert('Error generating image: ' + data.error);
         }
-        
-        // Add event listeners for time validation
-        document.getElementById('start_time').addEventListener('change', validateTimes);
-        document.getElementById('end_time').addEventListener('change', validateTimes);
-        
-        // AI Image Generation
-        document.getElementById('generateAiImage').addEventListener('click', async function() {
-            const title = document.getElementById('title').value;
-            const eventType = document.getElementById('event_type').value;
-            const eventDate = document.getElementById('event_date').value;
-            const startTime = document.getElementById('start_time').value;
-            const endTime = document.getElementById('end_time').value;
-            const location = document.getElementById('location').value;
-            
-            if (!title) {
-                alert('Please enter an event title first');
-                return;
-            }
-            
-            const btn = this;
-            const spinner = document.getElementById('aiSpinner');
-            btn.disabled = true;
-            spinner.style.display = 'block';
-            
-            try {
-                const response = await fetch('{{ url_for("events.generate_ai_image") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        title: title,
-                        event_type: eventType,
-                        event_date: eventDate,
-                        start_time: startTime,
-                        end_time: endTime,
-                        location: location
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    // Set the AI-generated image URL in hidden field
-                    document.getElementById('ai_image_url').value = data.image_url;
-                    
-                    // Show preview
-                    const preview = document.getElementById('imagePreview');
-                    preview.src = data.image_url;
-                    preview.style.display = 'block';
-                    
-                    // Clear manual file input
-                    document.getElementById('image').value = '';
-                    
-                    alert('Image generated successfully!');
-                } else {
-                    alert('Error generating image: ' + data.error);
-                }
-            } catch (error) {
-                alert('Failed to generate image. Please try again.');
-                console.error('Error:', error);
-            } finally {
-                btn.disabled = false;
-                spinner.style.display = 'none';
-            }
-        });
-        
-        // Enhance form submission with additional validation
-        form.addEventListener('submit', function(event) {
-            validateTimes();
-            
-            if (!form.checkValidity()) {
-                event.preventDefault();
-                event.stopPropagation();
-                
-                // Scroll to first invalid field
-                const firstInvalid = form.querySelector('.form-control:invalid, .form-select:invalid');
-                if (firstInvalid) {
-                    firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    firstInvalid.focus();
-                }
-            }
-            form.classList.add('was-validated');
-        }, false);
-    })();
+      } catch (err) {
+        alert('Network error — please try again.');
+        console.error(err);
+      } finally {
+        btn.disabled = false;
+        spinner.classList.remove('visible');
+      }
+    });
+
+  })();
 </script>
 {% endblock %}

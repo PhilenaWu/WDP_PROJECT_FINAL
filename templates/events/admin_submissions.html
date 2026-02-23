@@ -1,919 +1,871 @@
 {% extends "base.html" %}
 
-{% block title %}Admin - Event Submissions - StoryConnect{% endblock %}
+{% block title %}Admin - Event Submissions - Genlink{% endblock %}
 
 {% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
 <style>
-    .admin-container {
-        max-width: 1400px;
-        margin: 30px auto;
-        padding: 0 20px;
-    }
-    
-    .admin-header {
-        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-        color: white;
-        padding: 25px 30px;
-        border-radius: 15px;
-        margin-bottom: 30px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    }
-    
-    .admin-header h2 {
-        font-weight: 700;
-        margin-bottom: 8px;
-        font-size: 1.8rem;
-    }
-    
-    .admin-header p {
-        opacity: 0.9;
-        margin: 0;
-        font-size: 0.95rem;
-    }
-    
-    /* Folder Tabs System */
-    .folder-tabs-container {
-        display: flex;
-        gap: 15px;
-        margin-bottom: 30px;
-        padding-bottom: 10px;
-        border-bottom: 3px solid #e0e0e0;
-    }
-    
-    .folder-tab {
-        position: relative;
-        padding: 15px 35px;
-        background: #f5f5f5;
-        border: 2px solid #ddd;
-        border-bottom: none;
-        border-radius: 12px 12px 0 0;
-        cursor: pointer;
-        transition: all 0.3s;
-        font-weight: 700;
-        font-size: 1rem;
-        color: #666;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        user-select: none;
-    }
-    
-    .folder-tab i {
-        font-size: 1.3rem;
-    }
-    
-    .folder-tab.active {
-        background: white;
-        color: #333;
-        border-color: #f0ad4e;
-        transform: translateY(3px);
-        box-shadow: 0 -3px 10px rgba(240, 173, 78, 0.2);
-    }
-    
-    .folder-tab.pending {
-        border-color: #ffc107;
-    }
-    
-    .folder-tab.pending.active {
-        border-color: #ffc107;
-        box-shadow: 0 -3px 10px rgba(255, 193, 7, 0.2);
-    }
-    
-    .folder-tab.approved {
-        border-color: #28a745;
-    }
-    
-    .folder-tab.approved.active {
-        border-color: #28a745;
-        box-shadow: 0 -3px 10px rgba(40, 167, 69, 0.2);
-    }
-    
-    .folder-tab.rejected {
-        border-color: #dc3545;
-    }
-    
-    .folder-tab.rejected.active {
-        border-color: #dc3545;
-        box-shadow: 0 -3px 10px rgba(220, 53, 69, 0.2);
-    }
-    
-    .folder-tab:not(.active):hover {
-        background: #fff;
-        transform: translateY(1px);
-    }
-    
-    .folder-tab .count-badge {
-        background: rgba(0,0,0,0.1);
-        padding: 3px 10px;
-        border-radius: 12px;
-        font-size: 0.85rem;
-        margin-left: 5px;
-    }
-    
-    .folder-tab.active .count-badge {
-        background: #f0ad4e;
-        color: white;
-    }
-    
-    /* Drag over state for tabs */
-    .folder-tab.drag-over {
-        background: #fff8e1;
-        border-color: #f0ad4e;
-        box-shadow: 0 0 20px rgba(240, 173, 78, 0.4);
-        transform: scale(1.05) translateY(0);
-    }
-    
-    /* Submission Cards */
-    .submission-card {
-        background: white;
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 18px;
-        box-shadow: 0 2px 15px rgba(0,0,0,0.08);
-        border-left: 5px solid #f0ad4e;
-        transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
-        cursor: grab;
-    }
-    
-    .submission-card.dragging {
-        opacity: 0.5;
-        cursor: grabbing;
-        transform: rotate(2deg);
-    }
-    
-    .submission-card.no-drag {
-        cursor: default !important;
-    }
-    
-    .submission-card:not(.no-drag):hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 25px rgba(0,0,0,0.12);
-    }
-    
-    .submission-card.pending {
-        border-left-color: #ffc107;
-    }
-    
-    .submission-card.approved {
-        border-left-color: #28a745;
-    }
-    
-    .submission-card.rejected {
-        border-left-color: #dc3545;
-    }
-    
-    .submission-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 15px;
-    }
-    
-    .submission-title {
-        font-size: 1.3rem;
-        font-weight: 700;
-        color: #333;
-        margin-bottom: 5px;
-        flex: 1;
-    }
-    
-    .submitter-info {
-        font-size: 0.85rem;
-        color: #666;
-    }
-    
-    .status-badge {
-        padding: 6px 16px;
-        border-radius: 16px;
-        font-weight: 600;
-        font-size: 0.8rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        white-space: nowrap;
-    }
-    
-    .status-badge.pending {
-        background: #fff3cd;
-        color: #856404;
-        border: 2px solid #ffc107;
-    }
-    
-    .status-badge.approved {
-        background: #d4edda;
-        color: #155724;
-        border: 2px solid #28a745;
-    }
-    
-    .status-badge.rejected {
-        background: #f8d7da;
-        color: #721c24;
-        border: 2px solid #dc3545;
-    }
-    
-    .submission-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 12px;
-        margin: 15px 0;
-    }
-    
-    .grid-item {
-        background: #f8f9fa;
-        padding: 10px 12px;
-        border-radius: 8px;
-    }
-    
-    .grid-label {
-        font-weight: 600;
-        color: #666;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 4px;
-    }
-    
-    .grid-value {
-        color: #333;
-        font-size: 0.9rem;
-        word-break: break-word;
-    }
-    
-    .submission-summary {
-        background: #f8f9fa;
-        padding: 12px;
-        border-radius: 8px;
-        margin-top: 12px;
-    }
-    
-    .submission-summary .grid-label {
-        margin-bottom: 6px;
-    }
-    
-    .submission-summary .grid-value {
-        line-height: 1.5;
-        max-height: 60px;
-        overflow-y: auto;
-    }
-    
-    .submission-actions {
-        display: flex;
-        gap: 10px;
-        margin-top: 15px;
-        padding-top: 15px;
-        border-top: 2px solid #e9ecef;
-    }
-    
-    .btn-review {
-        background: #17a2b8;
-        color: white;
-        padding: 8px 20px;
-        border-radius: 20px;
-        border: none;
-        cursor: pointer;
-        transition: background 0.3s;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-weight: 600;
-        font-size: 0.9rem;
-    }
-    
-    .btn-review:hover {
-        background: #138496;
-        color: white;
-    }
-    
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 20px;
-        margin-bottom: 30px;
-    }
-    
-    .stat-card {
-        background: white;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-        text-align: center;
-    }
-    
-    .stat-value {
-        font-size: 2.2rem;
-        font-weight: 700;
-        color: #f0ad4e;
-        margin-bottom: 8px;
-    }
-    
-    .stat-label {
-        color: #666;
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.8rem;
-        letter-spacing: 0.5px;
-    }
-    
-    .folder-content {
-        display: none;
-    }
-    
-    .folder-content.active {
-        display: block;
-    }
-    
-    .drag-instruction {
-        background: #e3f2fd;
-        border: 2px dashed #2196f3;
-        border-radius: 10px;
-        padding: 15px;
-        margin-bottom: 20px;
-        text-align: center;
-        color: #1976d2;
-        font-weight: 600;
-    }
-    
-    .drag-instruction i {
-        margin-right: 8px;
-    }
+  :root {
+    --orange: #f39a1f;
+    --orange-deep: #d97f06;
+    --coral: #ff8c61;
+    --cream: #fbf8f5;
+    --text: #1c1209;
+    --muted: #8a7260;
+    --glow: rgba(243,154,31,0.3);
+    --glow-strong: rgba(243,154,31,0.5);
+    --white: #ffffff;
+    --pending: #f59e0b;
+    --approved: #16a34a;
+    --rejected: #dc2626;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+  }
+
+  /* ── Page wrapper ── */
+  .admin-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 40px 32px 80px;
+    position: relative;
+  }
+
+  /* ── Decorative blobs (background) ── */
+  .admin-container::before {
+    content: '';
+    position: fixed;
+    top: -160px; right: -180px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(243,154,31,0.18), transparent 70%);
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .admin-container::after {
+    content: '';
+    position: fixed;
+    bottom: -100px; left: -120px;
+    width: 440px; height: 440px;
+    background: radial-gradient(circle, rgba(255,140,97,0.14), transparent 70%);
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .admin-inner { position: relative; z-index: 1; }
+
+  /* ── Header ── */
+  .admin-header {
+    margin-bottom: 40px;
+  }
+
+  .admin-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(243,154,31,0.1);
+    border: 1px solid rgba(243,154,31,0.28);
+    border-radius: 999px;
+    padding: 5px 16px 5px 10px;
+    font-size: 0.7rem; font-weight: 700;
+    color: var(--orange-deep);
+    letter-spacing: 0.08em; text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .admin-eyebrow-dot {
+    width: 8px; height: 8px;
+    background: var(--orange);
+    border-radius: 50%;
+    animation: blink 2s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.5;transform:scale(1.4);} }
+
+  .admin-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 3.5vw, 2.8rem);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 10px;
+  }
+  .admin-header h2 em {
+    font-style: italic;
+    background: linear-gradient(135deg, var(--orange) 0%, var(--coral) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .admin-header p {
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  /* ── Stats grid ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-bottom: 40px;
+  }
+
+  .stat-card {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 24px 20px;
+    border: 1px solid rgba(243,154,31,0.12);
+    text-align: center;
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s;
+  }
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 16px 40px rgba(243,154,31,0.13);
+  }
+
+  .stat-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.4rem;
+    font-weight: 900;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--orange), var(--coral));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: block;
+    margin-bottom: 6px;
+  }
+  .stat-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* ── Folder tabs ── */
+  .folder-tabs-container {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: 2px solid rgba(243,154,31,0.15);
+  }
+
+  .folder-tab {
+    position: relative;
+    padding: 14px 30px;
+    background: var(--cream);
+    border: 2px solid rgba(243,154,31,0.18);
+    border-bottom: none;
+    border-radius: 16px 16px 0 0;
+    cursor: pointer;
+    transition: all 0.25s;
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    user-select: none;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .folder-tab i { font-size: 1.1rem; }
+
+  .folder-tab:not(.active):hover {
+    background: var(--white);
+    color: var(--text);
+    transform: translateY(2px);
+  }
+
+  .folder-tab.active {
+    background: var(--white);
+    color: var(--text);
+    transform: translateY(3px);
+    box-shadow: 0 -4px 16px rgba(243,154,31,0.15);
+  }
+
+  .folder-tab.pending        { border-color: rgba(245,158,11,0.35); }
+  .folder-tab.pending.active { border-color: var(--pending); box-shadow: 0 -4px 16px rgba(245,158,11,0.2); }
+  .folder-tab.approved.active{ border-color: var(--approved); box-shadow: 0 -4px 16px rgba(22,163,74,0.15); }
+  .folder-tab.rejected.active{ border-color: var(--rejected); box-shadow: 0 -4px 16px rgba(220,38,38,0.1); }
+
+  .folder-tab .count-badge {
+    background: rgba(139,114,96,0.1);
+    color: var(--muted);
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    transition: all 0.25s;
+  }
+  .folder-tab.pending.active  .count-badge { background: rgba(245,158,11,0.15); color: var(--orange-deep); }
+  .folder-tab.approved.active .count-badge { background: rgba(22,163,74,0.12); color: var(--approved); }
+  .folder-tab.rejected.active .count-badge { background: rgba(220,38,38,0.1);  color: var(--rejected); }
+
+  /* Drag-over highlight */
+  .folder-tab.drag-over {
+    background: #fff8e1;
+    border-color: var(--orange) !important;
+    box-shadow: 0 0 0 4px rgba(243,154,31,0.18) !important;
+    transform: scale(1.04) translateY(0) !important;
+  }
+
+  /* ── Folder content ── */
+  .folder-content { display: none; }
+  .folder-content.active {
+    display: block;
+    background: var(--white);
+    border: 2px solid rgba(243,154,31,0.13);
+    border-top: none;
+    border-radius: 0 20px 20px 20px;
+    padding: 28px;
+  }
+
+  /* ── Drag instruction banner ── */
+  .drag-instruction {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: rgba(243,154,31,0.07);
+    border: 2px dashed rgba(243,154,31,0.3);
+    border-radius: 14px;
+    padding: 14px 20px;
+    margin-bottom: 24px;
+    color: var(--orange-deep);
+    font-weight: 600;
+    font-size: 0.85rem;
+  }
+  .drag-instruction.locked {
+    background: rgba(220,38,38,0.05);
+    border-color: rgba(220,38,38,0.2);
+    color: var(--rejected);
+  }
+
+  /* ── Submission cards ── */
+  .submission-card {
+    background: var(--cream);
+    border-radius: 18px;
+    padding: 22px;
+    margin-bottom: 16px;
+    border: 1px solid rgba(243,154,31,0.14);
+    border-left: 5px solid var(--orange);
+    transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.25s, opacity 0.25s;
+    cursor: grab;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* subtle shimmer line */
+  .submission-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--orange), var(--coral), transparent);
+    opacity: 0.5;
+    border-radius: 18px 18px 0 0;
+  }
+
+  .submission-card:not(.no-drag):hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 36px rgba(243,154,31,0.12);
+  }
+
+  .submission-card.dragging {
+    opacity: 0.45;
+    cursor: grabbing;
+    transform: rotate(2deg) scale(1.02);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+  }
+
+  .submission-card.no-drag { cursor: default; }
+
+  .submission-card.pending  { border-left-color: var(--pending);  }
+  .submission-card.approved { border-left-color: var(--approved); }
+  .submission-card.rejected { border-left-color: var(--rejected); opacity: 0.85; }
+
+  /* ── Card header ── */
+  .submission-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    gap: 16px;
+  }
+
+  .submission-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+    line-height: 1.2;
+  }
+
+  .submitter-info {
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+  .submitter-info strong { color: var(--text); }
+
+  /* ── Status badge ── */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .status-badge.pending  { background: rgba(245,158,11,0.12); color: #92400e;  border: 1.5px solid rgba(245,158,11,0.4); }
+  .status-badge.approved { background: rgba(22,163,74,0.10);  color: #14532d;  border: 1.5px solid rgba(22,163,74,0.35); }
+  .status-badge.rejected { background: rgba(220,38,38,0.08);  color: #7f1d1d;  border: 1.5px solid rgba(220,38,38,0.3); }
+
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .status-badge.pending  .status-dot { background: var(--pending);  animation: blink 2s ease-in-out infinite; }
+  .status-badge.approved .status-dot { background: var(--approved); }
+  .status-badge.rejected .status-dot { background: var(--rejected); }
+
+  /* ── Info grid ── */
+  .submission-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 10px;
+    margin: 14px 0;
+  }
+
+  .grid-item {
+    background: var(--white);
+    border: 1px solid rgba(243,154,31,0.1);
+    padding: 10px 14px;
+    border-radius: 12px;
+  }
+
+  .grid-label {
+    font-size: 0.66rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 4px;
+  }
+
+  .grid-value {
+    font-size: 0.85rem;
+    color: var(--text);
+    word-break: break-word;
+    font-weight: 500;
+  }
+
+  /* ── Summary box ── */
+  .submission-summary {
+    background: var(--white);
+    border: 1px solid rgba(243,154,31,0.1);
+    border-left: 3px solid var(--orange);
+    padding: 12px 16px;
+    border-radius: 12px;
+    margin-top: 12px;
+  }
+
+  .submission-summary .grid-value {
+    line-height: 1.6;
+    max-height: 64px;
+    overflow-y: auto;
+    color: #555;
+  }
+
+  /* ── Actions ── */
+  .submission-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(243,154,31,0.12);
+  }
+
+  .btn-review {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 22px;
+    background: linear-gradient(135deg, var(--orange), var(--coral));
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 4px 16px var(--glow);
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .btn-review:hover {
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 8px 28px var(--glow-strong);
+    color: #fff;
+  }
+
+  /* ── Thumbnail ── */
+  .event-thumb {
+    width: 80px;
+    height: 52px;
+    object-fit: cover;
+    border-radius: 10px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+    flex-shrink: 0;
+  }
+
+  /* ── Empty state ── */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+  }
+  .empty-icon {
+    font-size: 3.5rem;
+    display: block;
+    margin-bottom: 16px;
+    opacity: 0.35;
+  }
+  .empty-state h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .empty-state p {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  @media (max-width: 900px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .admin-container { padding: 24px 16px 60px; }
+  }
+  @media (max-width: 576px) {
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .folder-tabs-container { gap: 6px; }
+    .folder-tab { padding: 10px 16px; font-size: 0.8rem; }
+  }
 </style>
 {% endblock %}
 
 
-
 {% block content %}
-<div class="container admin-container">
-    <div class="admin-header">
-        <h2><i class="bi bi-folder-open"></i> Event Submissions Management</h2>
-        <p>Drag and drop submissions between folders to manage their status</p>
-    </div>
-    
-    <!-- Statistics -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-value" id="stat-pending">{{ submissions|selectattr('status', 'equalto', 'pending')|list|length }}</div>
-            <div class="stat-label">Pending Review</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value" id="stat-approved">{{ submissions|selectattr('status', 'equalto', 'approved')|list|length }}</div>
-            <div class="stat-label">Approved</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value" id="stat-rejected">{{ submissions|selectattr('status', 'equalto', 'rejected')|list|length }}</div>
-            <div class="stat-label">Rejected</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value">{{ submissions|length }}</div>
-            <div class="stat-label">Total</div>
-        </div>
-    </div>
-    
-    <!-- Folder Tabs -->
-    <div class="folder-tabs-container">
-        <div class="folder-tab pending active" data-folder="pending" onclick="switchFolder('pending')">
-            <i class="bi bi-folder2-open"></i>
-            <span>Pending</span>
-            <span class="count-badge" id="count-pending">{{ submissions|selectattr('status', 'equalto', 'pending')|list|length }}</span>
-        </div>
-        <div class="folder-tab approved" data-folder="approved" onclick="switchFolder('approved')">
-            <i class="bi bi-folder-check"></i>
-            <span>Approved</span>
-            <span class="count-badge" id="count-approved">{{ submissions|selectattr('status', 'equalto', 'approved')|list|length }}</span>
-        </div>
-        <div class="folder-tab rejected" data-folder="rejected" onclick="switchFolder('rejected')">
-            <i class="bi bi-folder-x"></i>
-            <span>Rejected</span>
-            <span class="count-badge" id="count-rejected">{{ submissions|selectattr('status', 'equalto', 'rejected')|list|length }}</span>
-        </div>
-    </div>
-    
-    <!-- Pending Folder Content -->
-    <div id="folder-pending" class="folder-content active">
-        <div class="drag-instruction">
-            <i class="bi bi-hand-index"></i>
-            Drag submissions to <strong>Approved</strong> or <strong>Rejected</strong> folders to change their status
-        </div>
-        {% set pending_submissions = submissions|selectattr('status', 'equalto', 'pending')|list %}
-        {% if pending_submissions and pending_submissions|length > 0 %}
-            {% for submission in pending_submissions %}
-            <div class="submission-card pending" 
-                 draggable="true" 
-                 data-id="{{ submission.id }}" 
-                 data-status="pending">
-                <div class="submission-header">
-                    <div style="flex: 1;">
-                        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-                            {% if submission.image_url %}
-                            <img src="{{ submission.image_url }}" alt="thumb" style="width:80px;height:54px;object-fit:cover;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);" />
-                            {% endif %}
-                            <div class="submission-title">{{ submission.event_title }}</div>
-                        </div>
-                        <div class="submitter-info">
-                            Submitted by: <strong>{{ submission.username }}</strong> ({{ submission.user_email }})
-                        </div>
-                    </div>
-                    <div class="status-badge pending">
-                        {{ submission.status }}
-                    </div>
-                </div>
-                
-                <div class="submission-grid">
-                    <div class="grid-item">
-                        <div class="grid-label">Organizer</div>
-                        <div class="grid-value">{{ submission.organizer_name }}</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-label">Contact</div>
-                        <div class="grid-value">{{ submission.organizer_email }}</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-label">Phone</div>
-                        <div class="grid-value">{{ submission.organizer_phone }}</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-label">Event Type</div>
-                        <div class="grid-value">{{ submission.event_type }}</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-label">Preferred Date</div>
-                        <div class="grid-value">{{ submission.preferred_date.strftime('%Y-%m-%d') if submission.preferred_date else 'N/A' }}</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-label">Participants</div>
-                        <div class="grid-value">{{ submission.expected_participants }}</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-label">Location</div>
-                        <div class="grid-value">{{ submission.organizer_location or 'Not specified' }}</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-label">Submitted On</div>
-                        <div class="grid-value">{{ submission.created_at.strftime('%Y-%m-%d') if submission.created_at else 'N/A' }}</div>
-                    </div>
-                </div>
-                
-                <div class="submission-summary">
-                    <div class="grid-label">Event Summary</div>
-                    <div class="grid-value">{{ submission.event_summary }}</div>
-                </div>
-                
-                <div class="submission-actions">
-                    <a href="{{ url_for('events.admin_review_submission', submission_id=submission.id) }}" class="btn-review">
-                        <i class="bi bi-eye"></i> Review & Decide
-                    </a>
-                </div>
-            </div>
-            {% endfor %}
-        {% else %}
-        <div class="text-center py-5">
-            <i class="bi bi-inbox" style="font-size: 3.5rem; color: #e0e0e0;"></i>
-            <h4 class="mt-3 text-muted">No Pending Submissions</h4>
-            <p class="text-muted">All submissions have been reviewed.</p>
-        </div>
-        {% endif %}
-    </div>
-    
-    <!-- Approved Folder Content -->
-    <div id="folder-approved" class="folder-content">
-        <div class="drag-instruction">
-            <i class="bi bi-hand-index"></i>
-            Drag approved submissions to <strong>Pending</strong> folder to revoke approval
-        </div>
-        {% set approved_submissions = submissions|selectattr('status', 'equalto', 'approved')|list %}
-        {% if approved_submissions and approved_submissions|length > 0 %}
-            {% for submission in approved_submissions %}
-            <div class="submission-card approved" 
-                 draggable="true" 
-                 data-id="{{ submission.id }}" 
-                 data-status="approved">
-                <div class="submission-header">
-                    <div style="flex: 1;">
-                        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-                            {% if submission.image_url %}
-                            <img src="{{ submission.image_url }}" alt="thumb" style="width:80px;height:54px;object-fit:cover;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);" />
-                            {% endif %}
-                            <div class="submission-title">{{ submission.event_title }}</div>
-                        </div>
-                        <div class="submitter-info">
-                            Submitted by: <strong>{{ submission.username }}</strong> ({{ submission.user_email }})
-                        </div>
-                    </div>
-                    <div class="status-badge approved">
-                        {{ submission.status }}
-                    </div>
-                </div>
-                
-                <div class="submission-grid">
-                    <div class="grid-item">
-                        <div class="grid-label">Organizer</div>
-                        <div class="grid-value">{{ submission.organizer_name }}</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-label">Contact</div>
-                        <div class="grid-value">{{ submission.organizer_email }}</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-label">Phone</div>
-                        <div class="grid-value">{{ submission.organizer_phone }}</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-label">Event Type</div>
-                        <div class="grid-value">{{ submission.event_type }}</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-label">Preferred Date</div>
-                        <div class="grid-value">{{ submission.preferred_date.strftime('%Y-%m-%d') if submission.preferred_date else 'N/A' }}</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-label">Participants</div>
-                        <div class="grid-value">{{ submission.expected_participants }}</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-label">Location</div>
-                        <div class="grid-value">{{ submission.organizer_location or 'Not specified' }}</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-label">Submitted On</div>
-                        <div class="grid-value">{{ submission.created_at.strftime('%Y-%m-%d') if submission.created_at else 'N/A' }}</div>
-                    </div>
-                </div>
-                
-                <div class="submission-summary">
-                    <div class="grid-label">Event Summary</div>
-                    <div class="grid-value">{{ submission.event_summary }}</div>
-                </div>
-                
-                <div class="submission-actions">
-                    <a href="{{ url_for('events.admin_review_submission', submission_id=submission.id) }}" class="btn-review">
-                        <i class="bi bi-eye"></i> Review & Decide
-                    </a>
-                </div>
-            </div>
-            {% endfor %}
-        {% else %}
-        <div class="text-center py-5">
-            <i class="bi bi-inbox" style="font-size: 3.5rem; color: #e0e0e0;"></i>
-            <h4 class="mt-3 text-muted">No Approved Submissions</h4>
-            <p class="text-muted">Approved submissions will appear here.</p>
-        </div>
-        {% endif %}
-    </div>
-    
-    <!-- Rejected Folder Content -->
-    <div id="folder-rejected" class="folder-content">
-        <div class="drag-instruction" style="background: #fce4ec; border-color: #e91e63; color: #c2185b;">
-            <i class="bi bi-lock"></i>
-            Rejected submissions cannot be moved
-        </div>
-        {% set rejected_submissions = submissions|selectattr('status', 'equalto', 'rejected')|list %}
-        {% if rejected_submissions and rejected_submissions|length > 0 %}
-            {% for submission in rejected_submissions %}
-            <div class="submission-card rejected no-drag" 
-                 data-id="{{ submission.id }}" 
-                 data-status="rejected">
-                <div class="submission-header">
-                    <div style="flex: 1;">
-                        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-                            {% if submission.image_url %}
-                            <img src="{{ submission.image_url }}" alt="thumb" style="width:80px;height:54px;object-fit:cover;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);" />
-                            {% endif %}
-                            <div class="submission-title">{{ submission.event_title }}</div>
-                        </div>
-                        <div class="submitter-info">
-                            Submitted by: <strong>{{ submission.username }}</strong> ({{ submission.user_email }})
-                        </div>
-                    </div>
-                    <div class="status-badge rejected">
-                        {{ submission.status }}
-                    </div>
-                </div>
-                
-                <div class="submission-grid">
-                    <div class="grid-item">
-                        <div class="grid-label">Organizer</div>
-                        <div class="grid-value">{{ submission.organizer_name }}</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-label">Contact</div>
-                        <div class="grid-value">{{ submission.organizer_email }}</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-label">Phone</div>
-                        <div class="grid-value">{{ submission.organizer_phone }}</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-label">Event Type</div>
-                        <div class="grid-value">{{ submission.event_type }}</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-label">Preferred Date</div>
-                        <div class="grid-value">{{ submission.preferred_date.strftime('%Y-%m-%d') if submission.preferred_date else 'N/A' }}</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-label">Participants</div>
-                        <div class="grid-value">{{ submission.expected_participants }}</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-label">Location</div>
-                        <div class="grid-value">{{ submission.organizer_location or 'Not specified' }}</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-label">Submitted On</div>
-                        <div class="grid-value">{{ submission.created_at.strftime('%Y-%m-%d') if submission.created_at else 'N/A' }}</div>
-                    </div>
-                </div>
-                
-                <div class="submission-summary">
-                    <div class="grid-label">Event Summary</div>
-                    <div class="grid-value">{{ submission.event_summary }}</div>
-                </div>
-                
-                <div class="submission-actions">
-                    <a href="{{ url_for('events.admin_review_submission', submission_id=submission.id) }}" class="btn-review">
-                        <i class="bi bi-eye"></i> Review & Decide
-                    </a>
-                </div>
-            </div>
-            {% endfor %}
-        {% else %}
-        <div class="text-center py-5">
-            <i class="bi bi-inbox" style="font-size: 3.5rem; color: #e0e0e0;"></i>
-            <h4 class="mt-3 text-muted">No Rejected Submissions</h4>
-            <p class="text-muted">Rejected submissions will appear here.</p>
-        </div>
-        {% endif %}
-    </div>
-</div>
+<div class="admin-container">
+<div class="admin-inner">
 
+  <!-- ── Header ── -->
+  <div class="admin-header">
+    <div class="admin-eyebrow">
+      <span class="admin-eyebrow-dot"></span>
+      Admin Panel
+    </div>
+    <h2>Event <em>Submissions</em></h2>
+    <p>Drag and drop cards between folders to manage submission status, or click Review to decide.</p>
+  </div>
+
+  <!-- ── Stats ── -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <span class="stat-value" id="stat-pending">{{ submissions|selectattr('status', 'equalto', 'pending')|list|length }}</span>
+      <span class="stat-label">Pending Review</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value" id="stat-approved">{{ submissions|selectattr('status', 'equalto', 'approved')|list|length }}</span>
+      <span class="stat-label">Approved</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value" id="stat-rejected">{{ submissions|selectattr('status', 'equalto', 'rejected')|list|length }}</span>
+      <span class="stat-label">Rejected</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value">{{ submissions|length }}</span>
+      <span class="stat-label">Total</span>
+    </div>
+  </div>
+
+  <!-- ── Folder Tabs ── -->
+  <div class="folder-tabs-container">
+    <div class="folder-tab pending active" data-folder="pending" onclick="switchFolder('pending')">
+      <i class="bi bi-folder2-open"></i>
+      Pending
+      <span class="count-badge" id="count-pending">{{ submissions|selectattr('status', 'equalto', 'pending')|list|length }}</span>
+    </div>
+    <div class="folder-tab approved" data-folder="approved" onclick="switchFolder('approved')">
+      <i class="bi bi-folder-check"></i>
+      Approved
+      <span class="count-badge" id="count-approved">{{ submissions|selectattr('status', 'equalto', 'approved')|list|length }}</span>
+    </div>
+    <div class="folder-tab rejected" data-folder="rejected" onclick="switchFolder('rejected')">
+      <i class="bi bi-folder-x"></i>
+      Rejected
+      <span class="count-badge" id="count-rejected">{{ submissions|selectattr('status', 'equalto', 'rejected')|list|length }}</span>
+    </div>
+  </div>
+
+  <!-- ── Pending Folder ── -->
+  <div id="folder-pending" class="folder-content active">
+    <div class="drag-instruction">
+      <i class="bi bi-hand-index"></i>
+      Drag submissions to <strong>&nbsp;Approved&nbsp;</strong> or <strong>&nbsp;Rejected&nbsp;</strong> folders to change their status
+    </div>
+
+    {% set pending_submissions = submissions|selectattr('status', 'equalto', 'pending')|list %}
+    {% if pending_submissions and pending_submissions|length > 0 %}
+      {% for submission in pending_submissions %}
+      <div class="submission-card pending"
+           draggable="true"
+           data-id="{{ submission.id }}"
+           data-status="pending">
+
+        <div class="submission-header">
+          <div style="flex:1; min-width:0;">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+              {% if submission.image_url %}
+              <img src="{{ submission.image_url }}" alt="thumbnail" class="event-thumb">
+              {% endif %}
+              <div class="submission-title">{{ submission.event_title }}</div>
+            </div>
+            <div class="submitter-info">
+              Submitted by <strong>{{ submission.username }}</strong> &middot; {{ submission.user_email }}
+            </div>
+          </div>
+          <div class="status-badge pending">
+            <span class="status-dot"></span> Pending
+          </div>
+        </div>
+
+        <div class="submission-grid">
+          <div class="grid-item"><div class="grid-label">Organizer</div><div class="grid-value">{{ submission.organizer_name }}</div></div>
+          <div class="grid-item"><div class="grid-label">Contact Email</div><div class="grid-value">{{ submission.organizer_email }}</div></div>
+          <div class="grid-item"><div class="grid-label">Phone</div><div class="grid-value">{{ submission.organizer_phone }}</div></div>
+          <div class="grid-item"><div class="grid-label">Event Type</div><div class="grid-value">{{ submission.event_type }}</div></div>
+          <div class="grid-item"><div class="grid-label">Preferred Date</div><div class="grid-value">{{ submission.preferred_date.strftime('%d %b %Y') if submission.preferred_date else 'N/A' }}</div></div>
+          <div class="grid-item"><div class="grid-label">Participants</div><div class="grid-value">{{ submission.expected_participants }}</div></div>
+          <div class="grid-item"><div class="grid-label">Location</div><div class="grid-value">{{ submission.organizer_location or 'Not specified' }}</div></div>
+          <div class="grid-item"><div class="grid-label">Submitted On</div><div class="grid-value">{{ submission.created_at.strftime('%d %b %Y') if submission.created_at else 'N/A' }}</div></div>
+        </div>
+
+        <div class="submission-summary">
+          <div class="grid-label">Event Summary</div>
+          <div class="grid-value">{{ submission.event_summary }}</div>
+        </div>
+
+        <div class="submission-actions">
+          <a href="{{ url_for('events.admin_review_submission', submission_id=submission.id) }}" class="btn-review">
+            <i class="bi bi-eye"></i> Review &amp; Decide
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+    <div class="empty-state">
+      <span class="empty-icon">📥</span>
+      <h4>No Pending Submissions</h4>
+      <p>All submissions have been reviewed — check back later.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- ── Approved Folder ── -->
+  <div id="folder-approved" class="folder-content">
+    <div class="drag-instruction">
+      <i class="bi bi-hand-index"></i>
+      Drag approved submissions to <strong>&nbsp;Pending&nbsp;</strong> to revoke approval
+    </div>
+
+    {% set approved_submissions = submissions|selectattr('status', 'equalto', 'approved')|list %}
+    {% if approved_submissions and approved_submissions|length > 0 %}
+      {% for submission in approved_submissions %}
+      <div class="submission-card approved"
+           draggable="true"
+           data-id="{{ submission.id }}"
+           data-status="approved">
+
+        <div class="submission-header">
+          <div style="flex:1; min-width:0;">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+              {% if submission.image_url %}
+              <img src="{{ submission.image_url }}" alt="thumbnail" class="event-thumb">
+              {% endif %}
+              <div class="submission-title">{{ submission.event_title }}</div>
+            </div>
+            <div class="submitter-info">
+              Submitted by <strong>{{ submission.username }}</strong> &middot; {{ submission.user_email }}
+            </div>
+          </div>
+          <div class="status-badge approved">
+            <span class="status-dot"></span> Approved
+          </div>
+        </div>
+
+        <div class="submission-grid">
+          <div class="grid-item"><div class="grid-label">Organizer</div><div class="grid-value">{{ submission.organizer_name }}</div></div>
+          <div class="grid-item"><div class="grid-label">Contact Email</div><div class="grid-value">{{ submission.organizer_email }}</div></div>
+          <div class="grid-item"><div class="grid-label">Phone</div><div class="grid-value">{{ submission.organizer_phone }}</div></div>
+          <div class="grid-item"><div class="grid-label">Event Type</div><div class="grid-value">{{ submission.event_type }}</div></div>
+          <div class="grid-item"><div class="grid-label">Preferred Date</div><div class="grid-value">{{ submission.preferred_date.strftime('%d %b %Y') if submission.preferred_date else 'N/A' }}</div></div>
+          <div class="grid-item"><div class="grid-label">Participants</div><div class="grid-value">{{ submission.expected_participants }}</div></div>
+          <div class="grid-item"><div class="grid-label">Location</div><div class="grid-value">{{ submission.organizer_location or 'Not specified' }}</div></div>
+          <div class="grid-item"><div class="grid-label">Submitted On</div><div class="grid-value">{{ submission.created_at.strftime('%d %b %Y') if submission.created_at else 'N/A' }}</div></div>
+        </div>
+
+        <div class="submission-summary">
+          <div class="grid-label">Event Summary</div>
+          <div class="grid-value">{{ submission.event_summary }}</div>
+        </div>
+
+        <div class="submission-actions">
+          <a href="{{ url_for('events.admin_review_submission', submission_id=submission.id) }}" class="btn-review">
+            <i class="bi bi-eye"></i> Review &amp; Decide
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+    <div class="empty-state">
+      <span class="empty-icon">✅</span>
+      <h4>No Approved Submissions</h4>
+      <p>Approved submissions will appear here once reviewed.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- ── Rejected Folder ── -->
+  <div id="folder-rejected" class="folder-content">
+    <div class="drag-instruction locked">
+      <i class="bi bi-lock-fill"></i>
+      Rejected submissions are locked and cannot be moved
+    </div>
+
+    {% set rejected_submissions = submissions|selectattr('status', 'equalto', 'rejected')|list %}
+    {% if rejected_submissions and rejected_submissions|length > 0 %}
+      {% for submission in rejected_submissions %}
+      <div class="submission-card rejected no-drag"
+           data-id="{{ submission.id }}"
+           data-status="rejected">
+
+        <div class="submission-header">
+          <div style="flex:1; min-width:0;">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+              {% if submission.image_url %}
+              <img src="{{ submission.image_url }}" alt="thumbnail" class="event-thumb">
+              {% endif %}
+              <div class="submission-title">{{ submission.event_title }}</div>
+            </div>
+            <div class="submitter-info">
+              Submitted by <strong>{{ submission.username }}</strong> &middot; {{ submission.user_email }}
+            </div>
+          </div>
+          <div class="status-badge rejected">
+            <span class="status-dot"></span> Rejected
+          </div>
+        </div>
+
+        <div class="submission-grid">
+          <div class="grid-item"><div class="grid-label">Organizer</div><div class="grid-value">{{ submission.organizer_name }}</div></div>
+          <div class="grid-item"><div class="grid-label">Contact Email</div><div class="grid-value">{{ submission.organizer_email }}</div></div>
+          <div class="grid-item"><div class="grid-label">Phone</div><div class="grid-value">{{ submission.organizer_phone }}</div></div>
+          <div class="grid-item"><div class="grid-label">Event Type</div><div class="grid-value">{{ submission.event_type }}</div></div>
+          <div class="grid-item"><div class="grid-label">Preferred Date</div><div class="grid-value">{{ submission.preferred_date.strftime('%d %b %Y') if submission.preferred_date else 'N/A' }}</div></div>
+          <div class="grid-item"><div class="grid-label">Participants</div><div class="grid-value">{{ submission.expected_participants }}</div></div>
+          <div class="grid-item"><div class="grid-label">Location</div><div class="grid-value">{{ submission.organizer_location or 'Not specified' }}</div></div>
+          <div class="grid-item"><div class="grid-label">Submitted On</div><div class="grid-value">{{ submission.created_at.strftime('%d %b %Y') if submission.created_at else 'N/A' }}</div></div>
+        </div>
+
+        <div class="submission-summary">
+          <div class="grid-label">Event Summary</div>
+          <div class="grid-value">{{ submission.event_summary }}</div>
+        </div>
+
+        <div class="submission-actions">
+          <a href="{{ url_for('events.admin_review_submission', submission_id=submission.id) }}" class="btn-review">
+            <i class="bi bi-eye"></i> Review &amp; Decide
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+    <div class="empty-state">
+      <span class="empty-icon">🗂️</span>
+      <h4>No Rejected Submissions</h4>
+      <p>Rejected submissions will appear here.</p>
+    </div>
+    {% endif %}
+  </div>
+
+</div><!-- /admin-inner -->
+</div><!-- /admin-container -->
 {% endblock %}
+
 
 {% block extra_js %}
 <script>
-    // ===== SYNC LANGUAGE FROM BACKEND TO LOCALSTORAGE =====
-    (function() {
-        const adminLanguage = "{{ admin_language or 'en' }}";
-        if (adminLanguage && adminLanguage !== 'en') {
-            localStorage.setItem('siteLanguage', adminLanguage);
-            if (typeof setSiteLanguage === 'function') {
-                setSiteLanguage(adminLanguage);
-            }
-        }
-    })();
-
-    let currentFolder = 'pending';
-    let draggedCard = null;
-
-    // Switch between folders
-    function switchFolder(folderName) {
-        currentFolder = folderName;
-        
-        // Update active tab
-        document.querySelectorAll('.folder-tab').forEach(tab => {
-            tab.classList.remove('active');
-        });
-        document.querySelector(`.folder-tab[data-folder="${folderName}"]`).classList.add('active');
-        
-        // Update active content
-        document.querySelectorAll('.folder-content').forEach(content => {
-            content.classList.remove('active');
-        });
-        document.getElementById(`folder-${folderName}`).classList.add('active');
+  /* ── Sync admin language to localStorage ── */
+  (function () {
+    const lang = "{{ admin_language or 'en' }}";
+    if (lang && lang !== 'en') {
+      localStorage.setItem('siteLanguage', lang);
+      if (typeof setSiteLanguage === 'function') setSiteLanguage(lang);
     }
+  })();
 
-    // Initialize drag and drop
-    function initDragAndDrop() {
-        const cards = document.querySelectorAll('.submission-card[draggable="true"]');
-        const folderTabs = document.querySelectorAll('.folder-tab');
-        
-        // Card drag events
-        cards.forEach(card => {
-            card.addEventListener('dragstart', handleDragStart);
-            card.addEventListener('dragend', handleDragEnd);
-        });
-        
-        // Folder tab drop events
-        folderTabs.forEach(tab => {
-            tab.addEventListener('dragover', handleDragOver);
-            tab.addEventListener('dragleave', handleDragLeave);
-            tab.addEventListener('drop', handleDrop);
-        });
-    }
+  let currentFolder = 'pending';
+  let draggedCard   = null;
 
-    function handleDragStart(e) {
-        draggedCard = this;
-        this.classList.add('dragging');
-        e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('text/html', this.innerHTML);
-    }
+  /* ── Tab switching ── */
+  function switchFolder(name) {
+    currentFolder = name;
+    document.querySelectorAll('.folder-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector(`.folder-tab[data-folder="${name}"]`).classList.add('active');
+    document.querySelectorAll('.folder-content').forEach(c => c.classList.remove('active'));
+    document.getElementById(`folder-${name}`).classList.add('active');
+  }
 
-    function handleDragEnd(e) {
-        this.classList.remove('dragging');
-        
-        // Remove all drag-over classes
-        document.querySelectorAll('.folder-tab').forEach(tab => {
-            tab.classList.remove('drag-over');
-        });
-    }
-
-    function handleDragOver(e) {
-        if (e.preventDefault) {
-            e.preventDefault();
-        }
-        
-        const targetFolder = this.dataset.folder;
-        const currentStatus = draggedCard.dataset.status;
-        
-        // Check if this drop is allowed
-        if (isDropAllowed(currentStatus, targetFolder)) {
-            e.dataTransfer.dropEffect = 'move';
-            this.classList.add('drag-over');
-        } else {
-            e.dataTransfer.dropEffect = 'none';
-        }
-        
-        return false;
-    }
-
-    function handleDragLeave(e) {
-        this.classList.remove('drag-over');
-    }
-
-    function handleDrop(e) {
-        if (e.stopPropagation) {
-            e.stopPropagation();
-        }
-        
-        e.preventDefault();
-        
-        const targetFolder = this.dataset.folder;
-        const currentStatus = draggedCard.dataset.status;
-        const submissionId = draggedCard.dataset.id;
-        
-        // Remove drag-over class
-        this.classList.remove('drag-over');
-        
-        // Check if drop is allowed
-        if (!isDropAllowed(currentStatus, targetFolder)) {
-            return false;
-        }
-        
-        // Don't do anything if dropping on same folder
-        if (currentStatus === targetFolder) {
-            return false;
-        }
-        
-        // Update status via AJAX
-        updateSubmissionStatus(submissionId, targetFolder);
-        
-        return false;
-    }
-
-    function isDropAllowed(currentStatus, targetFolder) {
-        // From pending: can drop to approved or rejected
-        if (currentStatus === 'pending') {
-            return targetFolder === 'approved' || targetFolder === 'rejected';
-        }
-        
-        // From approved: can only drop to pending (revoke)
-        if (currentStatus === 'approved') {
-            return targetFolder === 'pending';
-        }
-        
-        // From rejected: cannot drop anywhere (disabled)
-        if (currentStatus === 'rejected') {
-            return false;
-        }
-        
-        return false;
-    }
-
-    function updateSubmissionStatus(submissionId, newStatus) {
-        // Show loading state
-        const card = draggedCard;
-        const oldStatus = card.dataset.status;
-        card.style.opacity = '0.6';
-        card.style.pointerEvents = 'none';
-        
-        fetch(`/events/admin/submissions/${submissionId}/update-status`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                status: newStatus
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Show success message based on the action
-                let message = `Submission moved to ${newStatus}!`;
-                
-                if (newStatus === 'approved') {
-                    message += ' Event created and added to carousel.';
-                } else if (newStatus === 'pending' && oldStatus === 'approved') {
-                    message = 'Approval revoked - event removed from carousel.';
-                }
-                
-                showToast(message, 'success');
-                
-                // Auto-refresh page after 800ms to show updated state
-                setTimeout(() => {
-                    // Store which folder should be active after reload
-                    sessionStorage.setItem('activeFolder', newStatus);
-                    window.location.reload();
-                }, 800);
-            } else {
-                // Restore card state on error
-                card.style.opacity = '1';
-                card.style.pointerEvents = 'auto';
-                showToast(data.error || 'Failed to update status', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            card.style.opacity = '1';
-            card.style.pointerEvents = 'auto';
-            showToast('Network error - please try again', 'error');
-        });
-    }
-
-    function showToast(message, type = 'info') {
-        // Create toast element
-        const toast = document.createElement('div');
-        toast.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 25px;
-            border-radius: 8px;
-            color: white;
-            font-weight: 600;
-            z-index: 10000;
-            animation: slideIn 0.3s ease-out;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-        `;
-        
-        // Set background color based on type
-        const colors = {
-            success: '#28a745',
-            error: '#dc3545',
-            info: '#17a2b8',
-            warning: '#ffc107'
-        };
-        toast.style.background = colors[type] || colors.info;
-        toast.textContent = message;
-        
-        // Add animation styles
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideIn {
-                from {
-                    transform: translateX(400px);
-                    opacity: 0;
-                }
-                to {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-            }
-            @keyframes slideOut {
-                from {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-                to {
-                    transform: translateX(400px);
-                    opacity: 0;
-                }
-            }
-        `;
-        if (!document.querySelector('style[data-toast-styles]')) {
-            style.setAttribute('data-toast-styles', 'true');
-            document.head.appendChild(style);
-        }
-        
-        document.body.appendChild(toast);
-        
-        // Remove after 3 seconds
-        setTimeout(() => {
-            toast.style.animation = 'slideOut 0.3s ease-in';
-            setTimeout(() => {
-                document.body.removeChild(toast);
-            }, 300);
-        }, 3000);
-    }
-
-    // Initialize on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        initDragAndDrop();
-        
-        // Check if we should switch to a specific folder after reload
-        const activeFolder = sessionStorage.getItem('activeFolder');
-        if (activeFolder) {
-            sessionStorage.removeItem('activeFolder');
-            switchFolder(activeFolder);
-        }
+  /* ── Drag & Drop ── */
+  function initDragAndDrop() {
+    document.querySelectorAll('.submission-card[draggable="true"]').forEach(card => {
+      card.addEventListener('dragstart', handleDragStart);
+      card.addEventListener('dragend',   handleDragEnd);
     });
+    document.querySelectorAll('.folder-tab').forEach(tab => {
+      tab.addEventListener('dragover',  handleDragOver);
+      tab.addEventListener('dragleave', handleDragLeave);
+      tab.addEventListener('drop',      handleDrop);
+    });
+  }
+
+  function handleDragStart(e) {
+    draggedCard = this;
+    this.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  }
+
+  function handleDragEnd() {
+    this.classList.remove('dragging');
+    document.querySelectorAll('.folder-tab').forEach(t => t.classList.remove('drag-over'));
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+    if (draggedCard && isDropAllowed(draggedCard.dataset.status, this.dataset.folder)) {
+      e.dataTransfer.dropEffect = 'move';
+      this.classList.add('drag-over');
+    } else {
+      e.dataTransfer.dropEffect = 'none';
+    }
+    return false;
+  }
+
+  function handleDragLeave() { this.classList.remove('drag-over'); }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const target = this.dataset.folder;
+    const current = draggedCard?.dataset.status;
+    this.classList.remove('drag-over');
+    if (!draggedCard || !isDropAllowed(current, target) || current === target) return false;
+    updateSubmissionStatus(draggedCard.dataset.id, target);
+    return false;
+  }
+
+  function isDropAllowed(current, target) {
+    if (current === 'pending')  return target === 'approved' || target === 'rejected';
+    if (current === 'approved') return target === 'pending';
+    return false;
+  }
+
+  /* ── AJAX status update ── */
+  function updateSubmissionStatus(id, newStatus) {
+    const card = draggedCard;
+    const oldStatus = card.dataset.status;
+    card.style.opacity = '0.5';
+    card.style.pointerEvents = 'none';
+
+    fetch(`/events/admin/submissions/${id}/update-status`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus })
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        let msg = `Moved to ${newStatus}!`;
+        if (newStatus === 'approved')                            msg += ' Event published to carousel.';
+        if (newStatus === 'pending' && oldStatus === 'approved') msg  = 'Approval revoked — event removed from carousel.';
+        showToast(msg, 'success');
+        setTimeout(() => {
+          sessionStorage.setItem('activeFolder', newStatus);
+          window.location.reload();
+        }, 800);
+      } else {
+        card.style.opacity      = '1';
+        card.style.pointerEvents = 'auto';
+        showToast(data.error || 'Failed to update status.', 'error');
+      }
+    })
+    .catch(() => {
+      card.style.opacity      = '1';
+      card.style.pointerEvents = 'auto';
+      showToast('Network error — please try again.', 'error');
+    });
+  }
+
+  /* ── Toast notification ── */
+  function showToast(message, type = 'info') {
+    const colors = { success: 'linear-gradient(135deg,#f39a1f,#ff8c61)', error: 'linear-gradient(135deg,#dc2626,#ef4444)', info: 'linear-gradient(135deg,#0ea5e9,#38bdf8)', warning: 'linear-gradient(135deg,#f59e0b,#fbbf24)' };
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+      position:fixed; top:24px; right:24px;
+      padding:14px 26px;
+      background:${colors[type]||colors.info};
+      border-radius:14px;
+      color:#fff; font-family:'Poppins',sans-serif;
+      font-weight:700; font-size:0.88rem;
+      z-index:10000;
+      box-shadow:0 8px 32px rgba(0,0,0,0.18);
+      animation:toastIn 0.35s cubic-bezier(.34,1.56,.64,1);
+    `;
+    toast.textContent = message;
+
+    if (!document.querySelector('#toast-style')) {
+      const s = document.createElement('style');
+      s.id = 'toast-style';
+      s.textContent = `@keyframes toastIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}} @keyframes toastOut{from{transform:translateX(0);opacity:1}to{transform:translateX(120%);opacity:0}}`;
+      document.head.appendChild(s);
+    }
+
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.style.animation = 'toastOut 0.3s ease-in forwards';
+      setTimeout(() => toast.remove(), 320);
+    }, 3200);
+  }
+
+  /* ── Init ── */
+  document.addEventListener('DOMContentLoaded', () => {
+    initDragAndDrop();
+    const saved = sessionStorage.getItem('activeFolder');
+    if (saved) { sessionStorage.removeItem('activeFolder'); switchFolder(saved); }
+  });
 </script>
 {% endblock %}
+

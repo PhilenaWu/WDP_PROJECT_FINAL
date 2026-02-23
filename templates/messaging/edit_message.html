@@ -1,18 +1,137 @@
 {% extends "base.html" %}
 {% block title %}Edit Message - Genlink{% endblock %}
-{% block content %}
 {% block navbar %}{% endblock %}
 {% block banner %}{% endblock %}
-<div class="container" style="max-width:600px;margin:3rem auto;">
-    <h2>Edit Message</h2>
-    <div style="background:white;padding:2rem;border-radius:12px;">
-        <form method="POST">
-            <div class="mb-3"><label for="content" class="form-label">Message Content *</label><textarea class="form-control" id="content" name="content" required maxlength="5000" rows="5">{{ message.content }}</textarea></div>
-            <div style="display:flex;gap:1rem;"><button type="submit" class="btn btn-primary">Save Changes</button><a href="javascript:history.back()" class="btn btn-secondary">Cancel</a></div>
-        </form>
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #f39a1f; --orange-deep: #d97f06; --coral: #ff8c61;
+    --cream: #fbf8f5; --text: #1c1209; --muted: #8a7260;
+    --glow: rgba(243,154,31,0.3); --glow-strong: rgba(243,154,31,0.5); --white: #ffffff;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  body { font-family: 'Poppins', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; }
+  body::before {
+    content: ''; position: fixed; top: -160px; right: -180px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(243,154,31,0.16), transparent 70%);
+    border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0;
+  }
+
+  .page-container { max-width: 580px; margin: 0 auto; padding: 44px 24px 80px; position: relative; z-index: 1; }
+
+  .page-header { margin-bottom: 28px; }
+  .header-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(243,154,31,0.1); border: 1px solid rgba(243,154,31,0.28);
+    border-radius: 999px; padding: 5px 16px 5px 10px;
+    font-size: 0.7rem; font-weight: 700; color: var(--orange-deep);
+    letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px;
+  }
+  .header-eyebrow-dot { width: 8px; height: 8px; background: var(--orange); border-radius: 50%; animation: blink 2s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.5;transform:scale(1.4);} }
+  .page-header h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.7rem, 3vw, 2.2rem); font-weight: 900; line-height: 1.1; margin-bottom: 6px; }
+  .page-header h2 em { font-style: italic; background: linear-gradient(135deg, var(--orange), var(--coral)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .page-header p { color: var(--muted); font-size: 0.86rem; }
+
+  .form-card {
+    background: var(--white); border-radius: 22px; padding: 34px;
+    border: 1px solid rgba(243,154,31,0.13); position: relative; overflow: hidden;
+  }
+  .form-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--orange), var(--coral), transparent); border-radius: 22px 22px 0 0;
+  }
+
+  .field-label { font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px; display: block; }
+  .field-label .required { color: var(--coral); margin-left: 2px; }
+
+  .field-textarea {
+    width: 100%; border: 2px solid rgba(139,114,96,0.18); border-radius: 14px;
+    padding: 14px 16px; font-family: 'Poppins', sans-serif; font-size: 0.9rem;
+    color: var(--text); background: var(--cream); outline: none;
+    resize: vertical; min-height: 150px; line-height: 1.65;
+    transition: border-color 0.25s, box-shadow 0.25s, background 0.2s;
+  }
+  .field-textarea:focus { border-color: var(--orange); box-shadow: 0 0 0 4px rgba(243,154,31,0.12); background: var(--white); }
+
+  .char-counter { font-size: 0.72rem; color: var(--muted); text-align: right; margin-top: 6px; }
+
+  /* Original message preview */
+  .original-bubble {
+    background: var(--cream);
+    border: 1px solid rgba(139,114,96,0.15);
+    border-left: 3px solid rgba(243,154,31,0.4);
+    border-radius: 12px; padding: 12px 16px; margin-bottom: 18px;
+    font-size: 0.82rem; color: var(--muted); line-height: 1.6;
+  }
+  .original-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 6px; }
+
+  .form-actions { display: flex; gap: 12px; padding-top: 22px; border-top: 1px solid rgba(243,154,31,0.12); flex-wrap: wrap; margin-top: 6px; }
+  .btn-save {
+    display: inline-flex; align-items: center; gap: 8px; padding: 12px 30px;
+    background: linear-gradient(135deg, var(--orange), var(--coral));
+    color: #fff; border: none; border-radius: 999px;
+    font-family: 'Poppins', sans-serif; font-size: 0.88rem; font-weight: 700; cursor: pointer;
+    box-shadow: 0 4px 18px var(--glow); transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s;
+  }
+  .btn-save:hover { transform: translateY(-2px) scale(1.04); box-shadow: 0 8px 26px var(--glow-strong); }
+  .btn-cancel {
+    display: inline-flex; align-items: center; gap: 7px; padding: 11px 24px;
+    background: transparent; color: var(--muted); border: 1.5px solid rgba(139,114,96,0.22); border-radius: 999px;
+    font-family: 'Poppins', sans-serif; font-size: 0.88rem; font-weight: 600;
+    text-decoration: none; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-cancel:hover { border-color: var(--orange); color: var(--orange); }
+
+  @media (max-width: 560px) {
+    .page-container { padding: 24px 14px 60px; }
+    .form-card { padding: 22px 16px; }
+    .form-actions { flex-direction: column; }
+    .btn-save, .btn-cancel { width: 100%; justify-content: center; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+  <div class="page-header">
+    <div class="header-eyebrow"><span class="header-eyebrow-dot"></span> Messaging</div>
+    <h2>Edit <em>Message</em></h2>
+    <p>Update your message content below.</p>
+  </div>
+
+  <div class="form-card">
+    <!-- Original message preview -->
+    <div class="original-bubble">
+      <div class="original-label">Original message</div>
+      {{ message.content }}
     </div>
+
+    <form method="POST">
+      <label for="content" class="field-label">Updated Content <span class="required">*</span></label>
+      <textarea class="field-textarea" id="content" name="content"
+                required maxlength="5000" rows="6"
+                oninput="updateCounter(this)">{{ message.content }}</textarea>
+      <div class="char-counter"><span id="charCount">{{ message.content|length }}</span> / 5000</div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-save"><i class="bi bi-check-circle-fill"></i> Save Changes</button>
+        <button type="button" class="btn-cancel" onclick="history.back()"><i class="bi bi-x"></i> Cancel</button>
+      </div>
+    </form>
+  </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function updateCounter(el) {
+    document.getElementById('charCount').textContent = el.value.length;
+  }
+</script>
+{% endblock %}
 
 {% block footer %}{% endblock %}
-
-{% endblock %}

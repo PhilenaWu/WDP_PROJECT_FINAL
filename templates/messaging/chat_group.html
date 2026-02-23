@@ -2,128 +2,631 @@
 {% block title %}{{ group.name }} - Genlink{% endblock %}
 
 {% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
 <style>
-    /* ── Animations ── */
-    @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes fadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-10px); } }
-    @keyframes pulse { 0%{transform:scale(1)} 50%{transform:scale(1.1)} 100%{transform:scale(1)} }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  :root {
+    --orange: #f39a1f;
+    --orange-deep: #d97f06;
+    --coral: #ff8c61;
+    --cream: #fbf8f5;
+    --text: #1c1209;
+    --muted: #8a7260;
+    --glow: rgba(243,154,31,0.3);
+    --glow-strong: rgba(243,154,31,0.5);
+    --white: #ffffff;
+    --chat-bg: #fdf3e8;
+    --sent-bg: linear-gradient(135deg, #f39a1f, #ff8c61);
+    --recv-bg: #ffffff;
+  }
 
-    /* ── Layout ── */
-    .chat-layout { display: flex; height: 100vh; overflow: hidden; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ── Sidebar ── */
-    .chat-sidebar { width: 300px; flex-shrink: 0; display: flex; flex-direction: column; overflow: hidden; border-right: 1px solid #dee2e6; background: #fff; }
-    .chat-sidebar-header { padding: 16px 16px 12px; border-bottom: 1px solid #dee2e6; background: #ff6b35;}
-    .sb-search { position: relative; margin-bottom: 12px; }
-    .sb-search input { width: 100%; padding: 9px 14px 9px 36px; font-size: 13px; border: 1.5px solid #dee2e6; border-radius: 10px; background: #f8f9fa; color: #212529; outline: none; transition: all 0.15s; }
-    .sb-search input::placeholder { color: #adb5bd; }
-    .sb-search input:focus { border-color: #ff6b35; background: #fff; }
-    .sb-search i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #adb5bd; font-size: 13px; }
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    overflow: hidden;
+  }
 
-    /* Tab toggle */
-    .sb-tabs { display: flex; background: #f8f9fa; border-radius: 10px; padding: 3px; gap: 2px; }
-    .sb-tab-btn { flex: 1; padding: 7px 10px; border-radius: 8px; border: none; background: transparent; color: #6c757d; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 5px; }
-    .sb-tab-btn.active { background: #fff; color: #ff6b35; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-    .sb-tab-btn:hover:not(.active) { color: #495057; }
-    .sb-tab-badge { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 100px; }
-    .sb-tab-badge.contacts { background: #ff6b35; color: white; }
-    .sb-tab-badge.groups { background: #e9ecef; color: #6c757d; }
-    .sb-tab-btn.active .sb-tab-badge.groups { background: #ff6b35; color: white; }
+  /* ── Animations ── */
+  @keyframes slideDown  { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeOut    { from { opacity:1; transform:translateY(0); }  to { opacity:0; transform:translateY(-10px); } }
+  @keyframes pulse      { 0%{transform:scale(1)} 50%{transform:scale(1.1)} 100%{transform:scale(1)} }
+  @keyframes blink      { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  @keyframes spin       { to{transform:rotate(360deg)} }
+  @keyframes toastIn    { from{transform:translateX(120%);opacity:0} to{transform:translateX(0);opacity:1} }
 
-    /* Tab panels */
-    .sb-panel { display: none; }
-    .sb-panel.active { display: block; }
+  /* ══════════════════════════════
+     LAYOUT
+  ══════════════════════════════ */
+  .chat-layout {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
 
-    /* Contact/group list */
-    .sb-list { flex: 1; overflow-y: auto; padding: 6px; }
-    .sb-list::-webkit-scrollbar { width: 4px; }
-    .sb-list::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
-    .sb-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; text-decoration: none !important; color: inherit !important; transition: background 0.15s; }
-    .sb-item:hover { background: #fff5f0; }
-    .sb-item.active { background: #fff0e6; }
-    .sb-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #ff6b35, #ff8c42); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px; flex-shrink: 0; }
-    .sb-avatar.group { border-radius: 13px; }
-    .sb-avatar.teal { background: linear-gradient(135deg, #0FA87E, #3AB8C0); }
-    .sb-avatar.indigo { background: linear-gradient(135deg, #5B4FD4, #8B7FFF); }
-    .sb-avatar.rose { background: linear-gradient(135deg, #E84470, #F07A9A); }
-    .sb-info { flex: 1; min-width: 0; }
-    .sb-name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .sb-preview { font-size: 12px; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
-    .sb-time { font-size: 11px; color: #adb5bd; flex-shrink: 0; align-self: flex-start; margin-top: 2px; }
-    .sb-section-label { padding: 10px 10px 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #adb5bd; }
-    .sb-empty { text-align: center; padding: 2rem; color: #adb5bd; font-size: 14px; }
-    @media (max-width: 768px) { .chat-sidebar { display: none; } }
+  /* ══════════════════════════════
+     SIDEBAR
+  ══════════════════════════════ */
+  .chat-sidebar {
+    width: 290px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--white);
+    border-right: 1px solid rgba(243,154,31,0.15);
+  }
 
-    /* ── Chat main ── */
-    .chat-container { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; background: white; }
+  .chat-sidebar-header {
+    padding: 16px 16px 12px;
+    border-bottom: 1px solid rgba(243,154,31,0.12);
+    background: linear-gradient(135deg, var(--orange), var(--coral));
+    position: relative;
+    overflow: hidden;
+  }
+  .chat-sidebar-header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 80% at 90% 20%, rgba(255,255,255,0.12), transparent 70%);
+    pointer-events: none;
+  }
 
-    /* ── Chat header (orange) ── */
-    .chat-header { background: linear-gradient(135deg, #ff6b35, #ff8c42); color: white; padding: 12px 24px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-    .chat-avatar { width: 44px; height: 44px; border-radius: 50%; background: white; color: #ff6b35; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; flex-shrink: 0; }
-    .chat-info h3 { margin: 0; font-size: 1.1rem; }
-    .chat-info p { margin: 0.2rem 0 0 0; opacity: 0.9; font-size: 0.85rem; }
+  /* Search */
+  .sb-search { position: relative; margin-bottom: 12px; }
+  .sb-search input {
+    width: 100%;
+    padding: 9px 14px 9px 36px;
+    font-size: 0.8rem;
+    font-family: 'Poppins', sans-serif;
+    border: none;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.25);
+    color: var(--white);
+    outline: none;
+    transition: background 0.2s;
+  }
+  .sb-search input::placeholder { color: rgba(255,255,255,0.65); }
+  .sb-search input:focus { background: rgba(255,255,255,0.35); }
+  .sb-search i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.7); font-size: 0.8rem; }
 
-    /* ── Group-specific: sender name in bubbles ── */
-    .message-sender { font-size: 0.8rem; font-weight: bold; color: #ff6b35; margin-bottom: 0.2rem; }
-    .message-sent .message-sender { color: rgba(255,255,255,0.9); }
+  /* Tabs */
+  .sb-tabs {
+    display: flex;
+    background: rgba(255,255,255,0.15);
+    border-radius: 10px;
+    padding: 3px;
+    gap: 2px;
+  }
+  .sb-tab-btn {
+    flex: 1;
+    padding: 7px 10px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: rgba(255,255,255,0.75);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
+  .sb-tab-btn.active {
+    background: rgba(255,255,255,0.92);
+    color: var(--orange-deep);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+  .sb-tab-btn:hover:not(.active) { color: #fff; }
 
-    /* ── Messages ── */
-    .chat-messages { flex: 1; overflow-y: auto; padding: 24px; background: #ffe8d8; -ms-overflow-style: none; scrollbar-width: none; }
-    .chat-messages::-webkit-scrollbar { display: none; }
-    .message-group { margin-bottom: 1.2rem; }
-    .message-bubble { max-width: 55%; padding: 10px 14px; border-radius: 16px; margin-bottom: 0.4rem; position: relative; word-wrap: break-word; font-size: 14px; line-height: 1.5; }
-    .message-sent { background: #ff8c42; color: white; margin-left: auto; border-bottom-right-radius: 4px; }
-    .message-received { background: white; color: #2c2c2c; margin-right: auto; border-bottom-left-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-    .message-time { font-size: 0.7rem; opacity: 0.7; margin-top: 0.2rem; }
-    .message-media { max-width: 300px; border-radius: 12px; margin-top: 0.5rem; }
-    .message-media img, .message-media video { width: 100%; border-radius: 12px; }
-    .message-actions { display: flex; gap: 0.4rem; margin-top: 0.4rem; }
-    .btn-message-action { font-size: 0.7rem; padding: 0.25rem 0.5rem; background: rgba(255,255,255,0.3); border: none; border-radius: 4px; cursor: pointer; color: inherit; }
+  .sb-tab-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.25);
+    color: #fff;
+  }
+  .sb-tab-btn.active .sb-tab-badge { background: var(--orange); color: #fff; }
 
-    /* ── Typing ── */
-    .typing-indicator { padding: 0.4rem 24px; color: #888; font-style: italic; font-size: 0.8rem; background: linear-gradient(135deg, #fff5f0 0%, #ffe8d8 100%); display: none; }
-    .typing-indicator.active { display: block; }
+  /* Panel */
+  .sb-panel { display: none; }
+  .sb-panel.active { display: block; }
 
-    /* ── Input ── */
-    .chat-input-area { padding: 14px 24px; background: white; border-top: 1px solid #dee2e6; flex-shrink: 0; }
-    .chat-input-form { display: flex; gap: 10px; align-items: center; }
-    .message-input { flex: 1; padding: 10px 16px; border: 1.5px solid #dee2e6; border-radius: 12px; font-size: 14px; resize: none; max-height: 100px; outline: none; font-family: inherit; background: #f8f9fa; transition: all 0.15s; }
-    .message-input:focus { border-color: #ff6b35; background: white; box-shadow: 0 0 0 3px rgba(255,107,53,0.07); }
-    .input-actions { display: flex; gap: 6px; }
-    .btn-attachment, .btn-voice { width: 40px; height: 40px; border-radius: 10px; border: 1px solid #dee2e6; background: #f8f9fa; cursor: pointer; font-size: 1.2rem; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
-    .btn-attachment:hover, .btn-voice:hover { background: #FFE8DC; border-color: #ff6b35; }
-    .btn-send { width: 42px; height: 42px; border-radius: 12px; border: none; background: #ff6b35; color: white; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
-    .btn-send:hover { background: #ff5722; transform: scale(1.05); box-shadow: 0 4px 12px rgba(255,107,53,0.3); }
-    .btn-voice.recording { background: #ff4444; border-color: #ff4444; color: white; animation: pulse 1s infinite; }
-    .recording-indicator { display: none; align-items: center; gap: 1rem; flex: 1; padding: 0 1rem; }
-    .recording-indicator.active { display: flex; }
-    .recording-dot { width: 12px; height: 12px; background: #ff4444; border-radius: 50%; animation: blink 1s infinite; }
-    .recording-time { font-size: 1rem; color: #ff4444; font-weight: 500; }
-    .message-input-wrapper { display: flex; flex: 1; align-items: center; }
-    .message-input-wrapper.hidden { display: none; }
+  /* List */
+  .sb-list { flex: 1; overflow-y: auto; padding: 6px; }
+  .sb-list::-webkit-scrollbar { width: 4px; }
+  .sb-list::-webkit-scrollbar-thumb { background: rgba(243,154,31,0.2); border-radius: 4px; }
 
-    /* ── Voice / Video ── */
-    .voice-message { display: flex; align-items: center; gap: 0.8rem; min-width: 200px; padding: 0.5rem; }
-    .voice-play-btn { width: 40px; height: 40px; border-radius: 50%; border: none; background: rgba(255,255,255,0.3); cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
-    .voice-waveform { flex: 1; height: 30px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='30'%3E%3Crect x='2' y='8' width='3' height='14' fill='rgba(255,255,255,0.6)' rx='1'/%3E%3Crect x='7' y='5' width='3' height='20' fill='rgba(255,255,255,0.6)' rx='1'/%3E%3Crect x='12' y='10' width='3' height='10' fill='rgba(255,255,255,0.6)' rx='1'/%3E%3Crect x='17' y='3' width='3' height='24' fill='rgba(255,255,255,0.6)' rx='1'/%3E%3Crect x='22' y='8' width='3' height='14' fill='rgba(255,255,255,0.6)' rx='1'/%3E%3Crect x='27' y='6' width='3' height='18' fill='rgba(255,255,255,0.6)' rx='1'/%3E%3Crect x='32' y='11' width='3' height='8' fill='rgba(255,255,255,0.6)' rx='1'/%3E%3Crect x='37' y='4' width='3' height='22' fill='rgba(255,255,255,0.6)' rx='1'/%3E%3Crect x='42' y='9' width='3' height='12' fill='rgba(255,255,255,0.6)' rx='1'/%3E%3Crect x='47' y='7' width='3' height='16' fill='rgba(255,255,255,0.6)' rx='1'/%3E%3C/svg%3E"); background-repeat: repeat-x; background-position: center; min-width: 100px; }
-    .voice-duration { font-size: 0.85rem; opacity: 0.8; }
-    .video-preview-wrapper { display: none; position: fixed; bottom: 120px; right: 30px; width: 160px; height: 160px; border-radius: 50%; overflow: hidden; background: black; box-shadow: 0 8px 25px rgba(0,0,0,0.3); z-index: 2000; }
-    .video-preview-wrapper.active { display: block; }
-    .video-preview-wrapper video { width: 100%; height: 100%; object-fit: cover; }
-    .video-timer { position: absolute; bottom: 10px; width: 100%; text-align: center; color: white; font-weight: bold; }
-    .video-bubble-wrapper { position: relative; width: 180px; height: 180px; border-radius: 50%; overflow: hidden; cursor: pointer; background: black; }
-    .video-bubble { width: 100%; height: 100%; object-fit: cover; }
-    .video-play-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 40px; color: white; pointer-events: none; }
+  .sb-section-label {
+    padding: 10px 10px 6px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--muted);
+  }
 
-    /* ── Modals ── */
-    .file-upload-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 1000; min-width: 400px; }
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; }
+  .sb-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    text-decoration: none !important;
+    color: var(--text) !important;
+    transition: background 0.15s;
+  }
+  .sb-item:hover { background: rgba(243,154,31,0.07); }
+  .sb-item.active { background: rgba(243,154,31,0.12); }
 
-    /* ── Alert overrides ── */
-    .alert-chat { padding: 1rem; border-radius: 8px; margin-bottom: 1rem; font-weight: 500; animation: slideDown 0.3s ease-out; }
-    .alert-error { background: #ffebee; color: #c62828; border: 2px solid #ef5350; }
-    .alert-success { background: #178220; color: white; border: 2px solid #cbffcd; }
+  .sb-avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--orange), var(--coral));
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 0.88rem;
+    flex-shrink: 0; overflow: hidden;
+  }
+  .sb-avatar.group   { border-radius: 13px; }
+  .sb-avatar.teal    { background: linear-gradient(135deg, #0FA87E, #3AB8C0); }
+  .sb-avatar.indigo  { background: linear-gradient(135deg, #5B4FD4, #8B7FFF); }
+  .sb-avatar.rose    { background: linear-gradient(135deg, #E84470, #F07A9A); }
+
+  .sb-info { flex: 1; min-width: 0; }
+  .sb-name    { font-size: 0.84rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sb-preview { font-size: 0.72rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+  .sb-time    { font-size: 0.66rem; color: #bbb; flex-shrink: 0; align-self: flex-start; margin-top: 2px; }
+  .sb-empty   { text-align: center; padding: 2rem; color: var(--muted); font-size: 0.82rem; }
+
+  @media (max-width: 768px) { .chat-sidebar { display: none; } }
+
+  /* ══════════════════════════════
+     CHAT MAIN
+  ══════════════════════════════ */
+  .chat-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+    background: var(--white);
+  }
+
+  /* ── Chat header ── */
+  .chat-header {
+    background: linear-gradient(135deg, var(--orange) 0%, var(--coral) 100%);
+    color: #fff;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .chat-header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 80% at 90% 50%, rgba(255,255,255,0.1), transparent 70%);
+    pointer-events: none;
+  }
+
+  .chat-avatar-header {
+    width: 46px; height: 46px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.2);
+    border: 2px solid rgba(255,255,255,0.35);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .chat-info h3 { margin: 0; font-size: 1rem; font-weight: 700; font-family: 'Poppins', sans-serif; }
+  .chat-info p  { margin: 2px 0 0; opacity: 0.85; font-size: 0.78rem; }
+
+  .header-actions { margin-left: auto; display: flex; gap: 8px; position: relative; z-index: 1; }
+  .header-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 16px;
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+    border: 1.5px solid rgba(255,255,255,0.3);
+    border-radius: 999px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .header-btn:hover {
+    background: rgba(255,255,255,0.3);
+    border-color: rgba(255,255,255,0.5);
+    color: #fff;
+    text-decoration: none;
+  }
+
+  /* ── Flash messages ── */
+  #flashContainer { padding: 10px 24px; background: rgba(243,154,31,0.06); }
+  .alert-chat { padding: 10px 16px; border-radius: 10px; margin: 0; font-size: 0.82rem; font-weight: 600; animation: slideDown 0.3s ease-out; }
+  .alert-error   { background: #fef2f2; color: #dc2626; border: 1.5px solid rgba(220,38,38,0.25); }
+  .alert-success { background: rgba(22,163,74,0.1); color: #15803d; border: 1.5px solid rgba(22,163,74,0.25); }
+
+  /* ── Messages area ── */
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 24px;
+    background: var(--chat-bg);
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .chat-messages::-webkit-scrollbar { display: none; }
+
+  .message-group {
+    margin-bottom: 14px;
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+  }
+  .message-group.sent  { justify-content: flex-end; }
+  .message-group.recv  { justify-content: flex-start; }
+
+  /* Sender avatar (recv only) */
+  .msg-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--orange), var(--coral));
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 0.78rem; font-weight: 700;
+    flex-shrink: 0; overflow: hidden;
+    align-self: flex-end;
+  }
+
+  .message-bubble {
+    max-width: 58%;
+    padding: 10px 14px;
+    border-radius: 18px;
+    font-size: 0.86rem;
+    line-height: 1.55;
+    word-wrap: break-word;
+    position: relative;
+  }
+  .message-sent {
+    background: linear-gradient(135deg, var(--orange), var(--coral));
+    color: #fff;
+    border-bottom-right-radius: 4px;
+    box-shadow: 0 4px 14px rgba(243,154,31,0.28);
+  }
+  .message-received {
+    background: var(--white);
+    color: var(--text);
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  }
+
+  .message-sender {
+    font-size: 0.72rem;
+    font-weight: 700;
+    margin-bottom: 3px;
+    color: var(--orange-deep);
+  }
+  .message-sent .message-sender { color: rgba(255,255,255,0.85); }
+
+  .message-time {
+    font-size: 0.65rem;
+    opacity: 0.65;
+    margin-top: 4px;
+    text-align: right;
+  }
+
+  .message-media img,
+  .message-media video {
+    width: 100%;
+    max-width: 260px;
+    border-radius: 12px;
+    margin-top: 6px;
+  }
+
+  .message-actions {
+    display: flex;
+    gap: 5px;
+    margin-top: 6px;
+  }
+  .btn-message-action {
+    font-size: 0.68rem;
+    padding: 3px 8px;
+    background: rgba(255,255,255,0.22);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    color: inherit;
+    font-family: 'Poppins', sans-serif;
+    transition: background 0.2s;
+  }
+  .btn-message-action:hover { background: rgba(255,255,255,0.4); }
+
+  #noMessages {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    padding: 40px 0;
+  }
+
+  /* ── Typing indicator ── */
+  .typing-indicator {
+    padding: 6px 24px;
+    color: var(--muted);
+    font-style: italic;
+    font-size: 0.76rem;
+    background: rgba(243,154,31,0.05);
+    display: none;
+    align-items: center;
+    gap: 8px;
+  }
+  .typing-indicator.active { display: flex; }
+  .typing-dots { display: flex; gap: 3px; }
+  .typing-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--orange);
+    animation: blink 1.2s ease-in-out infinite;
+  }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  /* ── Input area ── */
+  .chat-input-area {
+    padding: 12px 20px;
+    background: var(--white);
+    border-top: 1px solid rgba(243,154,31,0.12);
+    flex-shrink: 0;
+  }
+  .chat-input-form {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .message-input-wrapper { display: flex; flex: 1; }
+  .message-input-wrapper.hidden { display: none; }
+
+  .message-input {
+    flex: 1;
+    padding: 10px 16px;
+    border: 2px solid rgba(139,114,96,0.18);
+    border-radius: 14px;
+    font-size: 0.86rem;
+    font-family: 'Poppins', sans-serif;
+    resize: none;
+    max-height: 100px;
+    outline: none;
+    background: var(--cream);
+    color: var(--text);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    line-height: 1.5;
+  }
+  .message-input::placeholder { color: rgba(139,114,96,0.55); }
+  .message-input:focus {
+    border-color: var(--orange);
+    background: var(--white);
+    box-shadow: 0 0 0 4px rgba(243,154,31,0.1);
+  }
+
+  .recording-indicator {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    padding: 0 8px;
+  }
+  .recording-indicator.active { display: flex; }
+  .recording-dot {
+    width: 10px; height: 10px;
+    background: #dc2626;
+    border-radius: 50%;
+    animation: blink 1s infinite;
+    flex-shrink: 0;
+  }
+  .recording-time { font-size: 0.9rem; color: #dc2626; font-weight: 600; }
+
+  .input-actions { display: flex; gap: 6px; }
+
+  .btn-icon {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    border: 1.5px solid rgba(139,114,96,0.18);
+    background: var(--cream);
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  .btn-icon:hover {
+    background: rgba(243,154,31,0.1);
+    border-color: var(--orange);
+    color: var(--orange);
+  }
+  .btn-icon.recording {
+    background: #dc2626;
+    border-color: #dc2626;
+    color: #fff;
+    animation: pulse 1s infinite;
+  }
+
+  .btn-send {
+    width: 42px; height: 42px;
+    border-radius: 14px;
+    border: none;
+    background: linear-gradient(135deg, var(--orange), var(--coral));
+    color: #fff;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 14px var(--glow);
+    transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s;
+    flex-shrink: 0;
+  }
+  .btn-send:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px var(--glow-strong);
+  }
+
+  /* ── Voice message bubble ── */
+  .voice-message {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 200px;
+    padding: 4px 0;
+  }
+  .voice-play-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.25);
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex; align-items: center; justify-content: center;
+    color: inherit;
+    transition: background 0.2s;
+  }
+  .voice-play-btn:hover { background: rgba(255,255,255,0.4); }
+  .voice-waveform {
+    flex: 1;
+    height: 28px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='30'%3E%3Crect x='2' y='8' width='3' height='14' fill='rgba(255,255,255,0.6)' rx='1'/%3E%3Crect x='7' y='5' width='3' height='20' fill='rgba(255,255,255,0.6)' rx='1'/%3E%3Crect x='12' y='10' width='3' height='10' fill='rgba(255,255,255,0.6)' rx='1'/%3E%3Crect x='17' y='3' width='3' height='24' fill='rgba(255,255,255,0.6)' rx='1'/%3E%3Crect x='22' y='8' width='3' height='14' fill='rgba(255,255,255,0.6)' rx='1'/%3E%3Crect x='27' y='6' width='3' height='18' fill='rgba(255,255,255,0.6)' rx='1'/%3E%3Crect x='32' y='11' width='3' height='8' fill='rgba(255,255,255,0.6)' rx='1'/%3E%3Crect x='37' y='4' width='3' height='22' fill='rgba(255,255,255,0.6)' rx='1'/%3E%3C/svg%3E");
+    background-repeat: repeat-x;
+    background-position: center;
+    min-width: 80px;
+  }
+  .voice-duration { font-size: 0.78rem; opacity: 0.8; }
+
+  /* ── Video ── */
+  .video-preview-wrapper {
+    display: none;
+    position: fixed;
+    bottom: 120px; right: 30px;
+    width: 150px; height: 150px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: black;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    border: 3px solid var(--orange);
+    z-index: 2000;
+  }
+  .video-preview-wrapper.active { display: block; }
+  .video-preview-wrapper video { width: 100%; height: 100%; object-fit: cover; }
+  .video-timer { position: absolute; bottom: 10px; width: 100%; text-align: center; color: #fff; font-weight: 700; font-size: 0.8rem; }
+
+  .video-bubble-wrapper {
+    position: relative;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+    background: black;
+    border: 3px solid rgba(243,154,31,0.3);
+  }
+  .video-bubble { width: 100%; height: 100%; object-fit: cover; }
+  .video-play-overlay {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    font-size: 2.2rem;
+    color: #fff;
+    pointer-events: none;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(28,18,9,0.55);
+    z-index: 999;
+    backdrop-filter: blur(4px);
+  }
+  .file-upload-modal {
+    display: none;
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    background: var(--white);
+    padding: 32px;
+    border-radius: 22px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    z-index: 1000;
+    min-width: 380px;
+    border: 1px solid rgba(243,154,31,0.15);
+  }
+  .modal-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .modal-title em {
+    font-style: italic;
+    background: linear-gradient(135deg, var(--orange), var(--coral));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .modal-subtitle { font-size: 0.8rem; color: var(--muted); margin-bottom: 22px; }
+
+  .modal-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 7px;
+    display: block;
+  }
+  .modal-select, .modal-file {
+    width: 100%;
+    border: 2px solid rgba(139,114,96,0.18);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.85rem;
+    color: var(--text);
+    background: var(--cream);
+    outline: none;
+    margin-bottom: 16px;
+    transition: border-color 0.2s;
+  }
+  .modal-select:focus, .modal-file:focus { border-color: var(--orange); }
+  .field-hint { font-size: 0.72rem; color: var(--muted); margin-top: -10px; margin-bottom: 16px; }
+
+  .modal-actions { display: flex; gap: 10px; margin-top: 6px; }
+  .modal-btn-send {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 10px 24px;
+    background: linear-gradient(135deg, var(--orange), var(--coral));
+    color: #fff; border: none; border-radius: 999px;
+    font-family: 'Poppins', sans-serif; font-size: 0.84rem; font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 14px var(--glow);
+    transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s;
+  }
+  .modal-btn-send:hover { transform: translateY(-2px) scale(1.04); box-shadow: 0 8px 24px var(--glow-strong); }
+  .modal-btn-cancel {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 10px 22px;
+    background: transparent; color: var(--muted);
+    border: 1.5px solid rgba(139,114,96,0.22);
+    border-radius: 999px;
+    font-family: 'Poppins', sans-serif; font-size: 0.84rem; font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .modal-btn-cancel:hover { border-color: var(--orange); color: var(--orange); }
 </style>
 {% endblock %}
 
@@ -133,215 +636,242 @@
 {% block content %}
 <div class="chat-layout">
 
-    <!-- ═══════ LEFT SIDEBAR ═══════ -->
-    <div class="chat-sidebar">
-        <div class="chat-sidebar-header">
-            <div class="sb-search">
-                <i class="bi bi-search"></i>
-                <input type="text" id="sidebarSearch" placeholder="Search..." oninput="filterSidebarItems()">
-            </div>
-            <div class="sb-tabs">
-                <button class="sb-tab-btn" onclick="switchSidebarTab('contacts', this)">
-                    <i class="bi bi-person"></i> Contacts
-                    <span class="sb-tab-badge contacts">{{ all_contacts|length }}</span>
-                </button>
-                <button class="sb-tab-btn active" onclick="switchSidebarTab('groups', this)">
-                    <i class="bi bi-people"></i> Groups
-                    <span class="sb-tab-badge groups">{{ all_groups|length }}</span>
-                </button>
-            </div>
-        </div>
-
-        <div class="sb-list" id="sidebarList">
-
-            <!-- Contacts Panel -->
-            <div id="sb-panel-contacts" class="sb-panel">
-                <div class="sb-section-label">Recent</div>
-                {% if all_contacts %}
-                    {% for c in all_contacts %}
-                                        <a href="{{ url_for('messaging.chat_direct', contact_id=c.contact_user_id) }}"
-                                             class="sb-item" data-name="{{ (c.nickname or c.contact_display_name)|lower }}">
-                                                <div class="sb-avatar">
-                                                    {% if c.contact_profile_picture %}
-                                                        <img src="{{ url_for('static', filename=c.contact_profile_picture.replace('static/', '').replace('\\', '/')) }}" alt="Profile" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
-                                                    {% else %}
-                                                        {{ (c.contact_display_name or '?')[0].upper() }}
-                                                    {% endif %}
-                                                </div>
-                        <div class="sb-info">
-                            <div class="d-flex align-items-center justify-content-between gap-2">
-                                <div class="sb-name">
-                                    {{ c.nickname or c.contact_display_name }}
-                                    {% if c.is_favorite %}<span class="text-warning">★</span>{% endif %}
-                                </div>
-                                {% if c.last_message_time %}
-                                <span class="sb-time" data-timestamp="{{ c.last_message_time.isoformat() }}"></span>
-                                {% endif %}
-                            </div>
-                            {% if c.last_message %}
-                            <div class="sb-preview">
-                                {% if c.last_message_sender_id == current_user.id %}You: {% endif %}{{ c.last_message|truncate(35, True, '...') }}
-                            </div>
-                            {% else %}
-                            <div class="sb-preview">{{ c.contact_age_group or 'No messages yet' }}</div>
-                            {% endif %}
-                        </div>
-                    </a>
-                    {% endfor %}
-                {% else %}
-                    <div class="sb-empty">No contacts yet</div>
-                {% endif %}
-            </div>
-
-            <!-- Groups Panel (default active for group chat) -->
-            <div id="sb-panel-groups" class="sb-panel active">
-                <div class="sb-section-label">Your Groups</div>
-                {% if all_groups %}
-                    {% set grp_colors = ['', 'teal', 'indigo', 'rose'] %}
-                    {% set grp_icons = ['🏘️', '👥', '🌐', '🎯', '💬', '🤝'] %}
-                    {% for g in all_groups %}
-                    <a href="{{ url_for('messaging.chat_group', group_id=g.id) }}"
-                       class="sb-item {% if g.id == group.id %}active{% endif %}"
-                       data-name="{{ g.name|lower }}">
-                        <div class="sb-avatar group {{ grp_colors[loop.index0 % 4] }}">{{ grp_icons[loop.index0 % 6] }}</div>
-                        <div class="sb-info">
-                            <div class="sb-name">{{ g.name }}</div>
-                            <div class="sb-preview">{{ g.member_count }} member{{ 's' if g.member_count != 1 else '' }}</div>
-                        </div>
-                    </a>
-                    {% endfor %}
-                {% else %}
-                    <div class="sb-empty">No groups yet</div>
-                {% endif %}
-            </div>
-
-        </div>
+  <!-- ═══════ SIDEBAR ═══════ -->
+  <div class="chat-sidebar">
+    <div class="chat-sidebar-header">
+      <div class="sb-search">
+        <i class="bi bi-search"></i>
+        <input type="text" id="sidebarSearch" placeholder="Search…" oninput="filterSidebarItems()">
+      </div>
+      <div class="sb-tabs">
+        <button class="sb-tab-btn" onclick="switchSidebarTab('contacts', this)">
+          <i class="bi bi-person"></i> Contacts
+          <span class="sb-tab-badge">{{ all_contacts|length }}</span>
+        </button>
+        <button class="sb-tab-btn active" onclick="switchSidebarTab('groups', this)">
+          <i class="bi bi-people"></i> Groups
+          <span class="sb-tab-badge">{{ all_groups|length }}</span>
+        </button>
+      </div>
     </div>
 
-    <!-- ═══════ CHAT AREA ═══════ -->
-    <div class="chat-container" id="chatContainer" data-group-id="{{ group.id }}" data-current-user-id="{{ current_user.id }}">
+    <div class="sb-list" id="sidebarList">
 
-        <!-- Chat Header -->
-        <div class="chat-header">
-            <div class="chat-avatar">&#128101;</div>
-            <div class="chat-info">
-                <h3>{{ group.name }}</h3>
-                <p>{{ group.member_count }} members{% if group.description %} &bull; {{ group.description }}{% endif %}</p>
+      <!-- Contacts Panel -->
+      <div id="sb-panel-contacts" class="sb-panel">
+        <div class="sb-section-label">Recent</div>
+        {% if all_contacts %}
+          {% for c in all_contacts %}
+          <a href="{{ url_for('messaging.chat_direct', contact_id=c.contact_user_id) }}"
+             class="sb-item" data-name="{{ (c.nickname or c.contact_display_name)|lower }}">
+            <div class="sb-avatar">
+              {% if c.contact_profile_picture %}
+                <img src="{{ url_for('static', filename=c.contact_profile_picture.replace('static/', '').replace('\\', '/')) }}" alt="Profile" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">
+              {% else %}
+                {{ (c.contact_display_name or '?')[0].upper() }}
+              {% endif %}
             </div>
-            <div style="margin-left: auto; display: flex; gap: 8px;">
-                {% if is_admin %}
-                <a href="{{ url_for('messaging.edit_group', group_id=group.id) }}" class="btn btn-sm" style="background: white; color: #ff6b35; font-weight: 600; border-radius: 8px;">
-                    <i class="bi bi-gear me-1"></i>Edit
-                </a>
+            <div class="sb-info">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+                <div class="sb-name">
+                  {{ c.nickname or c.contact_display_name }}
+                  {% if c.is_favorite %}<span style="color:var(--orange);">★</span>{% endif %}
+                </div>
+                {% if c.last_message_time %}
+                <span class="sb-time" data-timestamp="{{ c.last_message_time.isoformat() }}"></span>
                 {% endif %}
-                <a href="{{ url_for('messaging.view_contacts') }}" class="btn btn-sm" style="background: white; color: #ff6b35; font-weight: 600; border-radius: 8px;">
-                    <i class="bi bi-arrow-left me-1"></i>Back
-                </a>
+              </div>
+              {% if c.last_message %}
+              <div class="sb-preview">{% if c.last_message_sender_id == current_user.id %}You: {% endif %}{{ c.last_message|truncate(35, True, '…') }}</div>
+              {% else %}
+              <div class="sb-preview">{{ c.contact_age_group or 'No messages yet' }}</div>
+              {% endif %}
             </div>
-        </div>
+          </a>
+          {% endfor %}
+        {% else %}
+          <div class="sb-empty">No contacts yet</div>
+        {% endif %}
+      </div>
 
-        <!-- Flash Messages -->
-        {% with flash_msgs = get_flashed_messages(with_categories=true) %}
-            {% if flash_msgs %}
-                <div id="flashContainer" style="padding: 1rem; background: #ffe8d8;">
-                    {% for category, msg in flash_msgs %}
-                        <div class="alert-chat alert-{{ category }}" style="margin: 0;">{{ msg }}</div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
+      <!-- Groups Panel -->
+      <div id="sb-panel-groups" class="sb-panel active">
+        <div class="sb-section-label">Your Groups</div>
+        {% if all_groups %}
+          {% set grp_colors = ['', 'teal', 'indigo', 'rose'] %}
+          {% set grp_icons  = ['🏘️','👥','🌐','🎯','💬','🤝'] %}
+          {% for g in all_groups %}
+          <a href="{{ url_for('messaging.chat_group', group_id=g.id) }}"
+             class="sb-item {% if g.id == group.id %}active{% endif %}"
+             data-name="{{ g.name|lower }}">
+            <div class="sb-avatar group {{ grp_colors[loop.index0 % 4] }}">{{ grp_icons[loop.index0 % 6] }}</div>
+            <div class="sb-info">
+              <div class="sb-name">{{ g.name }}</div>
+              <div class="sb-preview">{{ g.member_count }} member{{ 's' if g.member_count != 1 else '' }}</div>
+            </div>
+          </a>
+          {% endfor %}
+        {% else %}
+          <div class="sb-empty">No groups yet</div>
+        {% endif %}
+      </div>
 
-        <!-- Messages -->
-        <div class="chat-messages" id="chatMessages">
-            {% if messages %}
-                {% for message in messages %}
-                <div class="message-group" id="message-{{ message.id }}" style="display: flex; justify-content: {% if message.sender_id == current_user.id %}flex-end{% else %}flex-start{% endif %}">
-                    {% if message.sender_id != current_user.id %}
-                        <div class="sb-avatar" style="margin-right: 10px; align-self: flex-end;">
-                            {% if message.sender_profile_picture %}
-                                <img src="{{ url_for('static', filename=message.sender_profile_picture.replace('static/', '').replace('\\', '/')) }}" alt="Profile" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
-                            {% else %}
-                                {{ (message.sender_display_name or '?')[0].upper() }}
-                            {% endif %}
-                        </div>
-                    {% endif %}
-                    <div class="message-bubble {% if message.sender_id == current_user.id %}message-sent{% else %}message-received{% endif %}">
-                        <div class="message-sender">{{ message.sender_display_name }}</div>
-                        {% if message.message_type == 'text' %}
-                            {{ message.content }}
-                        {% elif message.message_type == 'image' %}
-                            <div class="message-media"><img src="{{ url_for('static', filename=message.file_path.replace('static/', '').replace('\\', '/')) }}" alt="Image"></div>
-                        {% elif message.message_type == 'video' %}
-                            <div class="video-bubble-wrapper">
-                                <video class="video-bubble" playsinline preload="metadata" src="{{ url_for('static', filename=message.file_path.replace('static/', '').replace('\\', '/')) }}"></video>
-                                <div class="video-play-overlay">&#9654;</div>
-                            </div>
-                        {% elif message.message_type == 'voice' %}
-                            <div class="voice-message">
-                                <button class="voice-play-btn" onclick="toggleAudio(this)">&#9654;</button>
-                                <div class="voice-waveform"></div>
-                                <audio src="{{ url_for('static', filename=message.file_path.replace('static/', '').replace('\\', '/')) }}" style="display:none;"></audio>
-                                <span class="voice-duration">0:00</span>
-                            </div>
-                        {% endif %}
-                        <div class="message-time">{{ message.created_at|format_time }}</div>
-                        {% if message.sender_id == current_user.id %}
-                        <div class="message-actions">
-                            {% if message.message_type == 'text' %}<a href="{{ url_for('messaging.edit_message', message_id=message.id) }}" class="btn-message-action">Edit</a>{% endif %}
-                            <form method="POST" action="{{ url_for('messaging.delete_message', message_id=message.id) }}" style="display:inline;" onsubmit="return confirm('Delete this message?');"><button type="submit" class="btn-message-action">Delete</button></form>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-                {% endfor %}
+    </div>
+  </div>
+
+  <!-- ═══════ CHAT AREA ═══════ -->
+  <div class="chat-container" id="chatContainer"
+       data-group-id="{{ group.id }}"
+       data-current-user-id="{{ current_user.id }}">
+
+    <!-- Header -->
+    <div class="chat-header">
+      <div class="chat-avatar-header">👥</div>
+      <div class="chat-info">
+        <h3>{{ group.name }}</h3>
+        <p>{{ group.member_count }} members{% if group.description %} &bull; {{ group.description }}{% endif %}</p>
+      </div>
+      <div class="header-actions">
+        {% if is_admin %}
+        <a href="{{ url_for('messaging.edit_group', group_id=group.id) }}" class="header-btn">
+          <i class="bi bi-gear"></i> Edit
+        </a>
+        {% endif %}
+        <a href="{{ url_for('messaging.view_contacts') }}" class="header-btn">
+          <i class="bi bi-arrow-left"></i> Back
+        </a>
+      </div>
+    </div>
+
+    <!-- Flash messages -->
+    {% with flash_msgs = get_flashed_messages(with_categories=true) %}
+      {% if flash_msgs %}
+      <div id="flashContainer">
+        {% for category, msg in flash_msgs %}
+        <div class="alert-chat alert-{{ category }}">{{ msg }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Messages -->
+    <div class="chat-messages" id="chatMessages">
+      {% if messages %}
+        {% for message in messages %}
+        <div class="message-group {% if message.sender_id == current_user.id %}sent{% else %}recv{% endif %}"
+             id="message-{{ message.id }}">
+
+          {% if message.sender_id != current_user.id %}
+          <div class="msg-avatar">
+            {% if message.sender_profile_picture %}
+              <img src="{{ url_for('static', filename=message.sender_profile_picture.replace('static/', '').replace('\\', '/')) }}" alt="Profile" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">
             {% else %}
-                <p id="noMessages" style="text-align: center; color: #999;">No messages yet. Start the conversation!</p>
+              {{ (message.sender_display_name or '?')[0].upper() }}
             {% endif %}
-        </div>
+          </div>
+          {% endif %}
 
-        <!-- Typing Indicator (group version) -->
-        <div class="typing-indicator" id="typingIndicator"></div>
+          <div class="message-bubble {% if message.sender_id == current_user.id %}message-sent{% else %}message-received{% endif %}">
+            <div class="message-sender">{{ message.sender_display_name }}</div>
 
-        <!-- Input Area -->
-        <div class="chat-input-area">
-            <form class="chat-input-form" id="messageForm">
-                <div class="message-input-wrapper" id="textInputWrapper">
-                    <textarea id="messageInput" class="message-input" placeholder="Type a message..." rows="1" maxlength="5000"></textarea>
-                </div>
-                <div class="recording-indicator" id="recordingIndicator">
-                    <div class="recording-dot"></div>
-                    <span class="recording-time" id="recordingTime">0:00</span>
-                    <span style="color: #888; margin-left: 1rem;">Click to stop</span>
-                </div>
-                <div class="video-preview-wrapper" id="videoPreviewWrapper">
-                    <video id="videoPreview" autoplay muted playsinline></video>
-                    <div class="video-timer" id="videoTimer">0:00</div>
-                </div>
-                <div class="input-actions">
-                    <button type="button" class="btn-attachment" onclick="showFileUpload()" title="Send image/video">&#128206;</button>
-                    <button type="button" class="btn-voice" id="voiceBtn" title="Record voice">&#127908;</button>
-                    <button type="button" class="btn-voice" id="videoBtn" title="Record video">&#128249;</button>
-                    <button type="button" class="btn-send" id="sendBtn">&#10148;</button>
-                </div>
-            </form>
+            {% if message.message_type == 'text' %}
+              {{ message.content }}
+            {% elif message.message_type == 'image' %}
+              <div class="message-media"><img src="{{ url_for('static', filename=message.file_path.replace('static/', '').replace('\\', '/')) }}" alt="Image"></div>
+            {% elif message.message_type == 'video' %}
+              <div class="video-bubble-wrapper">
+                <video class="video-bubble" playsinline preload="metadata" src="{{ url_for('static', filename=message.file_path.replace('static/', '').replace('\\', '/')) }}"></video>
+                <div class="video-play-overlay">&#9654;</div>
+              </div>
+            {% elif message.message_type == 'voice' %}
+              <div class="voice-message">
+                <button class="voice-play-btn" onclick="toggleAudio(this)">&#9654;</button>
+                <div class="voice-waveform"></div>
+                <audio src="{{ url_for('static', filename=message.file_path.replace('static/', '').replace('\\', '/')) }}" style="display:none;"></audio>
+                <span class="voice-duration">0:00</span>
+              </div>
+            {% endif %}
+
+            <div class="message-time">{{ message.created_at|format_time }}</div>
+
+            {% if message.sender_id == current_user.id %}
+            <div class="message-actions">
+              {% if message.message_type == 'text' %}
+              <a href="{{ url_for('messaging.edit_message', message_id=message.id) }}" class="btn-message-action">Edit</a>
+              {% endif %}
+              <form method="POST" action="{{ url_for('messaging.delete_message', message_id=message.id) }}" style="display:inline;"
+                    onsubmit="return confirm('Delete this message?');">
+                <button type="submit" class="btn-message-action">Delete</button>
+              </form>
+            </div>
+            {% endif %}
+          </div>
         </div>
+        {% endfor %}
+      {% else %}
+        <p id="noMessages">No messages yet — start the conversation! 👋</p>
+      {% endif %}
     </div>
 
-</div>
-<!-- end chat-layout -->
+    <!-- Typing indicator -->
+    <div class="typing-indicator" id="typingIndicator">
+      <div class="typing-dots">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+      <span id="typingText"></span>
+    </div>
 
-<!-- Modals -->
+    <!-- Input area -->
+    <div class="chat-input-area">
+      <form class="chat-input-form" id="messageForm">
+        <div class="message-input-wrapper" id="textInputWrapper">
+          <textarea id="messageInput" class="message-input"
+                    placeholder="Type a message…" rows="1" maxlength="5000"></textarea>
+        </div>
+        <div class="recording-indicator" id="recordingIndicator">
+          <div class="recording-dot"></div>
+          <span class="recording-time" id="recordingTime">0:00</span>
+          <span style="color:var(--muted);font-size:0.78rem;margin-left:8px;">Click mic to stop</span>
+        </div>
+        <div class="video-preview-wrapper" id="videoPreviewWrapper">
+          <video id="videoPreview" autoplay muted playsinline></video>
+          <div class="video-timer" id="videoTimer">0:00</div>
+        </div>
+        <div class="input-actions">
+          <button type="button" class="btn-icon" onclick="showFileUpload()" title="Send image/video">📎</button>
+          <button type="button" class="btn-icon" id="voiceBtn" title="Record voice">🎙️</button>
+          <button type="button" class="btn-icon" id="videoBtn" title="Record video">📹</button>
+          <button type="button" class="btn-send" id="sendBtn">&#10148;</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div><!-- /chat-layout -->
+
+<!-- Media upload modal -->
 <div class="modal-overlay" id="modalOverlay" onclick="hideFileUpload()"></div>
 <div class="file-upload-modal" id="fileUploadModal">
-    <h3>Send Media</h3>
-    <form method="POST" action="{{ url_for('messaging.send_message') }}" enctype="multipart/form-data">
-        <input type="hidden" name="group_id" value="{{ group.id }}">
-        <div class="mb-3"><label class="form-label">Media Type *</label>
-            <select name="message_type" class="form-select" required><option value="">-- Select type --</option><option value="image">Image (JPG, PNG, GIF)</option><option value="video">Video (MP4, MOV)</option></select>
-        </div>
-        <div class="mb-3"><label class="form-label">Upload File *</label><input type="file" name="file" class="form-control" required accept="image/*,video/*"><div class="form-text">Max file size: 10MB</div></div>
-        <div class="d-flex gap-2"><button type="submit" class="btn btn-primary">Send</button><button type="button" class="btn btn-secondary" onclick="hideFileUpload()">Cancel</button></div>
-    </form>
+  <div class="modal-title">Send <em>Media</em></div>
+  <div class="modal-subtitle">Upload an image or video to share with the group.</div>
+  <form method="POST" action="{{ url_for('messaging.send_message') }}" enctype="multipart/form-data">
+    <input type="hidden" name="group_id" value="{{ group.id }}">
+    <label class="modal-label">Media Type <span style="color:var(--coral);">*</span></label>
+    <select name="message_type" class="modal-select" required>
+      <option value="">— Select type —</option>
+      <option value="image">Image (JPG, PNG, GIF)</option>
+      <option value="video">Video (MP4, MOV)</option>
+    </select>
+    <label class="modal-label">Upload File <span style="color:var(--coral);">*</span></label>
+    <input type="file" name="file" class="modal-file" required accept="image/*,video/*">
+    <div class="field-hint">Max file size: 10 MB</div>
+    <div class="modal-actions">
+      <button type="submit" class="modal-btn-send"><i class="bi bi-send"></i> Send</button>
+      <button type="button" class="modal-btn-cancel" onclick="hideFileUpload()">Cancel</button>
+    </div>
+  </form>
 </div>
 {% endblock %}
 
@@ -350,276 +880,265 @@
 {% block extra_js %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.min.js"></script>
 <script>
-(function() {
-    // ── Smart date formatting for sidebar timestamps ──
-    function formatSmartDate(isoString) {
-        if (!isoString) return '';
-        var d = new Date(isoString);
-        var now = new Date();
-        var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        var yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
-        var weekAgo = new Date(today); weekAgo.setDate(today.getDate() - 7);
-        var msgDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-        if (msgDate.getTime() === today.getTime()) {
-            return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-        } else if (msgDate.getTime() === yesterday.getTime()) {
-            return 'Yesterday';
-        } else if (msgDate > weekAgo) {
-            return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
-        } else {
-            return d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
-        }
-    }
-    document.querySelectorAll('.sb-time[data-timestamp]').forEach(function(el) {
-        el.textContent = formatSmartDate(el.getAttribute('data-timestamp'));
+(function () {
+
+  /* ── Smart date formatting ── */
+  function formatSmartDate(iso) {
+    if (!iso) return '';
+    var d = new Date(iso), now = new Date();
+    var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    var yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+    var weekAgo   = new Date(today); weekAgo.setDate(today.getDate() - 7);
+    var md = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    if (md.getTime() === today.getTime())     return d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit', hour12:true });
+    if (md.getTime() === yesterday.getTime()) return 'Yesterday';
+    if (md > weekAgo) return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
+    return d.toLocaleDateString('en-US', { day:'numeric', month:'short' });
+  }
+  document.querySelectorAll('.sb-time[data-timestamp]').forEach(function (el) {
+    el.textContent = formatSmartDate(el.getAttribute('data-timestamp'));
+  });
+
+  /* ── Sidebar tabs ── */
+  window.switchSidebarTab = function (tab, btn) {
+    document.querySelectorAll('.sb-tab-btn').forEach(function (b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    document.querySelectorAll('.sb-panel').forEach(function (p) { p.classList.remove('active'); });
+    document.getElementById('sb-panel-' + tab).classList.add('active');
+  };
+
+  /* ── Sidebar search ── */
+  window.filterSidebarItems = function () {
+    var q = document.getElementById('sidebarSearch').value.toLowerCase().trim();
+    document.querySelectorAll('.sb-item').forEach(function (item) {
+      item.style.display = (item.getAttribute('data-name') || '').indexOf(q) !== -1 ? 'flex' : 'none';
     });
+  };
 
-    // ── Sidebar tab toggle ──
-    window.switchSidebarTab = function(tab, btn) {
-        document.querySelectorAll('.sb-tab-btn').forEach(function(b) { b.classList.remove('active'); });
-        btn.classList.add('active');
-        document.querySelectorAll('.sb-panel').forEach(function(p) { p.classList.remove('active'); });
-        document.getElementById('sb-panel-' + tab).classList.add('active');
-    };
+  /* ── Core refs ── */
+  var container         = document.getElementById('chatContainer');
+  var currentUserId     = parseInt(container.dataset.currentUserId);
+  var groupId           = parseInt(container.dataset.groupId);
+  var chatMessages      = document.getElementById('chatMessages');
+  var messageInput      = document.getElementById('messageInput');
+  var voiceBtn          = document.getElementById('voiceBtn');
+  var videoBtn          = document.getElementById('videoBtn');
+  var sendBtn           = document.getElementById('sendBtn');
+  var textInputWrapper  = document.getElementById('textInputWrapper');
+  var recordingIndicator= document.getElementById('recordingIndicator');
+  var recordingTimeEl   = document.getElementById('recordingTime');
+  var typingIndicator   = document.getElementById('typingIndicator');
+  var typingText        = document.getElementById('typingText');
+  var noMessages        = document.getElementById('noMessages');
+  var messageForm       = document.getElementById('messageForm');
 
-    // ── Sidebar search ──
-    window.filterSidebarItems = function() {
-        var query = document.getElementById('sidebarSearch').value.toLowerCase().trim();
-        document.querySelectorAll('.sb-item').forEach(function(item) {
-            var name = item.getAttribute('data-name') || '';
-            item.style.display = name.indexOf(query) !== -1 ? 'flex' : 'none';
-        });
-    };
+  var mediaRecorder = null, audioChunks = [], recordingInterval = null, recordingSeconds = 0, isRecording = false, typingTimeout = null;
+  var typingUsers = {};
 
-    // ── Chat setup (GROUP) ──
-    var container = document.getElementById('chatContainer');
-    var currentUserId = parseInt(container.dataset.currentUserId);
-    var groupId = parseInt(container.dataset.groupId);
-    var chatMessages = document.getElementById('chatMessages');
-    var messageInput = document.getElementById('messageInput');
-    var voiceBtn = document.getElementById('voiceBtn');
-    var sendBtn = document.getElementById('sendBtn');
-    var textInputWrapper = document.getElementById('textInputWrapper');
-    var recordingIndicator = document.getElementById('recordingIndicator');
-    var recordingTimeEl = document.getElementById('recordingTime');
-    var typingIndicator = document.getElementById('typingIndicator');
-    var noMessages = document.getElementById('noMessages');
-    var messageForm = document.getElementById('messageForm');
+  /* ── Socket.IO ── */
+  var socket = io();
+  socket.on('connect', function () { console.log('Socket.IO connected (group)'); });
+  socket.on('connect_error', function (err) { console.error('Socket.IO error:', err); });
 
-    var mediaRecorder = null, audioChunks = [], recordingInterval = null, recordingSeconds = 0, isRecording = false, typingTimeout = null;
-    var typingUsers = {};
+  /* ── Send text ── */
+  function sendTextMessage() {
+    var content = messageInput.value.trim();
+    if (!content) return;
+    socket.emit('send_message', { group_id: groupId, message: content, message_type: 'text' });
+    messageInput.value = '';
+    socket.emit('stop_typing', { group_id: groupId });
+  }
+  sendBtn.addEventListener('click', function (e) { e.preventDefault(); sendTextMessage(); });
+  messageForm.addEventListener('submit', function (e) { e.preventDefault(); sendTextMessage(); });
+  messageInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendTextMessage(); }
+  });
 
-    var socket = io();
-    socket.on('connect', function() { console.log('Socket.IO connected (group chat)'); });
-    socket.on('connect_error', function(err) { console.error('Socket.IO connection error:', err); });
+  /* ── Receive ── */
+  socket.on('new_message', function (data) {
+    if (data.group_id == groupId) {
+      if (noMessages) { noMessages.remove(); noMessages = null; }
+      appendMessage(data);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+  });
+  socket.on('message_error', function (data) { alert(data.message); });
+  socket.on('message_deleted', function (data) {
+    if (!data || !data.message_id) return;
+    var el = document.getElementById('message-' + data.message_id);
+    if (el) el.remove();
+    if (!chatMessages.querySelector('.message-group') && !document.getElementById('noMessages')) {
+      var p = document.createElement('p'); p.id = 'noMessages';
+      p.textContent = 'No messages yet — start the conversation! 👋';
+      chatMessages.appendChild(p);
+    }
+  });
 
-    // send text
-    function sendTextMessage() {
-        var content = messageInput.value.trim();
-        if (!content) return;
-        socket.emit('send_message', { group_id: groupId, message: content, message_type: 'text' });
-        messageInput.value = '';
-        socket.emit('stop_typing', { group_id: groupId });
+  function appendMessage(data) {
+    var isSent = (data.sender_id == currentUserId);
+    var grp = document.createElement('div');
+    grp.className = 'message-group ' + (isSent ? 'sent' : 'recv');
+    grp.id = 'message-' + data.id;
+
+    if (!isSent) {
+      var av = document.createElement('div');
+      av.className = 'msg-avatar';
+      av.textContent = (data.sender_display_name || '?')[0].toUpperCase();
+      grp.appendChild(av);
     }
 
-    sendBtn.addEventListener('click', function(e) { e.preventDefault(); sendTextMessage(); });
-    messageForm.addEventListener('submit', function(e) { e.preventDefault(); sendTextMessage(); });
-    messageInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); e.stopPropagation(); sendTextMessage(); return false; }
+    var bubble = document.createElement('div');
+    bubble.className = 'message-bubble ' + (isSent ? 'message-sent' : 'message-received');
+    var html = '<div class="message-sender">' + escapeHtml(data.sender_display_name || 'Unknown') + '</div>';
+    if (data.message_type === 'text')  html += escapeHtml(data.message);
+    else if (data.message_type === 'image' && data.file_path)  html += '<div class="message-media"><img src="' + data.file_path + '" alt="Image"></div>';
+    else if (data.message_type === 'voice' && data.file_path)  html += '<div class="voice-message"><button class="voice-play-btn" onclick="toggleAudio(this)">&#9654;</button><div class="voice-waveform"></div><audio src="' + data.file_path + '" style="display:none;"></audio><span class="voice-duration">0:00</span></div>';
+    else if (data.message_type === 'video' && data.file_path)  html += '<div class="video-bubble-wrapper"><video class="video-bubble" playsinline preload="metadata" src="' + data.file_path + '"></video><div class="video-play-overlay">&#9654;</div></div>';
+    html += '<div class="message-time">' + data.timestamp + '</div>';
+    if (isSent) {
+      html += '<div class="message-actions">';
+      if (data.message_type === 'text') html += '<a href="/message/edit/' + data.id + '" class="btn-message-action">Edit</a>';
+      html += '<form method="POST" action="/message/delete/' + data.id + '" style="display:inline;" onsubmit="return confirm(\'Delete?\');"><button type="submit" class="btn-message-action">Delete</button></form></div>';
+    }
+    bubble.innerHTML = html;
+    grp.appendChild(bubble);
+    chatMessages.appendChild(grp);
+  }
+
+  function escapeHtml(text) { var d = document.createElement('div'); d.textContent = text; return d.innerHTML; }
+
+  /* ── Typing ── */
+  messageInput.addEventListener('input', function () {
+    socket.emit('typing', { group_id: groupId });
+    if (typingTimeout) clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(function () { socket.emit('stop_typing', { group_id: groupId }); }, 2000);
+  });
+  socket.on('typing', function (data) {
+    if (data.group_id == groupId && data.sender_id != currentUserId) {
+      typingUsers[data.sender_id] = data.sender_name || 'Someone';
+      updateTypingIndicator();
+    }
+  });
+  socket.on('stop_typing', function (data) {
+    if (data.group_id == groupId && data.sender_id != currentUserId) {
+      delete typingUsers[data.sender_id];
+      updateTypingIndicator();
+    }
+  });
+  function updateTypingIndicator() {
+    var names = Object.values(typingUsers);
+    if (!names.length) { typingIndicator.classList.remove('active'); typingText.textContent = ''; }
+    else if (names.length === 1) { typingText.textContent = names[0] + ' is typing…'; typingIndicator.classList.add('active'); }
+    else if (names.length === 2) { typingText.textContent = names[0] + ' and ' + names[1] + ' are typing…'; typingIndicator.classList.add('active'); }
+    else { typingText.textContent = names.length + ' people are typing…'; typingIndicator.classList.add('active'); }
+  }
+
+  /* ── Video recording ── */
+  var videoPreviewWrapper = document.getElementById('videoPreviewWrapper');
+  var videoPreview        = document.getElementById('videoPreview');
+  var videoTimer          = document.getElementById('videoTimer');
+  var videoRecorder = null, videoChunks = [], videoStream = null, videoSeconds = 0, videoInterval = null, isVideoRecording = false;
+
+  videoBtn.addEventListener('click', function () { if (isVideoRecording) stopVideoRecording(); else startVideoRecording(); });
+  function startVideoRecording() {
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true }).then(function (stream) {
+      videoStream = stream; videoPreview.srcObject = stream; videoPreviewWrapper.classList.add('active');
+      videoRecorder = new MediaRecorder(stream); videoChunks = [];
+      videoRecorder.ondataavailable = function (e) { if (e.data.size > 0) videoChunks.push(e.data); };
+      videoRecorder.onstop = sendVideoMessage; videoRecorder.start(); isVideoRecording = true;
+      videoSeconds = 0; videoTimer.textContent = '0:00';
+      videoInterval = setInterval(function () { videoSeconds++; videoTimer.textContent = Math.floor(videoSeconds/60) + ':' + String(videoSeconds%60).padStart(2,'0'); }, 1000);
+    }).catch(function () { alert('Camera access denied.'); });
+  }
+  function stopVideoRecording() {
+    if (!isVideoRecording) return; isVideoRecording = false; clearInterval(videoInterval);
+    videoPreviewWrapper.classList.remove('active');
+    if (videoRecorder && videoRecorder.state !== 'inactive') videoRecorder.stop();
+    if (videoStream) videoStream.getTracks().forEach(function (t) { t.stop(); });
+  }
+  function sendVideoMessage() {
+    if (!videoChunks.length) return;
+    var blob = new Blob(videoChunks, { type: 'video/webm' }); var file = new File([blob], 'video_' + Date.now() + '.webm', { type: 'video/webm' });
+    var fd = new FormData(); fd.append('group_id', groupId); fd.append('message_type', 'video'); fd.append('file', file);
+    var xhr = new XMLHttpRequest(); xhr.open('POST', '{{ url_for("messaging.send_message") }}', true);
+    xhr.onload = function () { window.location.reload(); }; xhr.send(fd); videoChunks = [];
+  }
+
+  /* ── Video bubble play ── */
+  document.addEventListener('click', function (e) {
+    var w = e.target.closest('.video-bubble-wrapper'); if (!w) return;
+    var v = w.querySelector('video'); var o = w.querySelector('.video-play-overlay');
+    if (v.paused) { v.play(); o.style.display = 'none'; } else { v.pause(); o.style.display = 'block'; }
+    v.onended = function () { o.style.display = 'block'; };
+  });
+
+  /* ── File upload modal ── */
+  window.showFileUpload = function () { document.getElementById('modalOverlay').style.display = 'block'; document.getElementById('fileUploadModal').style.display = 'block'; };
+  window.hideFileUpload = function () { document.getElementById('modalOverlay').style.display = 'none'; document.getElementById('fileUploadModal').style.display = 'none'; };
+
+  /* ── Scroll to bottom ── */
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+  window.addEventListener('load', function () { chatMessages.scrollTop = chatMessages.scrollHeight; });
+
+  /* ── Auto-hide flash ── */
+  var flashContainer = document.getElementById('flashContainer');
+  if (flashContainer) {
+    setTimeout(function () {
+      flashContainer.style.animation = 'fadeOut 0.3s ease-out';
+      setTimeout(function () { flashContainer.remove(); }, 320);
+    }, 3000);
+  }
+
+  /* ── Voice recording ── */
+  voiceBtn.addEventListener('click', function () { if (isRecording) stopVoiceRecording(); else startVoiceRecording(); });
+  function startVoiceRecording() {
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+      mediaRecorder = new MediaRecorder(stream); audioChunks = [];
+      mediaRecorder.ondataavailable = function (e) { if (e.data.size > 0) audioChunks.push(e.data); };
+      mediaRecorder.onstop = function () { stream.getTracks().forEach(function (t) { t.stop(); }); if (audioChunks.length > 0 && recordingSeconds >= 1) sendVoiceMessage(); };
+      mediaRecorder.start(); isRecording = true; voiceBtn.classList.add('recording');
+      textInputWrapper.classList.add('hidden'); recordingIndicator.classList.add('active'); sendBtn.style.display = 'none';
+      recordingSeconds = 0; recordingTimeEl.textContent = '0:00';
+      if (recordingInterval) clearInterval(recordingInterval);
+      recordingInterval = setInterval(function () { recordingSeconds++; recordingTimeEl.textContent = Math.floor(recordingSeconds/60) + ':' + String(recordingSeconds%60).padStart(2,'0'); }, 1000);
+    }).catch(function (err) { console.error('Microphone error:', err); alert('Could not access microphone.'); });
+  }
+  function stopVoiceRecording() {
+    if (!isRecording || !mediaRecorder) return; isRecording = false;
+    if (recordingInterval) { clearInterval(recordingInterval); recordingInterval = null; }
+    voiceBtn.classList.remove('recording'); textInputWrapper.classList.remove('hidden');
+    recordingIndicator.classList.remove('active'); sendBtn.style.display = '';
+    if (mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+  }
+  function sendVoiceMessage() {
+    if (!audioChunks.length) return;
+    var blob = new Blob(audioChunks, { type: 'audio/webm' }); var file = new File([blob], 'voice_' + Date.now() + '.webm', { type: 'audio/webm' });
+    var fd = new FormData(); fd.append('group_id', groupId); fd.append('message_type', 'voice'); fd.append('file', file); fd.append('content', 'Voice message');
+    var xhr = new XMLHttpRequest(); xhr.open('POST', '{{ url_for("messaging.send_message") }}', true);
+    xhr.onload = function () { window.location.reload(); }; xhr.onerror = function () { alert('Failed to send voice message.'); }; xhr.send(fd); audioChunks = [];
+  }
+
+  /* ── Audio playback ── */
+  window.toggleAudio = function (btn) {
+    var audio = btn.parentElement.querySelector('audio'); var dur = btn.parentElement.querySelector('.voice-duration');
+    if (audio.paused) {
+      document.querySelectorAll('.voice-message audio').forEach(function (a) { a.pause(); a.currentTime = 0; });
+      document.querySelectorAll('.voice-play-btn').forEach(function (b) { b.innerHTML = '&#9654;'; });
+      audio.play(); btn.innerHTML = '&#9208;';
+      audio.ontimeupdate = function () { dur.textContent = Math.floor(audio.currentTime/60) + ':' + String(Math.floor(audio.currentTime%60)).padStart(2,'0'); };
+      audio.onended = function () { btn.innerHTML = '&#9654;'; dur.textContent = Math.floor(audio.duration/60) + ':' + String(Math.floor(audio.duration%60)).padStart(2,'0'); };
+    } else { audio.pause(); btn.innerHTML = '&#9654;'; }
+  };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.voice-message audio').forEach(function (a) {
+      a.addEventListener('loadedmetadata', function () {
+        var d = a.parentElement.querySelector('.voice-duration');
+        d.textContent = Math.floor(a.duration/60) + ':' + String(Math.floor(a.duration%60)).padStart(2,'0');
+      });
     });
+  });
 
-    // receive messages
-    socket.on('new_message', function(data) {
-        if (data.group_id == groupId) {
-            if (noMessages) { noMessages.remove(); noMessages = null; }
-            appendMessage(data);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-    });
-
-    socket.on('message_error', function(data) { alert(data.message); });
-
-    socket.on('message_deleted', function(data) {
-        if (!data || !data.message_id) return;
-        var msgEl = document.getElementById('message-' + data.message_id);
-        if (!msgEl) return;
-        msgEl.remove();
-        if (!chatMessages.querySelector('.message-group') && !document.getElementById('noMessages')) {
-            var p = document.createElement('p');
-            p.id = 'noMessages'; p.style.textAlign = 'center'; p.style.color = '#999';
-            p.textContent = 'No messages yet. Start the conversation!';
-            chatMessages.appendChild(p);
-        }
-    });
-
-    function appendMessage(data) {
-        var isSent = (data.sender_id == currentUserId);
-        var group = document.createElement('div');
-        group.className = 'message-group'; group.id = 'message-' + data.id;
-        group.style.display = 'flex'; group.style.justifyContent = isSent ? 'flex-end' : 'flex-start';
-        var bubble = document.createElement('div');
-        bubble.className = 'message-bubble ' + (isSent ? 'message-sent' : 'message-received');
-        var senderHtml = '<div class="message-sender">' + escapeHtml(data.sender_display_name || 'Unknown') + '</div>';
-        var html = '';
-        if (data.message_type === 'text') { html = escapeHtml(data.message); }
-        else if (data.message_type === 'image' && data.file_path) { html = '<div class="message-media"><img src="' + data.file_path + '" alt="Image"></div>'; }
-        else if (data.message_type === 'voice' && data.file_path) { html = '<div class="voice-message"><button class="voice-play-btn" onclick="toggleAudio(this)">&#9654;</button><div class="voice-waveform"></div><audio src="' + data.file_path + '" style="display:none;"></audio><span class="voice-duration">0:00</span></div>'; }
-        else if (data.message_type === 'video' && data.file_path) { html = '<div class="video-bubble-wrapper"><video class="video-bubble" playsinline preload="metadata" src="' + data.file_path + '"></video><div class="video-play-overlay">&#9654;</div></div>'; }
-        var actions = '';
-        if (isSent) {
-            actions = '<div class="message-actions">';
-            if (data.message_type === 'text') { actions += '<a href="/message/edit/' + data.id + '" class="btn-message-action">Edit</a>'; }
-            actions += '<form method="POST" action="/message/delete/' + data.id + '" style="display:inline;" onsubmit="return confirm(\'Delete this message?\');"><button type="submit" class="btn-message-action">Delete</button></form></div>';
-        }
-        bubble.innerHTML = senderHtml + html + '<div class="message-time">' + data.timestamp + '</div>' + actions;
-        group.appendChild(bubble);
-        chatMessages.appendChild(group);
-    }
-
-    function escapeHtml(text) { var d = document.createElement('div'); d.textContent = text; return d.innerHTML; }
-
-    // typing indicator (group version - tracks multiple users)
-    messageInput.addEventListener('input', function() {
-        socket.emit('typing', { group_id: groupId });
-        if (typingTimeout) clearTimeout(typingTimeout);
-        typingTimeout = setTimeout(function() { socket.emit('stop_typing', { group_id: groupId }); }, 2000);
-    });
-
-    socket.on('typing', function(data) {
-        if (data.group_id == groupId && data.sender_id != currentUserId) {
-            typingUsers[data.sender_id] = data.sender_name || 'Someone';
-            updateTypingIndicator();
-        }
-    });
-
-    socket.on('stop_typing', function(data) {
-        if (data.group_id == groupId && data.sender_id != currentUserId) {
-            delete typingUsers[data.sender_id];
-            updateTypingIndicator();
-        }
-    });
-
-    function updateTypingIndicator() {
-        var names = Object.values(typingUsers);
-        if (names.length === 0) {
-            typingIndicator.classList.remove('active'); typingIndicator.textContent = '';
-        } else if (names.length === 1) {
-            typingIndicator.textContent = names[0] + ' is typing...'; typingIndicator.classList.add('active');
-        } else if (names.length === 2) {
-            typingIndicator.textContent = names[0] + ' and ' + names[1] + ' are typing...'; typingIndicator.classList.add('active');
-        } else {
-            typingIndicator.textContent = names.length + ' people are typing...'; typingIndicator.classList.add('active');
-        }
-    }
-
-    // video recording
-    var videoBtn = document.getElementById('videoBtn');
-    var videoPreviewWrapper = document.getElementById('videoPreviewWrapper');
-    var videoPreview = document.getElementById('videoPreview');
-    var videoTimer = document.getElementById('videoTimer');
-    var videoRecorder = null, videoChunks = [], videoStream = null, videoSeconds = 0, videoInterval = null, isVideoRecording = false;
-
-    videoBtn.addEventListener('click', function() { if (isVideoRecording) stopVideoRecording(); else startVideoRecording(); });
-
-    function startVideoRecording() {
-        if (isVideoRecording) return;
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true }).then(function(stream) {
-            videoStream = stream; videoPreview.srcObject = stream; videoPreviewWrapper.classList.add('active');
-            videoRecorder = new MediaRecorder(stream); videoChunks = [];
-            videoRecorder.ondataavailable = function(e) { if (e.data.size > 0) videoChunks.push(e.data); };
-            videoRecorder.onstop = sendVideoMessage; videoRecorder.start(); isVideoRecording = true;
-            videoSeconds = 0; videoTimer.textContent = "0:00";
-            videoInterval = setInterval(function() { videoSeconds++; videoTimer.textContent = Math.floor(videoSeconds/60) + ":" + String(videoSeconds%60).padStart(2,'0'); }, 1000);
-        }).catch(function() { alert("Camera access denied."); });
-    }
-
-    function stopVideoRecording() {
-        if (!isVideoRecording) return; isVideoRecording = false; clearInterval(videoInterval);
-        videoPreviewWrapper.classList.remove('active');
-        if (videoRecorder && videoRecorder.state !== "inactive") videoRecorder.stop();
-        if (videoStream) videoStream.getTracks().forEach(function(t) { t.stop(); });
-    }
-
-    function sendVideoMessage() {
-        if (!videoChunks.length) return;
-        var blob = new Blob(videoChunks, { type: 'video/webm' }); var file = new File([blob], 'video_' + Date.now() + '.webm', { type: 'video/webm' });
-        var fd = new FormData(); fd.append('group_id', groupId); fd.append('message_type', 'video'); fd.append('file', file);
-        var xhr = new XMLHttpRequest(); xhr.open('POST', '{{ url_for("messaging.send_message") }}', true); xhr.onload = function() { window.location.reload(); }; xhr.send(fd); videoChunks = [];
-    }
-
-    // Video bubble click to play
-    document.addEventListener("click", function(e) {
-        var w = e.target.closest(".video-bubble-wrapper"); if (!w) return;
-        var v = w.querySelector("video"); var o = w.querySelector(".video-play-overlay");
-        if (v.paused) { v.play(); o.style.display = "none"; } else { v.pause(); o.style.display = "block"; }
-        v.onended = function() { o.style.display = "block"; };
-    });
-
-    // file upload
-    window.showFileUpload = function() { document.getElementById('modalOverlay').style.display = 'block'; document.getElementById('fileUploadModal').style.display = 'block'; };
-    window.hideFileUpload = function() { document.getElementById('modalOverlay').style.display = 'none'; document.getElementById('fileUploadModal').style.display = 'none'; };
-
-    // scroll to bottom
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-    window.addEventListener('load', function() { chatMessages.scrollTop = chatMessages.scrollHeight; });
-
-    // auto hide flash
-    var flashContainer = document.getElementById('flashContainer');
-    if (flashContainer) { setTimeout(function() { flashContainer.style.animation = 'fadeOut 0.3s ease-out'; setTimeout(function() { flashContainer.remove(); }, 300); }, 3000); }
-
-    // voice recording
-    voiceBtn.addEventListener('click', function() { if (isRecording) stopVoiceRecording(); else startVoiceRecording(); });
-
-    function startVoiceRecording() {
-        navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream) {
-            mediaRecorder = new MediaRecorder(stream); audioChunks = [];
-            mediaRecorder.ondataavailable = function(e) { if (e.data.size > 0) audioChunks.push(e.data); };
-            mediaRecorder.onstop = function() { stream.getTracks().forEach(function(t) { t.stop(); }); if (audioChunks.length > 0 && recordingSeconds >= 1) sendVoiceMessage(); };
-            mediaRecorder.start(); isRecording = true; voiceBtn.classList.add('recording');
-            textInputWrapper.classList.add('hidden'); recordingIndicator.classList.add('active'); sendBtn.style.display = 'none';
-            recordingSeconds = 0; recordingTimeEl.textContent = '0:00';
-            if (recordingInterval) clearInterval(recordingInterval);
-            recordingInterval = setInterval(function() { recordingSeconds++; recordingTimeEl.textContent = Math.floor(recordingSeconds/60) + ':' + String(recordingSeconds%60).padStart(2,'0'); }, 1000);
-        }).catch(function(err) { console.error('Microphone error:', err); alert('Could not access microphone.'); });
-    }
-
-    function stopVoiceRecording() {
-        if (!isRecording || !mediaRecorder) return; isRecording = false;
-        if (recordingInterval) { clearInterval(recordingInterval); recordingInterval = null; }
-        voiceBtn.classList.remove('recording'); textInputWrapper.classList.remove('hidden');
-        recordingIndicator.classList.remove('active'); sendBtn.style.display = 'block';
-        if (mediaRecorder.state !== 'inactive') mediaRecorder.stop();
-    }
-
-    function sendVoiceMessage() {
-        if (!audioChunks.length) return;
-        var blob = new Blob(audioChunks, { type: 'audio/webm' }); var file = new File([blob], 'voice_' + Date.now() + '.webm', { type: 'audio/webm' });
-        var fd = new FormData(); fd.append('group_id', groupId); fd.append('message_type', 'voice'); fd.append('file', file); fd.append('content', 'Voice message');
-        var xhr = new XMLHttpRequest(); xhr.open('POST', '{{ url_for("messaging.send_message") }}', true);
-        xhr.onload = function() { window.location.reload(); }; xhr.onerror = function() { alert('Failed to send voice message'); }; xhr.send(fd); audioChunks = [];
-    }
-
-    // audio playback
-    window.toggleAudio = function(btn) {
-        var audio = btn.parentElement.querySelector('audio'); var dur = btn.parentElement.querySelector('.voice-duration');
-        if (audio.paused) {
-            document.querySelectorAll('.voice-message audio').forEach(function(a) { a.pause(); a.currentTime = 0; });
-            document.querySelectorAll('.voice-play-btn').forEach(function(b) { b.innerHTML = '&#9654;'; });
-            audio.play(); btn.innerHTML = '&#9208;';
-            audio.ontimeupdate = function() { dur.textContent = Math.floor(audio.currentTime/60) + ':' + String(Math.floor(audio.currentTime%60)).padStart(2,'0'); };
-            audio.onended = function() { btn.innerHTML = '&#9654;'; dur.textContent = Math.floor(audio.duration/60) + ':' + String(Math.floor(audio.duration%60)).padStart(2,'0'); };
-        } else { audio.pause(); btn.innerHTML = '&#9654;'; }
-    };
-
-    // Load voice durations
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.voice-message audio').forEach(function(a) {
-            a.addEventListener('loadedmetadata', function() {
-                var d = a.parentElement.querySelector('.voice-duration');
-                d.textContent = Math.floor(a.duration/60) + ':' + String(Math.floor(a.duration%60)).padStart(2,'0');
-            });
-        });
-    });
 })();
 </script>
 {% endblock %}
