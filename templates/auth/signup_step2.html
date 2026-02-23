@@ -371,9 +371,10 @@ html[data-theme='dark'] .signup-vibe-card .form-control:focus {
     const m = today.getMonth() - birthday.getMonth();
     if (m < 0 || (m === 0 && today.getDate() < birthday.getDate())) age--;
     if (age < 13) return '';
-    if (age < 18) return 'Youth';
-    if (age < 60) return 'Adult';
-    return 'Elderly';
+    if (age >= 13 && age <= 20) return 'Youth';
+    if (age >= 21 && age <= 59) return 'Adult';
+    if (age >= 60) return 'Elderly';
+    return '';
   }
 
   birthdayInput && birthdayInput.addEventListener('input', () => {
