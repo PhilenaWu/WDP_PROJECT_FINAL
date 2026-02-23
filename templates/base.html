@@ -407,15 +407,6 @@ bellBtn?.addEventListener("click", (e) => e.preventDefault());
   const seenKey = `genlink:notif:last_seen:${userId}`;
   const dismissedKey = `genlink:notif:dismissed_count:${userId}`;
 
-        function googleTranslateElementInit() {
-            new google.translate.TranslateElement(
-                {
-                    pageLanguage: 'en',
-                    autoDisplay: false
-                },
-                'google_translate_element'
-            );
-        }
   // make top bar sit right below navbar height (doesn't push page)
   function positionTopBar(){
     if (!bar || !navEl) return;
@@ -435,18 +426,6 @@ bellBtn?.addEventListener("click", (e) => e.preventDefault());
       .replaceAll("'","&#039;");
   }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            if (document.body.classList.contains('language-page')) {
-                setGoogleTranslateCookie('en');
-                localStorage.setItem('siteLanguage', normalizeLanguage(userLang || 'en'));
-                return;
-            }
-
-            const preferred = userLang || localStorage.getItem('siteLanguage') || 'en';
-            applyLanguageWhenReady(preferred);
-        });
-    </script>
-    <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
   function setBadge(count){
     if (!bellBtn) return;
     let badge = document.getElementById("notifBadge");
