@@ -1,6 +1,6 @@
 venv/
 
-folder_name/__pycache__/
+WDP_PROJECT_FINAL/__pycache__/
 *.pyc
 /config.py
 *.env
