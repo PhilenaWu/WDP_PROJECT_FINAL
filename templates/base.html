@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Genlink | Home{% endblock %}</title>
-    
+
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
@@ -40,9 +40,7 @@
 
             function clampTextSize(value) {
                 const numberValue = Number(value);
-                if (Number.isNaN(numberValue)) {
-                    return defaults.textSize;
-                }
+                if (Number.isNaN(numberValue)) return defaults.textSize;
                 return Math.min(48, Math.max(12, numberValue));
             }
 
@@ -61,15 +59,10 @@
             function getSaved() {
                 try {
                     const stored = window.localStorage.getItem(appearanceStorageKey);
-                    if (stored) {
-                        return normalize(JSON.parse(stored));
-                    }
-                } catch (error) {
-                }
+                    if (stored) return normalize(JSON.parse(stored));
+                } catch (error) {}
 
-                if (!currentUserId) {
-                    return { ...defaults };
-                }
+                if (!currentUserId) return { ...defaults };
                 return normalize(serverAppearance);
             }
 
@@ -85,9 +78,7 @@
                     const elements = document.body.querySelectorAll('*:not(script):not(style):not(svg):not(path):not(img):not(video):not(canvas):not(iframe)');
                     elements.forEach((element) => {
                         const tag = element.tagName.toLowerCase();
-                        if (['script', 'style', 'svg', 'path', 'img', 'video', 'canvas', 'iframe'].includes(tag)) {
-                            return;
-                        }
+                        if (['script', 'style', 'svg', 'path', 'img', 'video', 'canvas', 'iframe'].includes(tag)) return;
 
                         const hasText = Array.from(element.childNodes).some(
                             (node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim().length > 0
@@ -96,25 +87,16 @@
                         const isTextInput = ['input', 'textarea', 'select', 'button'].includes(tag);
                         const isActionElement = ['a', 'button'].includes(tag);
 
-                        if (element.classList.contains('bi')) {
-                            return;
-                        }
-
-                        if (!hasText && !isTextInput && !isActionElement) {
-                            return;
-                        }
+                        if (element.classList.contains('bi')) return;
+                        if (!hasText && !isTextInput && !isActionElement) return;
 
                         if (!element.dataset.baseFontSize) {
                             const computedSize = parseFloat(window.getComputedStyle(element).fontSize);
-                            if (!Number.isNaN(computedSize)) {
-                                element.dataset.baseFontSize = String(computedSize);
-                            }
+                            if (!Number.isNaN(computedSize)) element.dataset.baseFontSize = String(computedSize);
                         }
 
                         const baseSize = parseFloat(element.dataset.baseFontSize || '');
-                        if (!Number.isNaN(baseSize)) {
-                            element.style.fontSize = `${(baseSize * scale).toFixed(2)}px`;
-                        }
+                        if (!Number.isNaN(baseSize)) element.style.fontSize = `${(baseSize * scale).toFixed(2)}px`;
 
                         element.style.fontWeight = next.fontWeight;
                         element.style.fontFamily = fontFamilies[next.fontStyle];
@@ -130,72 +112,40 @@
 
             function parseRgb(value) {
                 const match = value && value.match(/^rgba?\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?\)$/i);
-                if (!match) {
-                    return null;
-                }
-
-                return {
-                    r: Number(match[1]),
-                    g: Number(match[2]),
-                    b: Number(match[3]),
-                    a: match[4] === undefined ? 1 : Number(match[4])
-                };
+                if (!match) return null;
+                return { r: Number(match[1]), g: Number(match[2]), b: Number(match[3]), a: match[4] === undefined ? 1 : Number(match[4]) };
             }
 
             function classifySurfaceTone(backgroundColor) {
                 const rgb = parseRgb(backgroundColor);
-                if (!rgb || rgb.a === 0) {
-                    return null;
-                }
+                if (!rgb || rgb.a === 0) return null;
 
                 const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
                 const isNavyLike = rgb.b >= rgb.r + 15 && rgb.b >= rgb.g + 15 && brightness <= 170;
 
-                if (brightness >= 210) {
-                    return 'light';
-                }
-
-                if (brightness <= 150 || isNavyLike) {
-                    return 'dark';
-                }
-
+                if (brightness >= 210) return 'light';
+                if (brightness <= 150 || isNavyLike) return 'dark';
                 return null;
             }
 
             function updateSurfaceTones() {
-                if (!document.body) {
-                    return;
-                }
-
+                if (!document.body) return;
                 const themedNodes = document.body.querySelectorAll('*');
                 themedNodes.forEach((element) => {
                     const computed = window.getComputedStyle(element);
                     const tone = classifySurfaceTone(computed.backgroundColor);
-
-                    if (tone) {
-                        element.setAttribute('data-surface-tone', tone);
-                    } else {
-                        element.removeAttribute('data-surface-tone');
-                    }
+                    if (tone) element.setAttribute('data-surface-tone', tone);
+                    else element.removeAttribute('data-surface-tone');
                 });
             }
 
             function saveAppearance(settings) {
                 const next = normalize(settings);
-                try {
-                    window.localStorage.setItem(appearanceStorageKey, JSON.stringify(next));
-                } catch (error) {
-                }
+                try { window.localStorage.setItem(appearanceStorageKey, JSON.stringify(next)); } catch (error) {}
                 return next;
             }
 
-            window.genlinkAppearance = {
-                defaults,
-                getSaved,
-                applyAppearance,
-                saveAppearance,
-                updateSurfaceTones
-            };
+            window.genlinkAppearance = { defaults, getSaved, applyAppearance, saveAppearance, updateSurfaceTones };
 
             const initialAppearance = getSaved();
             saveAppearance(initialAppearance);
@@ -205,10 +155,7 @@
                 applyAppearance(initialAppearance);
                 updateSurfaceTones();
 
-                const observer = new MutationObserver(() => {
-                    updateSurfaceTones();
-                });
-
+                const observer = new MutationObserver(() => updateSurfaceTones());
                 observer.observe(document.body, {
                     childList: true,
                     subtree: true,
@@ -218,47 +165,50 @@
             });
         })();
     </script>
-    
+
     {% block extra_css %}{% endblock %}
 </head>
-<body {% block body_class %}{% endblock %}>    
-    {% block navbar %}
-    
-    <!-- Navigation -->
-<nav class="navbar navbar-expand-lg bg-white shadow-sm sticky-top py-2">
+
+<body {% block body_class %}{% endblock %}>
+{% block navbar %}
+
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg bg-white shadow-sm sticky-top py-2" id="mainNavbarTop">
     <div class="container-fluid px-4">
 
         <!-- Logo Left -->
         <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.home') }}">
             <img src="{{ url_for('static', filename='uploads/profile_pics/logo.png') }}"
-         alt="GenLink Logo" class="navbar-logo">
+                 alt="GenLink Logo" class="navbar-logo">
         </a>
-
 
         <!-- Mobile Toggle -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <div class="collapse navbar-collapse postion-relative" id="mainNavbar">
+        <div class="collapse navbar-collapse position-relative" id="mainNavbar">
 
             <!-- Center Menu -->
-            <ul class="navbar-nav align-items-center mx-auto navbar-center" >
+            <ul class="navbar-nav align-items-center mx-auto navbar-center">
 
                 <li class="nav-item">
-                    <a class="nav-link nav-modern {% if request.endpoint == 'main.home' %}active{% endif %}" href="{{ url_for('main.home') }}">
+                    <a class="nav-link nav-modern {% if request.endpoint == 'main.home' %}active{% endif %}"
+                       href="{{ url_for('main.home') }}">
                         <i class="bi bi-house-door me-1"></i> Home
                     </a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link nav-modern {% if request.endpoint in ['main.storyboard', 'main.add_story'] %}active{% endif %}" href="{{ url_for('main.storyboard') }}">
+                    <a class="nav-link nav-modern {% if request.endpoint in ['main.storyboard', 'main.add_story'] %}active{% endif %}"
+                       href="{{ url_for('main.storyboard') }}">
                         <i class="bi bi-book me-1"></i> Storyboard
                     </a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link nav-modern {% if request.endpoint == 'events.events_home' %}active{% endif %}" href="{{ url_for('events.events_home') }}">
+                    <a class="nav-link nav-modern {% if request.endpoint == 'events.events_home' %}active{% endif %}"
+                       href="{{ url_for('events.events_home') }}">
                         <i class="bi bi-calendar-event me-1"></i> Events
                     </a>
                 </li>
@@ -294,9 +244,35 @@
                     </a>
                 </li>
 
+                <!-- Notifications -->
+                <li class="nav-item dropdown" data-bs-auto-close="outside">
+                    <a class="btn btn-icon position-relative"
+                       href="#"
+                       role="button"
+                       data-bs-toggle="dropdown"
+                       aria-expanded="false"
+                       id="notifBellBtn">
+                        <i class="bi bi-bell"></i>
+
+                        {% if nav_notification_count and nav_notification_count > 0 %}
+                        <span class="notif-badge" id="notifBadge">{{ nav_notification_count }}</span>
+                        {% endif %}
+                    </a>
+
+                    <div class="dropdown-menu dropdown-menu-end notif-dropdown p-0" id="notifDropdown">
+                        <!-- JS will render inside here so it always matches API -->
+                        <div class="notif-panel" id="notifPanel">
+                            <div class="notif-empty">No new notifications</div>
+                        </div>
+                    </div>
+                </li>
+
+                <!-- Profile -->
                 <li class="nav-item dropdown">
                     <a class="btn btn-icon"
-                       href="#" role="button" data-bs-toggle="dropdown">
+                       href="#"
+                       role="button"
+                       data-bs-toggle="dropdown">
                         <i class="bi bi-person-circle"></i>
                     </a>
 
@@ -324,9 +300,20 @@
         </div>
     </div>
 </nav>
+
+<!-- Top Notification Popup (below navbar) -->
+<div id="topNotifBar" class="top-notif-bar" aria-live="polite" aria-atomic="true" hidden>
+    <div class="top-notif-inner">
+        <i class="bi bi-bell-fill"></i>
+        <div class="top-notif-text" id="topNotifText">You have new notifications.</div>
+
+        <button type="button" class="top-notif-close" id="topNotifClose" aria-label="Dismiss">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+</div>
+
 {% endblock %}
-
-
 
 {% block banner %}
 <!-- Flash messages -->
@@ -383,74 +370,42 @@
 </footer>
 {% endblock %}
 
-    <!--Google Translate Element-->
+<!-- Google Translate Element -->
+<div id="google_translate_element" style="display:none;"></div>
 
-    <div id="google_translate_element" style="display:none;"></div>
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <script>
-        const userLang = "{{ current_user.language if current_user.is_authenticated else '' }}";
-        const supportedLanguageCodes = new Set({{ translate_language_codes|tojson|safe }});
+<!-- ===== Notifications JS (API-driven dropdown + top bar) ===== -->
+<script>
+(function(){
+  const userId = "{{ current_user.id if current_user.is_authenticated else '' }}";
+  if (!userId) return;
 
-        const languageAliases = {{ translate_language_aliases|tojson|safe }};
+  const STATIC_PREFIX = "{{ url_for('static', filename='') }}"; // ends with /
+  const navEl = document.getElementById("mainNavbarTop");
+  const bellBtn = document.getElementById("notifBellBtn");
+  const dropdownMenu = document.getElementById("notifDropdown");
+  const panel = document.getElementById("notifPanel");
 
-        function normalizeLanguage(lang) {
-            const raw = (lang || '').trim();
-            if (!raw) {
-                return 'en';
-            }
+  let blockNotifHide = false;
 
-            const lowered = raw.toLowerCase();
-            if (languageAliases[lowered]) {
-                return languageAliases[lowered];
-            }
+const notifDropdownRoot = bellBtn?.closest(".dropdown");
+if (notifDropdownRoot){
+  notifDropdownRoot.addEventListener("hide.bs.dropdown", (ev) => {
+    if (blockNotifHide) ev.preventDefault();
+  });
+}
 
-            return supportedLanguageCodes.has(raw) ? raw : 'en';
-        }
+// prevent the <a href="#"> from jumping
+bellBtn?.addEventListener("click", (e) => e.preventDefault());
 
-        function setGoogleTranslateCookie(target) {
-            const value = `/auto/${target}`;
-            document.cookie = `googtrans=${value}; path=/`;
+  const bar = document.getElementById("topNotifBar");
+  const barText = document.getElementById("topNotifText");
+  const barClose = document.getElementById("topNotifClose");
 
-            const host = window.location.hostname;
-            if (host && host.includes('.') && host !== 'localhost') {
-                const rootHost = host.replace(/^www\./, '');
-                document.cookie = `googtrans=${value}; path=/; domain=.${rootHost}`;
-            }
-        }
-
-        function applyLanguageWhenReady(lang, timeoutMs = 5000) {
-            const requested = normalizeLanguage(lang);
-            const started = Date.now();
-
-            const tryApply = () => {
-                const select = document.querySelector('.goog-te-combo');
-                if (select) {
-                    const hasRequested = Array.from(select.options).some(
-                        (option) => option.value === requested
-                    );
-                    const target = hasRequested ? requested : 'en';
-
-                    setGoogleTranslateCookie(target);
-                    localStorage.setItem('siteLanguage', target);
-                    select.value = target;
-                    select.dispatchEvent(new Event('change'));
-                    return;
-                }
-
-                if (Date.now() - started < timeoutMs) {
-                    window.setTimeout(tryApply, 200);
-                }
-            };
-
-            tryApply();
-        }
-
-        if (userLang) {
-            localStorage.setItem('siteLanguage', normalizeLanguage(userLang));
-        }
+  const seenKey = `genlink:notif:last_seen:${userId}`;
+  const dismissedKey = `genlink:notif:dismissed_count:${userId}`;
 
         function googleTranslateElementInit() {
             new google.translate.TranslateElement(
@@ -461,10 +416,24 @@
                 'google_translate_element'
             );
         }
+  // make top bar sit right below navbar height (doesn't push page)
+  function positionTopBar(){
+    if (!bar || !navEl) return;
+    const h = navEl.getBoundingClientRect().height;
+    bar.style.top = `${Math.round(h + 6)}px`;
+  }
+  window.addEventListener("resize", positionTopBar);
+  document.addEventListener("DOMContentLoaded", positionTopBar);
+  positionTopBar();
 
-        function setSiteLanguage(lang) {
-            applyLanguageWhenReady(lang);
-        }
+  function escapeHtml(str){
+    return String(str ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
 
         document.addEventListener('DOMContentLoaded', () => {
             if (document.body.classList.contains('language-page')) {
@@ -478,7 +447,256 @@
         });
     </script>
     <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+  function setBadge(count){
+    if (!bellBtn) return;
+    let badge = document.getElementById("notifBadge");
+    if (count > 0){
+      if (!badge){
+        badge = document.createElement("span");
+        badge.className = "notif-badge";
+        badge.id = "notifBadge";
+        bellBtn.appendChild(badge);
+      }
+      badge.textContent = count;
+    } else {
+      if (badge) badge.remove();
+    }
+  }
 
-    {% block extra_js %}{% endblock %}
+  let topBarTimer = null;
+  
+function showTopBar(count){
+  if (!bar || !barText) return;
+
+  const dismissedCount = Number(localStorage.getItem(dismissedKey) || "0");
+  if (dismissedCount === count) return;
+
+  barText.textContent = `You have ${count} new notification${count === 1 ? "" : "s"}.`;
+  bar.hidden = false;
+  bar.classList.add("is-showing");
+
+  // clear previous timer (important)
+  if (topBarTimer) clearTimeout(topBarTimer);
+
+  // auto-hide after 3 seconds
+  topBarTimer = setTimeout(() => {
+    hideTopBar();
+  }, 3000);
+}
+
+function hideTopBar(){
+  if (!bar) return;
+
+  if (topBarTimer){
+    clearTimeout(topBarTimer);
+    topBarTimer = null;
+  }
+
+  bar.classList.remove("is-showing");
+  setTimeout(() => { bar.hidden = true; }, 220);
+}
+
+  if (barClose){
+    barClose.addEventListener("click", () => {
+      const currentCount = Number(document.getElementById("notifBadge")?.textContent || "0");
+      localStorage.setItem(dismissedKey, String(currentCount));
+      hideTopBar();
+    });
+  }
+
+  function markSeen(){
+    localStorage.setItem(seenKey, String(Date.now()));
+    setBadge(0);
+    localStorage.setItem(dismissedKey, "0");
+  }
+
+  async function postJSON(url, data){
+    const res = await fetch(url, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify(data)
+    });
+    const json = await res.json().catch(()=>({}));
+    return { ok: res.ok, ...json };
+  }
+
+  async function fetchSummary(){
+    const res = await fetch("/api/notifications/summary", { headers:{ "Accept":"application/json" }});
+    const data = await res.json();
+    if (!data || !data.ok) return null;
+    return data;
+  }
+
+  function renderDropdown(data){
+    if (!panel) return;
+
+    const pending = Array.isArray(data.pending) ? data.pending : [];
+    const nearing = Array.isArray(data.nearing) ? data.nearing : [];
+
+    if (pending.length === 0 && nearing.length === 0){
+      panel.innerHTML = `<div class="notif-empty">No new notifications</div>`;
+      return;
+    }
+
+    let html = "";
+
+    // pending requests
+    for (const r of pending){
+      const fromId = Number(r.from_id);
+      const name = escapeHtml(r.from_name || "User");
+      const picPath = (r.from_pic && r.from_pic !== "None" && r.from_pic !== "") ? r.from_pic : "uploads/main_topics_images/default_pfp.png";
+      const picUrl = STATIC_PREFIX + picPath;
+
+      html += `
+        <div class="notif-card notif-item notif-item-actions" data-from-id="${fromId}">
+          <div class="notif-left">
+            <img src="${picUrl}" class="notif-avatar" alt="User">
+          </div>
+
+          <div class="notif-mid">
+            <div class="notif-title">${name}</div>
+            <div class="notif-sub">sent you a connection request</div>
+
+            <div class="notif-actions">
+              <button type="button"
+                      class="notif-btn accept js-notif-accept"
+                      data-target-id="${fromId}"
+                      data-from-name="${name}">
+                Accept
+              </button>
+
+              <button type="button"
+                      class="notif-btn reject js-notif-reject"
+                      data-target-id="${fromId}"
+                      data-from-name="${name}">
+                Reject
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // nearing events
+    for (const e of nearing){
+      const title = escapeHtml(e.title || "Event");
+      const when = escapeHtml(`${e.date || ""}${e.time ? " • " + e.time : ""}`.trim());
+
+      html += `
+        <a class="notif-card notif-item notif-card-link" href="{{ url_for('events.events_home') }}">
+          <div class="notif-left">
+            <div class="notif-icon-wrap"><i class="bi bi-calendar-event"></i></div>
+          </div>
+          <div class="notif-mid">
+            <div class="notif-title">${title}</div>
+            <div class="notif-sub">Happening ${when}</div>
+          </div>
+        </a>
+      `;
+    }
+
+    panel.innerHTML = html;
+  }
+
+  function showConnectedMessage(fromId, fromName){
+  const item = document.querySelector(`.notif-item[data-from-id="${fromId}"]`);
+  if (!item) return;
+
+    item.classList.add("notif-success", "notif-fade-in");
+    item.innerHTML = `
+      <div class="notif-left">
+        <div class="notif-icon-wrap" style="background: rgba(25,135,84,.12);">
+          <i class="bi bi-check-lg"></i>
+        </div>
+      </div>
+
+      <div class="notif-mid">
+        <div class="notif-title">Connected!</div>
+        <div class="notif-sub">You and ${escapeHtml(fromName)} are now connected!</div>
+      </div>
+    `;
+
+    setTimeout(() => {
+      item.classList.remove("notif-fade-in");
+      item.classList.add("notif-fade-out");
+
+      setTimeout(() => {
+
+      lastCount = count;
+
+    }catch(err){}
+  }
+
+  poll();
+  setInterval(poll, 12000);
+})();
+</script>
+
+<script>
+    const userLang = "{{ current_user.language if current_user.is_authenticated else '' }}";
+
+    const languageMap = {
+        'en': 'en',
+        'zh': 'zh-CN',
+        'zh-cn': 'zh-CN',
+        'ta': 'ta',
+        'ms': 'ms'
+    };
+
+    function normalizeLanguage(lang) {
+        const normalized = (lang || '').trim().toLowerCase();
+        return languageMap[normalized] || 'en';
+    }
+
+    function applyLanguageWhenReady(lang, timeoutMs = 5000) {
+        const target = normalizeLanguage(lang);
+        const started = Date.now();
+
+        const tryApply = () => {
+            const select = document.querySelector('.goog-te-combo');
+            if (select) {
+                select.value = target;
+                select.dispatchEvent(new Event('change'));
+                localStorage.setItem('siteLanguage', target);
+                return;
+            }
+
+            if (Date.now() - started < timeoutMs) {
+                window.setTimeout(tryApply, 200);
+            }
+        };
+
+        tryApply();
+    }
+
+    if (userLang) {
+        localStorage.setItem('siteLanguage', normalizeLanguage(userLang));
+    }
+
+    function googleTranslateElementInit() {
+        new google.translate.TranslateElement(
+            {
+                pageLanguage: 'en',
+                includedLanguages: 'en,zh-CN,ta,ms',
+                autoDisplay: false
+            },
+            'google_translate_element'
+        );
+    }
+
+    function setSiteLanguage(lang) {
+        applyLanguageWhenReady(lang);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const stored = localStorage.getItem('siteLanguage');
+        if (!stored) return;
+        applyLanguageWhenReady(stored);
+    });
+</script>
+<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+<!-- Extra block for child templates -->
+{% block extra_js %}{% endblock %}
 </body>
 </html>
