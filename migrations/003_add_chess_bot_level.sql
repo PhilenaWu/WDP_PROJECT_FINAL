@@ -1,0 +1,2 @@
+ALTER TABLE chess_games
+ADD COLUMN bot_level TINYINT DEFAULT 5;

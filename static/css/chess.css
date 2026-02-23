@@ -1,0 +1,161 @@
+.chess-layout {
+    display: grid;
+    grid-template-columns: minmax(280px, 520px) minmax(220px, 1fr);
+    gap: 24px;
+    align-items: start;
+}
+
+body.chess-page,
+body.chess-lobby-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--app-bg);
+}
+
+.page-shell {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.page-hero {
+    background: var(--app-surface-2);
+    border: 1px solid var(--app-border);
+    border-radius: 16px;
+    padding: 20px 24px;
+    box-shadow: var(--app-shadow-1);
+    margin-bottom: 24px;
+}
+
+.page-hero h1 {
+    font-size: 1.6rem;
+    margin-bottom: 4px;
+}
+
+.page-hero p {
+    margin-bottom: 0;
+    color: var(--app-muted);
+}
+
+.hero-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.chess-card {
+    background: var(--app-surface-1);
+    border: 1px solid var(--app-border);
+    border-radius: 16px;
+    box-shadow: var(--app-shadow-1);
+}
+
+@media (max-width: 992px) {
+    .chess-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.chess-board {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    border: 2px solid #1c2b33;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f7f1e1;
+    aspect-ratio: 1 / 1;
+}
+
+.chess-square {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: clamp(16px, 2.8vw, 28px);
+    user-select: none;
+    cursor: pointer;
+    aspect-ratio: 1 / 1;
+}
+
+.chess-square.dark {
+    background: #a07b5a;
+}
+
+.chess-square.light {
+    background: #f1e7d1;
+}
+
+.chess-square.selected {
+    outline: 3px solid #2f6fdb;
+    outline-offset: -3px;
+}
+
+.chess-square.legal {
+    box-shadow: inset 0 0 0 3px rgba(31, 156, 90, 0.85);
+}
+
+.chess-piece.white {
+    color: #1c2b33;
+}
+
+.chess-piece.black {
+    color: #521b0e;
+}
+
+.chess-piece {
+    font-family: "Segoe UI Symbol", "Noto Sans Symbols", "Arial Unicode MS", sans-serif;
+    line-height: 1;
+    font-size: clamp(20px, 3.2vw, 34px);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6), 0 0 4px rgba(0, 0, 0, 0.25);
+}
+
+.move-dot,
+.capture-ring {
+    position: absolute;
+    pointer-events: none;
+}
+
+.chess-square {
+    position: relative;
+}
+
+.move-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: rgba(31, 156, 90, 0.85);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4);
+}
+
+.capture-ring {
+    width: 70%;
+    height: 70%;
+    border-radius: 50%;
+    border: 3px solid rgba(220, 53, 69, 0.9);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4);
+}
+
+.chess-panel {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 18px;
+}
+
+.chess-moves {
+    max-height: 320px;
+    overflow-y: auto;
+    font-size: 0.9rem;
+}
+
+.chess-moves li {
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.chess-status {
+    font-weight: 600;
+}

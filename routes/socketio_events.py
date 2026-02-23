@@ -150,3 +150,42 @@ def register_socketio_events(socketio, app):
                 'user_id': int(user_id),
                 'status': 'online' if is_online else 'offline'
             })
+
+    @socketio.on('chess_join')
+    def handle_chess_join(data):
+        if not current_user.is_authenticated:
+            emit('chess_error', {'message': 'Not logged in'})
+            return
+
+        game_id = data.get('game_id')
+        try:
+            game_id = int(game_id)
+        except Exception:
+            emit('chess_error', {'message': 'Invalid game'})
+            return
+
+        with app.app_context():
+            game = execute_query(
+                "SELECT id, white_id, black_id FROM chess_games WHERE id = %s",
+                (game_id,), fetch_one=True
+            )
+
+        if not game or current_user.id not in (game.get('white_id'), game.get('black_id')):
+            emit('chess_error', {'message': 'Access denied'})
+            return
+
+        join_room(f'chess_{game_id}')
+        emit('chess_joined', {'game_id': game_id})
+
+    @socketio.on('chess_leave')
+    def handle_chess_leave(data):
+        if not current_user.is_authenticated:
+            return
+
+        game_id = data.get('game_id')
+        try:
+            game_id = int(game_id)
+        except Exception:
+            return
+
+        leave_room(f'chess_{game_id}')

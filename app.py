@@ -58,6 +58,8 @@ def create_app():
     from routes.connections import connections_bp
     from routes.topics_routes import bp_topics
     from routes.storyboard import storyboard_bp
+    from routes.chess import chess_bp
+    from routes.games import games_bp
 
     app.register_blueprint(storyboard_bp)
     app.register_blueprint(bp_topics)
@@ -68,6 +70,8 @@ def create_app():
     app.register_blueprint(main_bp)
     app.register_blueprint(events_bp, url_prefix="/events")
     app.register_blueprint(connections_bp, url_prefix="/connections")
+    app.register_blueprint(chess_bp, url_prefix="/chess")
+    app.register_blueprint(games_bp, url_prefix="/games")
 
     @app.route("/")
     def index():

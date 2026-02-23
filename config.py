@@ -46,3 +46,6 @@ class Config:
     GOOGLE_OAUTH_CLIENT_ID = os.environ.get('GOOGLE_OAUTH_CLIENT_ID', '')
     GOOGLE_OAUTH_CLIENT_SECRET = os.environ.get('GOOGLE_OAUTH_CLIENT_SECRET', '')
     GOOGLE_OAUTH_REDIRECT_URI = os.environ.get('GOOGLE_OAUTH_REDIRECT_URI', '')
+
+    # Stockfish (chess engine)
+    STOCKFISH_PATH = os.environ.get('STOCKFISH_PATH', 'stockfish/stockfish.exe')

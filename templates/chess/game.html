@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Chess Game | Genlink{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chess.css') }}">
+<style>
+:root {
+  --orange: #f39a1f;
+  --coral: #ff8c61;
+  --glow: rgba(243,154,31,0.26);
+  --glow-strong: rgba(243,154,31,0.48);
+}
+
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 9998;
+}
+
+.sc-section { padding: 64px 0; }
+.sc-section-header { text-align: left; margin-bottom: 24px; }
+.sc-section-header .eyebrow {
+  display: inline-block;
+  font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--orange); margin-bottom: 10px;
+}
+.sc-section-header h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-weight: 900; line-height: 1.12; margin-bottom: 8px;
+  color: var(--app-text);
+}
+.sc-section-header h2 em {
+  font-style: italic;
+  background: linear-gradient(135deg, var(--orange), var(--coral));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.sc-section-header p { color: var(--app-muted); font-size: 0.95rem; margin: 0; }
+.sc-divider { width: 40px; height: 3px; background: linear-gradient(90deg, var(--orange), var(--coral)); border-radius: 99px; margin-top: 12px; }
+
+.chess-shell { display: grid; grid-template-columns: minmax(280px, 520px) minmax(220px, 1fr); gap: 22px; }
+@media (max-width: 992px) { .chess-shell { grid-template-columns: 1fr; } }
+
+.chess-card {
+  background: var(--app-surface-1);
+  border-radius: 22px;
+  border: 1px solid var(--app-border);
+  box-shadow: var(--app-shadow-1);
+  padding: 18px;
+}
+
+.chess-meta-tag {
+  display: inline-flex; align-items: center;
+  font-size: 0.65rem; font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase;
+  padding: 4px 12px; border-radius: 999px;
+  background: rgba(243,154,31,0.12);
+  border: 1px solid rgba(243,154,31,0.28);
+  color: #c97a00;
+}
+
+.btn-orange {
+  background: linear-gradient(135deg, var(--orange) 0%, var(--coral) 100%);
+  color: #fff; border: none; padding: 12px 18px; border-radius: 999px;
+  font-size: 0.88rem; font-weight: 700; font-family: 'Poppins', sans-serif;
+  cursor: pointer; box-shadow: 0 4px 16px var(--glow);
+  transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s;
+}
+.btn-orange:hover { transform: scale(1.03) translateY(-1px); box-shadow: 0 10px 28px var(--glow-strong); }
+
+.chess-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="sc-section">
+    <div class="container">
+        <div class="sc-section-header">
+            <span class="eyebrow">Live Game</span>
+            <h2>Chess <em>Match</em></h2>
+            <p>Opponent: {{ opponent_name }}</p>
+            <div class="sc-divider"></div>
+        </div>
+
+        <div class="chess-actions mb-4">
+            <span class="chess-meta-tag">Game in progress</span>
+            <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#forfeitModal">
+                Leave Game
+            </button>
+            <a class="btn-orange" href="{{ url_for('chess.lobby') }}">Back to Lobby</a>
+        </div>
+
+        <div class="chess-shell">
+            <div class="chess-card">
+                <div id="chess-board" class="chess-board"></div>
+            </div>
+
+            <div class="chess-card">
+                <div class="mb-3">
+                    <div class="chess-status" id="chess-status"></div>
+                    <div class="text-muted" id="chess-info"></div>
+                </div>
+                <div>
+                    <h6>Move History</h6>
+                    <ol class="chess-moves" id="chess-moves"></ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="modal fade" id="forfeitModal" tabindex="-1" aria-labelledby="forfeitModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="forfeitModalLabel">Leave game?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                If you leave now, you will forfeit and your opponent will be declared the winner.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Stay</button>
+                <form method="POST" action="{{ url_for('chess.forfeit_game', game_id=game.id) }}">
+                    <button type="submit" class="btn btn-danger">Forfeit &amp; Leave</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+    window.CHESS_STATE = {
+        gameId: {{ game.id }},
+        fen: {{ game.fen|tojson|safe }},
+        moves: {{ moves|tojson|safe }},
+        playerColor: {{ player_color|tojson|safe }},
+        orientation: {{ player_color|tojson|safe }},
+        status: {{ game.status|tojson|safe }},
+        result: {{ game.result|tojson|safe }},
+        turn: {{ turn|tojson|safe }}
+    };
+</script>
+<script src="{{ url_for('static', filename='js/chess.js') }}?v={{ game.updated_at or game.id }}"></script>
+{% endblock %}

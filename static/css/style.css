@@ -123,6 +123,17 @@ body, html {
   font-family: var(--app-font-family, 'Poppins', Arial, sans-serif) !important;
   margin: 0;
   overflow-x: hidden;
+  min-height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+body > footer {
+  margin-top: auto !important;
 }
 
 html[data-theme='dark'] body,

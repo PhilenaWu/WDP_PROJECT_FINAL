@@ -264,6 +264,12 @@
                 </li>
 
                 <li class="nav-item">
+                    <a class="nav-link nav-modern {% if request.endpoint and request.endpoint.startswith('games.') %}active{% endif %}" href="{{ url_for('games.index') }}">
+                        <i class="bi bi-controller me-1"></i> Games
+                    </a>
+                </li>
+
+                <li class="nav-item">
                     <a class="nav-link nav-modern {% if request.endpoint == 'events.submit_event' %}active{% endif %}" href="{{ url_for('events.submit_event') }}">
                         <i class="bi bi-envelope-paper me-1"></i> Proposal
                     </a>
