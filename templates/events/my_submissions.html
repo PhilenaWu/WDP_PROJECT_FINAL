@@ -1,441 +1,573 @@
 {% extends "base.html" %}
 
-{% block title %}My Submissions - StoryConnect{% endblock %}
+{% block title %}My Submissions – Genlink{% endblock %}
 
 {% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
 <style>
-    .submissions-container {
-        max-width: 1200px;
-        margin: 30px auto;
-        padding: 0 20px;
+    :root {
+        --orange: #f39a1f;
+        --orange-deep: #d97f06;
+        --coral: #ff8c61;
+        --cream: #fbf8f5;
+        --text: #1c1209;
+        --muted: #8a7260;
+        --glow: rgba(243,154,31,0.3);
+        --glow-strong: rgba(243,154,31,0.5);
     }
-    
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: var(--cream);
+        color: var(--text);
+        min-height: 100vh;
+        position: relative;
+    }
+
+    /* ── Background decoration ── */
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image: radial-gradient(circle, rgba(243,154,31,0.07) 1px, transparent 1px);
+        background-size: 40px 40px;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .blob {
+        position: fixed;
+        border-radius: 50%;
+        filter: blur(90px);
+        pointer-events: none;
+        z-index: 0;
+    }
+    .blob-a {
+        width: 600px; height: 600px;
+        background: radial-gradient(circle, rgba(243,154,31,0.12), transparent 70%);
+        top: -150px; right: -150px;
+        animation: drift 11s ease-in-out infinite alternate;
+    }
+    .blob-b {
+        width: 400px; height: 400px;
+        background: radial-gradient(circle, rgba(255,140,97,0.09), transparent 70%);
+        bottom: -80px; left: -80px;
+        animation: drift 14s ease-in-out infinite alternate-reverse;
+    }
+
+    @keyframes drift { from{transform:translate(0,0) scale(1)} to{transform:translate(22px,-18px) scale(1.06)} }
+    @keyframes slideUp { from{opacity:0; transform:translateY(20px)} to{opacity:1; transform:translateY(0)} }
+    @keyframes blink { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.4)} }
+    @keyframes fadeIn { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:translateY(0)} }
+
+    /* ── Page wrapper ── */
+    .page-wrapper {
+        position: relative;
+        z-index: 1;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 48px 24px 80px;
+    }
+
+    /* ── Back link ── */
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        margin-bottom: 28px;
+        transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--orange); }
+
+    /* ── Page header ── */
     .page-header-wrapper {
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        align-items: flex-start;
         margin-bottom: 40px;
         gap: 20px;
+        flex-wrap: wrap;
     }
-    
-    .page-header {
-        flex: 1;
-        margin-bottom: 0;
+
+    .page-eyebrow {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--orange);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
-    
-    .page-header h2 {
-        font-weight: 700;
-        color: #333;
-        margin-bottom: 10px;
+    .eyebrow-dot {
+        width: 7px; height: 7px;
+        background: var(--orange);
+        border-radius: 50%;
+        animation: blink 2s ease-in-out infinite;
     }
-    
-    .page-header p {
-        color: #666;
-        font-size: 1.1rem;
+
+    .page-title {
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+        font-weight: 900;
+        color: var(--text);
+        line-height: 1.1;
+        margin-bottom: 8px;
     }
-    
-    .back-btn {
-        background: white;
-        color: #f0ad4e;
-        border: 2px solid #f0ad4e;
-        padding: 8px 20px;
-        border-radius: 25px;
-        text-decoration: none;
+    .page-title em {
+        font-style: italic;
+        background: linear-gradient(135deg, var(--orange), var(--coral));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .page-subtitle {
+        color: var(--muted);
+        font-size: 0.92rem;
+        font-weight: 400;
+        margin: 0;
+    }
+
+    /* Count pill */
+    .count-pill {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        transition: all 0.3s;
-        margin-bottom: 20px;
-    }
-    
-    .back-btn:hover {
-        background: #f0ad4e;
+        background: linear-gradient(135deg, var(--orange), var(--coral));
         color: white;
-    }
-    
-    .submissions-count {
-        background: #f0ad4e;
-        color: white;
-        padding: 8px 20px;
-        border-radius: 25px;
-        display: inline-block;
-        font-weight: 600;
+        padding: 10px 22px;
+        border-radius: 999px;
+        font-weight: 800;
+        font-size: 0.8rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        box-shadow: 0 4px 16px var(--glow);
         white-space: nowrap;
+        flex-shrink: 0;
+        align-self: flex-start;
+        margin-top: 8px;
     }
-    
+
+    /* ── Submission card ── */
     .submission-card {
-        background: white;
-        border-radius: 15px;
-        padding: 30px;
-        margin-bottom: 25px;
-        margin-top: 20px;
-        box-shadow: 0 3px 20px rgba(0,0,0,0.08);
-        border-left: 6px solid #f0ad4e;
-        transition: transform 0.3s, box-shadow 0.3s;
+        background: #fff;
+        border-radius: 24px;
+        padding: 0;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 24px rgba(28,18,9,0.08), 0 0 0 1px rgba(243,154,31,0.08);
+        overflow: hidden;
+        transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s;
+        animation: fadeIn 0.4s ease-out both;
     }
-    
     .submission-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 5px 30px rgba(0,0,0,0.12);
+        transform: translateY(-4px);
+        box-shadow: 0 12px 40px rgba(28,18,9,0.11), 0 0 0 1px rgba(243,154,31,0.15);
     }
-    
-    .submission-card.pending {
-        border-left-color: #ffc107;
+
+    /* Status stripe at top */
+    .card-stripe {
+        height: 5px;
+        width: 100%;
     }
-    
-    .submission-card.approved {
-        border-left-color: #28a745;
-    }
-    
-    .submission-card.rejected {
-        border-left-color: #dc3545;
-    }
-    
+    .card-stripe.pending  { background: linear-gradient(90deg, #f59e0b, #fcd34d); }
+    .card-stripe.approved { background: linear-gradient(90deg, #22c55e, #86efac); }
+    .card-stripe.rejected { background: linear-gradient(90deg, #ef4444, #fca5a5); }
+
+    .card-inner { padding: 28px 32px 24px; }
+
+    /* ── Card header ── */
     .submission-header {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        margin-bottom: 20px;
+        gap: 16px;
+        margin-bottom: 22px;
+        flex-wrap: wrap;
     }
-    
+
     .submission-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #333;
-        margin-bottom: 10px;
+        font-family: 'Playfair Display', serif;
+        font-size: 1.35rem;
+        font-weight: 900;
+        color: var(--text);
+        line-height: 1.2;
         flex: 1;
     }
-    
+
     .status-badge {
-        padding: 8px 20px;
-        border-radius: 20px;
-        font-weight: 600;
-        font-size: 0.9rem;
+        padding: 6px 16px;
+        border-radius: 999px;
+        font-weight: 800;
+        font-size: 0.68rem;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.1em;
         white-space: nowrap;
+        flex-shrink: 0;
     }
-    
-    .status-badge.pending {
-        background: #fff3cd;
-        color: #856404;
-        border: 2px solid #ffc107;
-    }
-    
-    .status-badge.approved {
-        background: #d4edda;
-        color: #155724;
-        border: 2px solid #28a745;
-    }
-    
-    .status-badge.rejected {
-        background: #f8d7da;
-        color: #721c24;
-        border: 2px solid #dc3545;
-    }
-    
+    .status-badge.pending  { background: #fef3c7; color: #92400e; border: 1.5px solid #fcd34d; }
+    .status-badge.approved { background: #dcfce7; color: #14532d; border: 1.5px solid #86efac; }
+    .status-badge.rejected { background: #fee2e2; color: #7f1d1d; border: 1.5px solid #fca5a5; }
+
+    /* ── Info grid ── */
     .submission-info {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 15px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px;
         margin-bottom: 20px;
+        background: var(--cream);
+        border-radius: 16px;
+        padding: 18px 20px;
+        border: 1px solid rgba(243,154,31,0.1);
     }
-    
-    .info-item {
-        display: flex;
-        flex-direction: column;
-    }
-    
+
+    .info-item { display: flex; flex-direction: column; gap: 3px; }
     .info-label {
-        font-weight: 600;
-        color: #666;
-        font-size: 0.85rem;
+        font-size: 10px;
+        font-weight: 800;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 5px;
+        letter-spacing: 0.08em;
+        color: var(--orange-deep);
     }
-    
     .info-value {
-        color: #333;
-        font-size: 1rem;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text);
+        line-height: 1.5;
     }
-    
-    .submission-description {
-        background: #f8f9fa;
-        padding: 20px;
-        border-radius: 10px;
-        margin: 20px 0;
-    }
-    
-    .submission-description h6 {
-        font-weight: 700;
-        color: #333;
+
+    /* ── Text sections ── */
+    .text-section {
+        border-radius: 14px;
+        padding: 16px 18px;
         margin-bottom: 10px;
-        text-transform: uppercase;
-        font-size: 0.85rem;
-        letter-spacing: 0.5px;
+        background: var(--cream);
+        border: 1px solid rgba(243,154,31,0.1);
     }
-    
-    .submission-description p {
-        color: #666;
+    .text-section-label {
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        margin-bottom: 6px;
+    }
+    .text-section p {
+        color: var(--muted);
+        font-size: 13.5px;
+        line-height: 1.65;
+        margin: 0;
+        font-weight: 400;
+    }
+
+    /* ── Admin notes ── */
+    .admin-notes {
+        background: linear-gradient(135deg, rgba(243,154,31,0.07), rgba(255,140,97,0.05));
+        border: 1.5px solid rgba(243,154,31,0.25);
+        border-radius: 14px;
+        padding: 16px 18px;
+        margin-top: 12px;
+    }
+    .admin-notes-label {
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--orange-deep);
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .admin-notes p {
+        color: var(--muted);
+        font-size: 13px;
         line-height: 1.6;
         margin: 0;
     }
-    
-    .submission-actions {
+
+    /* ── Card footer ── */
+    .card-footer-row {
         display: flex;
-        gap: 10px;
-        margin-top: 20px;
-        padding-top: 20px;
-        border-top: 2px solid #e9ecef;
-    }
-    
-    .btn-edit {
-        background: #17a2b8;
-        color: white;
-        padding: 10px 25px;
-        border-radius: 25px;
-        border: none;
-        cursor: pointer;
-        transition: background 0.3s;
-        text-decoration: none;
-        display: inline-flex;
         align-items: center;
-        gap: 8px;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 22px;
+        padding-top: 18px;
+        border-top: 1px solid rgba(243,154,31,0.1);
+        flex-wrap: wrap;
     }
-    
-    .btn-edit:hover {
-        background: #138496;
-        color: white;
-    }
-    
-    .btn-delete {
-        background: #dc3545;
-        color: white;
-        padding: 10px 25px;
-        border-radius: 25px;
-        border: none;
-        cursor: pointer;
-        transition: background 0.3s;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .btn-delete:hover {
-        background: #c82333;
-    }
-    
+
     .submission-meta {
-        color: #999;
-        font-size: 0.85rem;
-        margin-top: 15px;
+        color: rgba(138,114,96,0.6);
+        font-size: 11.5px;
+        font-weight: 500;
     }
-    
-    .admin-notes {
-        background: #fff9e6;
-        border: 2px solid #f0ad4e;
-        border-radius: 10px;
-        padding: 15px;
-        margin-top: 15px;
-    }
-    
-    .admin-notes h6 {
+
+    .action-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .btn-edit {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 9px 20px;
+        border-radius: 12px;
+        background: rgba(14,165,233,0.08);
+        border: 1.5px solid rgba(14,165,233,0.25);
+        color: #0369a1;
+        font-size: 12.5px;
         font-weight: 700;
-        color: #333;
-        margin-bottom: 10px;
-        font-size: 0.9rem;
+        font-family: 'Poppins', sans-serif;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s;
     }
-    
-    .admin-notes p {
-        color: #666;
-        margin: 0;
+    .btn-edit:hover {
+        background: rgba(14,165,233,0.14);
+        border-color: rgba(14,165,233,0.5);
+        transform: translateY(-1px);
+        color: #0369a1;
     }
-    
+
+    .btn-delete {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 9px 20px;
+        border-radius: 12px;
+        background: rgba(239,68,68,0.07);
+        border: 1.5px solid rgba(239,68,68,0.22);
+        color: #b91c1c;
+        font-size: 12.5px;
+        font-weight: 700;
+        font-family: 'Poppins', sans-serif;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .btn-delete:hover {
+        background: rgba(239,68,68,0.13);
+        border-color: rgba(239,68,68,0.45);
+        transform: translateY(-1px);
+    }
+
+    /* ── Empty state ── */
     .empty-state {
         text-align: center;
-        padding: 80px 20px;
-        background: white;
-        border-radius: 15px;
-        box-shadow: 0 3px 20px rgba(0,0,0,0.08);
+        padding: 80px 32px;
+        background: #fff;
+        border-radius: 28px;
+        box-shadow: 0 4px 24px rgba(28,18,9,0.07), 0 0 0 1px rgba(243,154,31,0.08);
+        animation: slideUp 0.5s ease-out both;
     }
-    
-    .empty-state i {
-        font-size: 4rem;
-        color: #e0e0e0;
-        margin-bottom: 20px;
-        display: none;
-    }
-    
-    .empty-state h4 {
-        color: #666;
-        margin-bottom: 15px;
-    }
-    
-    .empty-state .btn {
-        background: #f0ad4e;
-        color: white;
-        border: none;
-        cursor: pointer;
-        transition: background 0.3s;
-        text-decoration: none;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 5px;
-        margin-top: 30px;
-        padding: 10px 10px;
-        border-radius: 15px;
-        margin-left: auto;
-        margin-right: auto;
-        width: 300px;
-    }
-    
-    .empty-state .btn i {
-        font-size: 2.5rem;
-        color: white;
+
+    .empty-emoji {
+        font-size: 3.5rem;
+        margin-bottom: 16px;
         display: block;
-        margin: 0;
+        filter: drop-shadow(0 4px 12px rgba(243,154,31,0.2));
     }
-    
-    .empty-state .btn span {
-        font-size: 1rem;
-        font-weight: 600;
-        text-align: center;
+
+    .empty-state h4 {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: var(--text);
+        margin-bottom: 10px;
     }
-    
-    .empty-state .btn:hover {
-        background: #ec971f;
+    .empty-state p {
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.65;
+        max-width: 360px;
+        margin: 0 auto 32px;
+    }
+
+    .btn-submit-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 32px;
+        background: linear-gradient(135deg, var(--orange), var(--coral));
+        color: white;
+        text-decoration: none;
+        border-radius: 14px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        font-family: 'Poppins', sans-serif;
+        box-shadow: 0 6px 20px var(--glow);
+        transition: all 0.25s cubic-bezier(.34,1.56,.64,1);
+    }
+    .btn-submit-cta:hover {
+        transform: translateY(-2px) scale(1.03);
+        box-shadow: 0 12px 28px var(--glow-strong);
+        color: white;
+    }
+
+    /* stagger animations */
+    .submission-card:nth-child(1) { animation-delay: 0.05s; }
+    .submission-card:nth-child(2) { animation-delay: 0.12s; }
+    .submission-card:nth-child(3) { animation-delay: 0.19s; }
+    .submission-card:nth-child(4) { animation-delay: 0.26s; }
+    .submission-card:nth-child(5) { animation-delay: 0.33s; }
+
+    @media (max-width: 600px) {
+        .card-inner { padding: 20px 18px 18px; }
+        .submission-info { grid-template-columns: 1fr 1fr; }
+        .card-footer-row { flex-direction: column; align-items: flex-start; }
     }
 </style>
 {% endblock %}
 
-
-
 {% block content %}
+<div class="blob blob-a"></div>
+<div class="blob blob-b"></div>
 
-<div class="container submissions-container">
-    <a href="{{ url_for('events.submit_event') }}" class="back-btn">
-        <i class="bi bi-arrow-left"></i> Back to Form
+<div class="page-wrapper">
+
+    <!-- Back link -->
+    <a href="{{ url_for('events.submit_event') }}" class="back-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        Back to Form
     </a>
-    
+
+    <!-- Page header -->
     <div class="page-header-wrapper">
-        <div class="page-header">
-            <h2>Your Submissions</h2>
-            <p>View, edit, and manage your event submissions</p>
+        <div>
+            <div class="page-eyebrow"><span class="eyebrow-dot"></span> Event Proposals</div>
+            <h1 class="page-title">My <em>Submissions</em></h1>
+            <p class="page-subtitle">View, edit, and manage your event proposals</p>
         </div>
         {% if submissions %}
-        <div class="submissions-count">
-            {{ submissions|length }} SUBMISSION{{ 'S' if submissions|length != 1 else '' }}
+        <div class="count-pill">
+            📋 {{ submissions|length }} Submission{{ 's' if submissions|length != 1 else '' }}
         </div>
         {% endif %}
     </div>
-    
+
     {% if submissions and submissions|length > 0 %}
         {% for submission in submissions %}
-        <div class="submission-card {{ submission.status }}">
-            <div class="submission-header">
-                <div class="submission-title">{{ submission.event_title }}</div>
-                <div class="status-badge {{ submission.status }}">
-                    {{ submission.status }}
+        <div class="submission-card">
+            <div class="card-stripe {{ submission.status }}"></div>
+            <div class="card-inner">
+
+                <!-- Header -->
+                <div class="submission-header">
+                    <div class="submission-title">{{ submission.event_title }}</div>
+                    <div class="status-badge {{ submission.status }}">
+                        {% if submission.status == 'pending' %}⏳{% elif submission.status == 'approved' %}✅{% else %}❌{% endif %}
+                        {{ submission.status | capitalize }}
+                    </div>
                 </div>
-            </div>
-            
-            <div class="submission-info">
-                <div class="info-item">
-                    <span class="info-label">Organizer</span>
-                    <span class="info-value">{{ submission.organizer_name }} (Age: {{ submission.organizer_age_group or 'N/A' }})</span>
+
+                <!-- Info grid -->
+                <div class="submission-info">
+                    <div class="info-item">
+                        <span class="info-label">Organizer</span>
+                        <span class="info-value">{{ submission.organizer_name }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Age Group</span>
+                        <span class="info-value">{{ submission.organizer_age_group or 'N/A' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Contact</span>
+                        <span class="info-value">{{ submission.organizer_email }}<br>{{ submission.organizer_phone }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Event Type</span>
+                        <span class="info-value">{{ submission.event_type }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Location</span>
+                        <span class="info-value">{{ submission.organizer_location or 'Not specified' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Preferred Date</span>
+                        <span class="info-value">{{ submission.preferred_date.strftime('%d %b %Y') if submission.preferred_date else 'N/A' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Participants</span>
+                        <span class="info-value">{{ submission.expected_participants }}</span>
+                    </div>
                 </div>
-                
-                <div class="info-item">
-                    <span class="info-label">Contact</span>
-                    <span class="info-value">
-                        {{ submission.organizer_email }}<br>
-                        {{ submission.organizer_phone }}
-                    </span>
+
+                <!-- Text sections -->
+                <div class="text-section">
+                    <div class="text-section-label">📝 Description</div>
+                    <p>{{ submission.event_summary }}</p>
                 </div>
-                
-                <div class="info-item">
-                    <span class="info-label">Event Type</span>
-                    <span class="info-value">{{ submission.event_type }}</span>
+
+                <div class="text-section">
+                    <div class="text-section-label">💛 Why is this meaningful?</div>
+                    <p>{{ submission.why_meaningful }}</p>
                 </div>
-                
-                <div class="info-item">
-                    <span class="info-label">Location</span>
-                    <span class="info-value">{{ submission.organizer_location or 'Not specified' }}</span>
+
+                {% if submission.previous_experience %}
+                <div class="text-section">
+                    <div class="text-section-label">🏅 Previous Experience</div>
+                    <p>{{ submission.previous_experience }}</p>
                 </div>
-                
-                <div class="info-item">
-                    <span class="info-label">Preferred Date</span>
-                    <span class="info-value">{{ submission.preferred_date.strftime('%Y-%m-%d') if submission.preferred_date else 'N/A' }}</span>
-                </div>
-                
-                <div class="info-item">
-                    <span class="info-label">Participants</span>
-                    <span class="info-value">{{ submission.expected_participants }}</span>
-                </div>
-            </div>
-            
-            <div class="submission-description">
-                <h6>Description</h6>
-                <p>{{ submission.event_summary }}</p>
-            </div>
-            
-            <div class="submission-description">
-                <h6>Why is this meaningful?</h6>
-                <p>{{ submission.why_meaningful }}</p>
-            </div>
-            
-            {% if submission.previous_experience %}
-            <div class="submission-description">
-                <h6>Previous Experience</h6>
-                <p>{{ submission.previous_experience }}</p>
-            </div>
-            {% endif %}
-            
-            <div class="submission-description">
-                <h6>Accessibility</h6>
-                <p>{{ submission.accessibility_considerations }}</p>
-            </div>
-            
-            {% if submission.admin_notes %}
-            <div class="admin-notes">
-                <h6><i class="bi bi-info-circle"></i> Admin Notes</h6>
-                <p>{{ submission.admin_notes }}</p>
-            </div>
-            {% endif %}
-            
-            <div class="submission-actions">
-                {% if submission.status == 'pending' %}
-                <a href="{{ url_for('events.edit_submission', submission_id=submission.id) }}" class="btn-edit">
-                    <i class="bi bi-pencil"></i> Edit
-                </a>
                 {% endif %}
-                
-                <form method="POST" action="{{ url_for('events.delete_submission', submission_id=submission.id) }}" 
-                      style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this submission?');">
-                    <button type="submit" class="btn-delete">
-                        <i class="bi bi-trash"></i> Delete
-                    </button>
-                </form>
-            </div>
-            
-            <div class="submission-meta">
-                Submitted on {{ submission.created_at.strftime('%Y-%m-%d %H:%M:%S') if submission.created_at else 'N/A' }}
+
+                <div class="text-section">
+                    <div class="text-section-label">♿ Accessibility</div>
+                    <p>{{ submission.accessibility_considerations }}</p>
+                </div>
+
+                {% if submission.admin_notes %}
+                <div class="admin-notes">
+                    <div class="admin-notes-label">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        Admin Notes
+                    </div>
+                    <p>{{ submission.admin_notes }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Footer row -->
+                <div class="card-footer-row">
+                    <div class="submission-meta">
+                        Submitted {{ submission.created_at.strftime('%d %b %Y at %H:%M') if submission.created_at else 'N/A' }}
+                    </div>
+                    <div class="action-btns">
+                        {% if submission.status == 'pending' %}
+                        <a href="{{ url_for('events.edit_submission', submission_id=submission.id) }}" class="btn-edit">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            Edit
+                        </a>
+                        {% endif %}
+                        <form method="POST" action="{{ url_for('events.delete_submission', submission_id=submission.id) }}"
+                              style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this submission?');">
+                            <button type="submit" class="btn-delete">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
             </div>
         </div>
         {% endfor %}
+
     {% else %}
     <div class="empty-state">
+        <span class="empty-emoji">📋</span>
         <h4>No Submissions Yet</h4>
-        <p>You haven't submitted any event proposals yet.<br>Start by submitting your first event idea!</p>
-        <a href="{{ url_for('events.submit_event') }}" class="btn">
-            <i class="bi bi-plus-circle"></i>
-            <span>Submit Event</span>
+        <p>You haven't submitted any event proposals yet. Share your idea and help build community connections!</p>
+        <a href="{{ url_for('events.submit_event') }}" class="btn-submit-cta">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Submit Your First Event
         </a>
     </div>
     {% endif %}
-</div>
 
+</div>
 {% endblock %}
+

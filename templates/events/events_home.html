@@ -1,780 +1,906 @@
 {% extends "base.html" %}
 
-{% block title %}Events - StoryConnect{% endblock %}
+{% block title %}Events - Genlink{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/events.css') }}">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
+
 <style>
-    .event-carousel-wrapper {
-        position: relative;
-        overflow: visible;
-        padding: 20px 0;
-        height: 600px;
-    }
-    
-    .event-carousel-container {
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        gap: 30px;
-        perspective: 1000px;
-        padding: 20px;
-        overflow: hidden;
-        position: relative;
-        height: 100%;
-    }
-    
-    .carousel-track {
-        display: flex;
-        gap: 30px;
-        transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1.0);
-        align-items: center;
-    }
-    
-    .view-more-btn {
-        background: #f0ad4e;
-        color: white;
-        border: none;
-        padding: 8px 20px;
-        border-radius: 20px;
-        cursor: pointer;
-        margin-left: auto;
-        transition: background 0.3s;
-    }
-    
-    .view-more-btn:hover {
-        background: #ec971f;
-    }
-    
-    .event-card {
-        flex-shrink: 0;
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        background: white;
-        border-radius: 15px;
-        overflow: hidden;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        transition: all 0.6s cubic-bezier(0.4, 0.0, 0.2, 1.0);
-        width: 250px;
-        opacity: 0.6;
-        transform: scale(0.85);
-    }
-    
-    .event-card.carousel-center {
-        width: 380px;
-        opacity: 1;
-        transform: scale(1);
-        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-        z-index: 5;
-    }
-    
-    .event-card-media {
-        width: 100%;
-        height: 200px;
-        background: #f1f3f5;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: height 0.5s cubic-bezier(0.4, 0.0, 0.2, 1.0);
-    }
+/* ── ACCENT TOKENS (never change between themes) ─────────── */
+:root {
+  --orange:      #f39a1f;
+  --coral:       #ff8c61;
+  --glow:        rgba(243,154,31,0.26);
+  --glow-strong: rgba(243,154,31,0.48);
+}
 
-    .event-card.carousel-center .event-card-media {
-        height: 250px;
-    }
+/* noise grain overlay */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 9998;
+}
 
-    .event-card-image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-    }
+/* ── TOAST ──────────────────────────────────────────────── */
+.sc-toast {
+  position: fixed; bottom: 28px; right: 28px;
+  background: var(--app-surface-1);
+  color: var(--app-text);
+  padding: 14px 20px; border-radius: 14px;
+  font-size: 14px; font-weight: 500;
+  display: flex; align-items: center; gap: 10px;
+  box-shadow: var(--app-shadow-2);
+  border: 1px solid rgba(243,154,31,0.3);
+  z-index: 9999;
+  animation: toastIn .35s cubic-bezier(.22,.68,0,1.2) both,
+             toastOut .3s ease 3.8s forwards;
+}
+@keyframes toastIn  { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
+@keyframes toastOut { to   { opacity:0; transform:translateY(10px); pointer-events:none; } }
+.sc-toast svg { flex-shrink: 0; stroke: var(--orange); }
 
-    .event-card-placeholder {
-        color: #8b8b8b;
-        font-size: 0.85rem;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-    }
-    
-    .event-card-body {
-        padding: 20px;
-        transition: padding 0.5s cubic-bezier(0.4, 0.0, 0.2, 1.0);
-    }
-    
-    .event-card.carousel-center .event-card-body {
-        padding: 25px;
-    }
-    
-    .event-card-title {
-        font-size: 1.2rem;
-        font-weight: 600;
-        margin-bottom: 10px;
-        color: #333;
-        transition: font-size 0.5s cubic-bezier(0.4, 0.0, 0.2, 1.0);
-    }
-    
-    .event-card.carousel-center .event-card-title {
-        font-size: 1.4rem;
-    }
-    
-    .event-card-date, .event-card-time {
-        font-size: 0.9rem;
-        color: #666;
-        margin-bottom: 5px;
-        transition: font-size 0.5s cubic-bezier(0.4, 0.0, 0.2, 1.0);
-    }
-    
-    .event-card.carousel-center .event-card-date,
-    .event-card.carousel-center .event-card-time {
-        font-size: 0.95rem;
-    }
-    
-    .event-card-description {
-        font-size: 0.9rem;
-        color: #666;
-        margin-top: 10px;
-        line-height: 1.5;
-        display: none;
-    }
-    
-    .event-card.carousel-center .event-card-description {
-        display: block;
-    }
-    
-    .signup-btn {
-        background: #f0ad4e;
-        color: white;
-        border: none;
-        padding: 10px 25px;
-        border-radius: 25px;
-        font-weight: 500;
-        cursor: pointer;
-        margin-top: 15px;
-        width: 100%;
-        transition: background 0.3s;
-        display: none;
-    }
-    
-    .event-card.carousel-center .signup-btn {
-        display: block;
-    }
-    
-    .signup-btn:hover {
-        background: #ec971f;
-    }
-    
-    .carousel-btn {
-        position: absolute;
-        top: 280px;
-        background: #f0ad4e;
-        border: none;
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        color: white;
-        font-size: 1.5rem;
-        cursor: pointer;
-        z-index: 10;
-        transition: background 0.3s;
-    }
-    
-    .carousel-btn:hover {
-        background: #ec971f;
-    }
-    
-    .carousel-btn-prev {
-        left: 20px;
-    }
-    
-    .carousel-btn-next {
-        right: 20px;
-    }
-    
-    .signup-btn {
-        background: #f0ad4e;
-        color: white;
-        border: none;
-        padding: 10px 25px;
-        border-radius: 25px;
-        font-weight: 500;
-        cursor: pointer;
-        margin-top: 15px;
-        width: 100%;
-        transition: background 0.3s;
-    }
-    
-    .signup-btn:hover {
-        background: #ec971f;
-    }
-    
-    .navigation-section {
-        background: #f8f9fa;
-        padding: 15px 0;
-        margin: 5px 0 50px 0;
-    }
-    
-    .map-container {
-        height: 400px;
-        border-radius: 15px;
-        overflow: hidden;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-    
-    .my-events-section {
-        padding: 40px 0;
-    }
-    
-    .calendar-container {
-        background: #1a1d2e;
-        color: white;
-        padding: 30px;
-        border-radius: 15px;
-    }
-    
-    .calendar-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-    
-    .calendar-grid {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 10px;
-        text-align: center;
-    }
-    
-    .calendar-day {
-        padding: 10px;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background 0.3s;
-    }
-    
-    .calendar-day:hover {
-        background: rgba(255,255,255,0.1);
-    }
-    
-    .calendar-day.has-event {
-        background: #f0ad4e;
-        color: white;
-        font-weight: 600;
-    }
-    
-    .calendar-day.today {
-        border: 2px solid #f0ad4e;
-    }
-    
-    .event-list-item {
-        background: white;
-        border-radius: 15px;
-        padding: 20px;
-        margin-bottom: 15px;
-        display: flex;
-        align-items: center;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
+/* ── SECTION CHROME ─────────────────────────────────────── */
+.sc-section { padding: 80px 0; }
 
-    .event-list-media {
-        width: 80px;
-        height: 80px;
-        border-radius: 10px;
-        background: #f1f3f5;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 20px;
-        flex-shrink: 0;
-        overflow: hidden;
-    }
+.sc-section-header { text-align: center; margin-bottom: 44px; }
+.sc-section-header .eyebrow {
+  display: inline-block;
+  font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--orange); margin-bottom: 10px;
+}
+.sc-section-header h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-weight: 900; line-height: 1.12; margin-bottom: 8px;
+  color: var(--app-text);
+}
+.sc-section-header h2 em {
+  font-style: italic;
+  background: linear-gradient(135deg, var(--orange), var(--coral));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.sc-section-header p { color: var(--app-muted); font-size: 0.95rem; margin: 0; line-height: 1.7; }
+.sc-divider {
+  width: 40px; height: 3px;
+  background: linear-gradient(90deg, var(--orange), var(--coral));
+  border-radius: 99px; margin: 14px auto 0;
+}
 
-    .event-list-image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-    }
+/* ── UPCOMING EVENTS ────────────────────────────────────── */
+.upcoming-section  { background: var(--app-bg); }
+.my-events-section { background: var(--app-bg); }
+.directions-section {
+  background: var(--app-surface-1);
+  border-top: 1px solid var(--app-border);
+  border-bottom: 1px solid var(--app-border);
+}
 
-    .event-list-placeholder {
-        color: #8b8b8b;
-        font-size: 0.7rem;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        text-align: center;
-        padding: 0 6px;
-    }
+.carousel-wrapper {
+  position: relative; max-width: 1160px;
+  margin: 0 auto; padding: 0 60px;
+}
+.carousel-viewport { overflow: hidden; border-radius: 18px; }
+.carousel-track {
+  display: flex; gap: 22px;
+  transition: transform 0.48s cubic-bezier(.4,0,.2,1);
+  will-change: transform;
+}
 
-    .event-modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.5);
-        overflow-y: auto;
-    }
-    
-    .event-modal-content {
-        background: white;
-        margin: 50px auto;
-        padding: 0;
-        border-radius: 15px;
-        max-width: 600px;
-        position: relative;
-    }
-    
-    .event-modal-close {
-        position: absolute;
-        right: 20px;
-        top: 20px;
-        font-size: 2rem;
-        color: #333;
-        cursor: pointer;
-        z-index: 10;
-        background: white;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .event-modal-image {
-        width: 100%;
-        height: 300px;
-        object-fit: cover;
-        border-radius: 15px 15px 0 0;
-    }
-    
-    .event-modal-body {
-        padding: 30px;
-    }
-    
-    .optout-btn {
-        background: #dc3545;
-        color: white;
-        border: none;
-        padding: 10px 30px;
-        border-radius: 25px;
-        cursor: pointer;
-        margin-top: 20px;
-        transition: background 0.3s;
-    }
-    
-    .optout-btn:hover {
-        background: #c82333;
-    }
+/* ── EVENT CARD ─────────────────────────────────────────── */
+.event-card {
+  flex: 0 0 calc((100% - 44px) / 3);
+  background: var(--app-surface-1);
+  border-radius: 22px;
+  border: 1px solid var(--app-border);
+  overflow: hidden; display: flex; flex-direction: column;
+  transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s, border-color 0.25s;
+}
+.event-card:hover {
+  transform: translateY(-7px);
+  box-shadow: 0 20px 56px rgba(243,154,31,0.13), 0 8px 24px rgba(0,0,0,0.08);
+  border-color: rgba(243,154,31,0.38);
+}
+
+.event-card-media {
+  height: 185px; background: var(--app-surface-2);
+  overflow: hidden; flex-shrink: 0;
+}
+.event-card-media img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  transition: transform 0.45s ease;
+}
+.event-card:hover .event-card-media img { transform: scale(1.06); }
+.event-card-placeholder {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--app-muted); font-size: 12px;
+  letter-spacing: .08em; text-transform: uppercase;
+  background: var(--app-surface-2);
+}
+
+.event-card-body {
+  padding: 20px 22px 22px;
+  display: flex; flex-direction: column; flex: 1;
+}
+
+.event-tag {
+  display: inline-flex; align-items: center;
+  font-size: 0.65rem; font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase;
+  padding: 4px 12px; border-radius: 999px;
+  background: rgba(243,154,31,0.12);
+  border: 1px solid rgba(243,154,31,0.28);
+  color: #c97a00;
+  margin-bottom: 12px; align-self: flex-start;
+}
+html[data-theme='dark'] .event-tag { color: #f5b84a; }
+
+.event-card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem; font-weight: 700;
+  margin: 0 0 12px; line-height: 1.28;
+  color: var(--app-text);
+}
+.event-meta { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+.event-meta span { font-size: 0.8rem; color: var(--app-muted); display: flex; align-items: center; gap: 7px; }
+.event-meta i { color: var(--orange); font-size: 0.78rem; }
+.event-card-description {
+  font-size: 0.82rem; color: var(--app-muted);
+  line-height: 1.6; margin-bottom: 18px;
+  display: -webkit-box; -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical; overflow: hidden; flex: 1;
+}
+
+.btn-orange {
+  width: 100%;
+  background: linear-gradient(135deg, var(--orange) 0%, var(--coral) 100%);
+  color: #fff; border: none; padding: 13px; border-radius: 999px;
+  font-size: 0.88rem; font-weight: 700; font-family: 'Poppins', sans-serif;
+  cursor: pointer; box-shadow: 0 4px 16px var(--glow);
+  transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s;
+  margin-top: auto;
+}
+.btn-orange:hover { transform: scale(1.03) translateY(-1px); box-shadow: 0 10px 28px var(--glow-strong); }
+
+.carousel-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  background: var(--app-surface-1);
+  border: 1.5px solid rgba(243,154,31,0.28);
+  width: 46px; height: 46px; border-radius: 50%;
+  box-shadow: var(--app-shadow-1);
+  display: grid; place-items: center;
+  cursor: pointer; z-index: 10;
+  color: var(--orange); font-size: 1rem;
+  transition: all 0.25s cubic-bezier(.34,1.56,.64,1);
+}
+.carousel-arrow:hover {
+  background: linear-gradient(135deg, var(--orange), var(--coral));
+  color: #fff; border-color: transparent;
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 8px 28px var(--glow-strong);
+}
+.carousel-arrow-prev { left: 6px; }
+.carousel-arrow-next { right: 6px; }
+
+.sc-empty-carousel { text-align: center; padding: 56px 0; color: var(--app-muted); font-size: 0.95rem; }
+
+@media (max-width: 992px) { .event-card { flex: 0 0 calc((100% - 22px) / 2); } }
+@media (max-width: 600px) {
+  .carousel-wrapper { padding: 0 16px; }
+  .event-card { flex: 0 0 100%; }
+  .carousel-arrow { display: none; }
+}
+
+/* ── DIRECTIONS ─────────────────────────────────────────── */
+.directions-controls {
+  background: var(--app-surface-2);
+  border-radius: 22px; padding: 28px 32px;
+  margin-bottom: 22px;
+  border: 1px solid var(--app-border);
+  box-shadow: var(--app-shadow-1);
+}
+
+.form-label {
+  font-size: 0.68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .1em;
+  color: var(--app-muted); margin-bottom: 7px; display: block;
+}
+
+.form-control,
+.form-select {
+  border: 1.5px solid var(--app-border);
+  border-radius: 12px; padding: 11px 15px;
+  font-size: 0.88rem; font-family: 'Poppins', sans-serif;
+  background: var(--app-surface-1);
+  color: var(--app-text);
+  width: 100%;
+  transition: border-color 0.22s, box-shadow 0.22s;
+}
+.form-control:focus, .form-select:focus {
+  outline: none; border-color: var(--orange);
+  box-shadow: 0 0 0 3px var(--glow);
+}
+.form-control::placeholder { color: var(--app-muted); }
+
+.btn-direction {
+  background: linear-gradient(135deg, var(--orange), var(--coral));
+  color: #fff; border: none;
+  height: 46px; width: 46px; border-radius: 12px;
+  display: grid; place-items: center;
+  cursor: pointer; font-size: 1.1rem;
+  box-shadow: 0 4px 14px var(--glow);
+  transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s;
+  flex-shrink: 0;
+}
+.btn-direction:hover { transform: scale(1.08); box-shadow: 0 8px 24px var(--glow-strong); }
+
+.map-container {
+  height: 420px; border-radius: 22px; overflow: hidden;
+  border: 1px solid var(--app-border);
+  box-shadow: var(--app-shadow-1);
+}
+.map-placeholder {
+  height: 100%; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 10px; background: var(--app-surface-2); color: var(--app-muted);
+}
+.map-placeholder svg { opacity: .35; }
+.map-placeholder p   { font-size: 0.88rem; margin: 0; }
+.map-placeholder small { font-size: 0.75rem; opacity: .7; }
+
+/* ── MY EVENTS ──────────────────────────────────────────── */
+.stats-row { display: flex; gap: 14px; margin-bottom: 28px; flex-wrap: wrap; }
+
+.stat-chip {
+  background: var(--app-surface-1);
+  border: 1.5px solid var(--app-border);
+  border-radius: 999px; padding: 10px 20px;
+  display: flex; align-items: center; gap: 12px;
+  font-size: 0.88rem; font-weight: 500;
+  box-shadow: var(--app-shadow-1);
+  transition: border-color 0.22s, box-shadow 0.22s;
+}
+.stat-chip:hover { border-color: rgba(243,154,31,0.4); box-shadow: 0 4px 18px var(--glow); }
+.stat-chip-icon {
+  width: 32px; height: 32px;
+  background: rgba(243,154,31,0.12);
+  border: 1px solid rgba(243,154,31,0.22);
+  border-radius: 50%; display: grid; place-items: center;
+  color: var(--orange); font-size: 0.85rem; flex-shrink: 0;
+}
+.stat-chip-value { font-weight: 900; font-size: 1rem; color: var(--app-text); }
+.stat-chip-label { color: var(--app-muted); font-size: 0.78rem; }
+
+.my-events-grid {
+  display: grid; grid-template-columns: 1.1fr 0.9fr;
+  gap: 24px; align-items: start;
+}
+@media (max-width: 992px) { .my-events-grid { grid-template-columns: 1fr; } }
+
+.events-list-panel {
+  background: var(--app-surface-1);
+  border-radius: 22px;
+  border: 1px solid var(--app-border);
+  overflow: hidden; box-shadow: var(--app-shadow-1);
+}
+
+.event-list-item {
+  display: flex; align-items: center; gap: 16px;
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--app-border);
+  transition: background 0.22s, transform 0.22s;
+}
+.event-list-item:last-child { border-bottom: none; }
+.event-list-item:hover { background: var(--app-surface-2); transform: translateX(3px); }
+
+.event-list-thumb {
+  width: 72px; height: 72px; border-radius: 14px; overflow: hidden;
+  flex-shrink: 0; background: var(--app-surface-2);
+  border: 1px solid var(--app-border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.68rem; color: var(--app-muted);
+  text-align: center; text-transform: uppercase; letter-spacing: .06em;
+}
+.event-list-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.event-list-info { flex: 1; min-width: 0; }
+.event-list-title {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700; font-size: 0.95rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-bottom: 5px; color: var(--app-text);
+}
+.event-list-date { font-size: 0.75rem; color: var(--app-muted); display: flex; align-items: center; gap: 5px; }
+
+.btn-view {
+  background: transparent; color: #c97a00;
+  border: 1.5px solid rgba(243,154,31,0.32);
+  border-radius: 999px; padding: 7px 18px;
+  font-size: 0.78rem; font-weight: 700;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer; flex-shrink: 0; transition: all 0.22s;
+}
+html[data-theme='dark'] .btn-view { color: #f5b84a; border-color: rgba(243,154,31,0.38); }
+.btn-view:hover {
+  background: linear-gradient(135deg, var(--orange), var(--coral));
+  color: #fff; border-color: transparent;
+  transform: translateY(-1px); box-shadow: 0 4px 14px var(--glow);
+}
+
+.empty-state { padding: 56px 32px; text-align: center; }
+.empty-icon {
+  width: 64px; height: 64px;
+  background: rgba(243,154,31,0.10);
+  border: 1px solid rgba(243,154,31,0.22);
+  border-radius: 20px; display: grid; place-items: center;
+  margin: 0 auto 18px; font-size: 1.7rem; color: var(--orange);
+}
+.empty-state h5 {
+  font-family: 'Playfair Display', serif;
+  font-weight: 900; font-size: 1.1rem; margin-bottom: 8px;
+  color: var(--app-text);
+}
+.empty-state p { color: var(--app-muted); font-size: 0.88rem; margin-bottom: 22px; line-height: 1.65; }
+.btn-browse {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: linear-gradient(135deg, var(--orange), var(--coral));
+  color: #fff; border: none;
+  padding: 12px 26px; border-radius: 999px;
+  font-size: 0.88rem; font-weight: 700;
+  font-family: 'Poppins', sans-serif; cursor: pointer;
+  box-shadow: 0 4px 16px var(--glow);
+  transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s;
+}
+.btn-browse:hover { transform: scale(1.04) translateY(-2px); box-shadow: 0 10px 28px var(--glow-strong); }
+
+/* ── CALENDAR (always dark card) ────────────────────────── */
+.calendar-card {
+  background: #1a1208;
+  border-radius: 22px; padding: 26px; color: #fff;
+  box-shadow: 0 20px 56px rgba(0,0,0,0.28);
+  position: relative; overflow: hidden;
+  border: 1px solid rgba(243,154,31,0.18);
+}
+html[data-theme='dark'] .calendar-card {
+  background: #0b1220;
+  border-color: var(--app-border);
+  box-shadow: 0 20px 56px rgba(0,0,0,0.52);
+}
+.calendar-card::before {
+  content: ''; position: absolute; top: -60px; right: -60px;
+  width: 220px; height: 220px;
+  background: radial-gradient(circle, rgba(243,154,31,0.16), transparent 65%);
+  pointer-events: none;
+}
+
+.cal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 22px; position: relative; z-index: 1;
+}
+.cal-header h5 { font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 700; margin: 0; color: #fff; }
+.cal-nav-btn {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.75);
+  width: 32px; height: 32px; border-radius: 8px;
+  display: grid; place-items: center; cursor: pointer; font-size: 0.82rem;
+  transition: background 0.2s, color 0.2s;
+}
+.cal-nav-btn:hover { background: var(--orange); border-color: var(--orange); color: #fff; }
+
+.cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; text-align: center; position: relative; z-index: 1; }
+.cal-day-name { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: rgba(255,255,255,0.35); padding-bottom: 10px; }
+.cal-day {
+  padding: 8px 4px; font-size: 0.8rem; border-radius: 9px; cursor: pointer;
+  color: rgba(255,255,255,0.65); transition: background 0.2s, color 0.2s;
+  display: flex; align-items: center; justify-content: center; min-height: 32px;
+}
+.cal-day:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.cal-day.today { border: 2px solid rgba(255,255,255,0.35); color: #fff; font-weight: 700; }
+.cal-day.has-event { background: linear-gradient(135deg, var(--orange), var(--coral)); color: #fff; font-weight: 800; box-shadow: 0 3px 10px rgba(243,154,31,0.45); }
+.cal-day.has-event.today { box-shadow: 0 0 0 3px rgba(243,154,31,0.4); }
+
+.cal-legend { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.08); position: relative; z-index: 1; }
+.cal-legend-chip { display: flex; align-items: center; gap: 7px; font-size: 0.72rem; color: rgba(255,255,255,0.55); }
+.cal-legend-dot  { width: 8px; height: 8px; border-radius: 50%; background: var(--orange); }
+.cal-legend-ring { width: 8px; height: 8px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.4); }
+
+/* ── EVENT MODAL ────────────────────────────────────────── */
+.event-modal {
+  display: none; position: fixed; inset: 0;
+  background: var(--app-overlay, rgba(0,0,0,0.55));
+  backdrop-filter: blur(5px); z-index: 2000;
+  overflow-y: auto; padding: 40px 16px;
+}
+.event-modal-content {
+  background: var(--app-surface-1);
+  border-radius: 22px; max-width: 580px;
+  margin: 0 auto; overflow: hidden; position: relative;
+  border: 1px solid var(--app-border);
+  box-shadow: var(--app-shadow-2);
+  animation: modalIn .3s cubic-bezier(.22,.68,0,1.2) both;
+}
+@keyframes modalIn { from { opacity:0; transform:scale(.94) translateY(14px); } to { opacity:1; transform:none; } }
+
+.event-modal-close {
+  position: absolute; top: 14px; right: 14px;
+  background: rgba(0,0,0,0.40); border: none;
+  width: 36px; height: 36px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 1.3rem; cursor: pointer; z-index: 10;
+  color: #fff; line-height: 1; transition: background 0.2s;
+}
+.event-modal-close:hover { background: rgba(0,0,0,0.65); }
+
+.event-modal-image { width: 100%; height: 280px; object-fit: cover; display: block; }
+.event-modal-body { padding: 28px 30px 32px; }
+.event-modal-body h3 {
+  font-family: 'Playfair Display', serif; font-weight: 900; font-size: 1.4rem;
+  margin-bottom: 14px; color: var(--app-text); line-height: 1.2;
+}
+.event-modal-body p { font-size: 0.88rem; margin-bottom: 7px; color: var(--app-text); line-height: 1.65; }
+
+.optout-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: transparent; color: #dc2626;
+  border: 1.5px solid rgba(220,38,38,0.35);
+  padding: 11px 26px; border-radius: 999px;
+  font-size: 0.85rem; font-weight: 700;
+  font-family: 'Poppins', sans-serif; cursor: pointer;
+  margin-top: 18px; transition: all 0.22s;
+}
+.optout-btn:hover { background: #dc2626; color: #fff; border-color: #dc2626; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(220,38,38,0.28); }
 </style>
 {% endblock %}
 
-
-
 {% block content %}
-<div class="container-fluid">
-    <!-- Upcoming Events Carousel Section -->
-    <section class="py-5">
-        <div class="text-center mb-4">
-            <h2 class="fw-bold">Upcoming Events</h2>
-        </div>
-        
-        {% if upcoming_events and upcoming_events|length > 0 %}
-        <div class="event-carousel-wrapper">
-            <button class="carousel-btn carousel-btn-prev" onclick="moveCarousel(-1)">
-                <i class="bi bi-chevron-left"></i>
-            </button>
-            
-            <div class="event-carousel-container" id="eventCarousel">
-                <div class="carousel-track" id="carouselTrack">
-                    {% for event in upcoming_events %}
-                    <div class="event-card" data-event-id="{{ event.id }}">
-                        <div class="event-card-media">
-                        {% if event.image_url %}
-                        <img src="{{ event.image_url }}" alt="{{ event.title }}" class="event-card-image">
-                        {% else %}
-                        <div class="event-card-placeholder">No image</div>
-                        {% endif %}
-                    </div>
-                    <div class="event-card-body">
-                        <h3 class="event-card-title">{{ event.title }}</h3>
-                        <p class="event-card-date">
-                            <i class="bi bi-calendar3"></i> 
-                            <strong>Date:</strong> {{ event.event_date.strftime('%d %B %Y') if event.event_date else 'TBA' }}
-                        </p>
-                        <p class="event-card-time">
-                            <i class="bi bi-clock"></i> 
-                            <strong>Time:</strong> {{ event.start_time if event.start_time else '' }} - 
-                            {{ event.end_time if event.end_time else '' }}
-                        </p>
-                        <p class="event-card-description">
-                            {{ event.description[:100] }}{% if event.description|length > 100 %}...{% endif %}
-                        </p>
-                        <button class="signup-btn" onclick="window.location.href='{{ url_for('events.signup_event', event_id=event.id) }}'">
-                            Sign Up
-                        </button>
-                    </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            
-            <button class="carousel-btn carousel-btn-next" onclick="moveCarousel(1)">
-                <i class="bi bi-chevron-right"></i>
-            </button>
-        </div>
-        {% else %}
-        <div class="text-center py-5">
-            <p class="text-muted">No upcoming events at the moment. Check back later!</p>
-        </div>
-        {% endif %}
-    </section>
-    
-    <!-- Navigation Section with Google Maps -->
-    <section class="navigation-section">
-        <div class="container">
-            <h2 class="text-center mb-4 fw-bold" style="color: black;">Get Directions to Your Events</h2>
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="bg-white p-4 rounded-3 shadow-sm mb-4">
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <label class="form-label">Your Location</label>
-                                <input type="text" class="form-control" id="userLocation" placeholder="Enter your current location">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Select Event</label>
-                                <select class="form-select" id="eventDestination">
-                                    <option value="">Choose an event...</option>
-                                    {% for event in my_events %}
-                                    <option value="{{ event.latitude }},{{ event.longitude }}" 
-                                            data-address="{{ event.location_address or event.location }}">
-                                        {{ event.title }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Travel Mode</label>
-                                <select class="form-select" id="travelMode">
-                                    <option value="DRIVING">Driving</option>
-                                    <option value="WALKING">Walking</option>
-                                    <option value="BICYCLING">Cycling</option>
-                                    <option value="TRANSIT">Transit</option>
-                                </select>
-                            </div>
-                        </div>
-                        <button class="btn btn-warning mt-3" onclick="getDirections()">
-                            <i class="bi bi-geo-alt"></i> Get Directions
-                        </button>
-                    </div>
-                    <div id="map" class="map-container"></div>
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <!-- My Events Section -->
-    <section class="my-events-section">
-        <div class="container">
-            <h2 class="text-center mb-4 fw-bold" style="color: black;">My Events</h2>
-            <div class="row">
-                <!-- Event List -->
-                <div class="col-lg-7">
-                    {% if my_events and my_events|length > 0 %}
-                        {% for event in my_events %}
-                        <div class="event-list-item">
-                            <div class="event-list-media">
-                                {% if event.image_url %}
-                                <img src="{{ event.image_url }}" alt="{{ event.title }}" class="event-list-image">
-                                {% else %}
-                                <div class="event-list-placeholder">No image</div>
-                                {% endif %}
-                            </div>
-                            <div class="event-list-content">
-                                <div class="event-list-title" title="{{ event.title }}">{{ event.title }}</div>
-                                <div class="event-list-date">
-                                    DATE: {{ event.event_date.strftime('%d %B %Y') if event.event_date else 'TBA' }}
-                                </div>
-                            </div>
-                            <button class="view-more-btn" onclick="showEventModal({{ event.id }})">View More</button>
-                        </div>
-                        {% endfor %}
-                    {% else %}
-                    <div class="text-center py-5">
-                        <p class="text-muted">You haven't registered for any events yet.</p>
-                        <a href="#" onclick="document.querySelector('.event-carousel-wrapper').scrollIntoView({behavior: 'smooth'}); return false;" 
-                           class="btn btn-warning">Browse Events</a>
-                    </div>
-                    {% endif %}
-                </div>
-                
-                <!-- Calendar -->
-                <div class="col-lg-5">
-                    <div class="calendar-container">
-                        <div class="calendar-header">
-                            <button class="btn btn-sm btn-outline-light" onclick="changeMonth(-1)">
-                                <i class="bi bi-chevron-left"></i>
-                            </button>
-                            <h5 id="calendarMonth">December 2025</h5>
-                            <button class="btn btn-sm btn-outline-light" onclick="changeMonth(1)">
-                                <i class="bi bi-chevron-right"></i>
-                            </button>
-                        </div>
-                        <div class="calendar-grid">
-                            <div class="fw-bold">Mo</div>
-                            <div class="fw-bold">Tu</div>
-                            <div class="fw-bold">We</div>
-                            <div class="fw-bold">Th</div>
-                            <div class="fw-bold">Fr</div>
-                            <div class="fw-bold">Sa</div>
-                            <div class="fw-bold">Su</div>
-                        </div>
-                        <div class="calendar-grid mt-2" id="calendarDays">
-                            <!-- Days will be populated by JavaScript -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-</div>
 
-<!-- Event Detail Modal -->
-<div id="eventModal" class="event-modal">
-    <div class="event-modal-content">
-        <span class="event-modal-close" onclick="closeEventModal()">&times;</span>
-        <div id="modalContent">
-            <!-- Content loaded dynamically -->
-        </div>
+<!-- ── TOAST ─────────────────────────────────────────────── -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+    <div class="sc-toast" id="sc-toast">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      {{ message }}
     </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<!-- ════════════════════════════════════════════════════════
+     UPCOMING EVENTS
+     ════════════════════════════════════════════════════════ -->
+<section class="sc-section upcoming-section">
+  <div class="sc-section-header">
+    <span class="eyebrow">What's on</span>
+    <h2>Upcoming <em>Events</em></h2>
+    <p>Join exciting community activities happening soon</p>
+    <div class="sc-divider"></div>
+  </div>
+
+  {% if upcoming_events and upcoming_events|length > 0 %}
+  <div class="carousel-wrapper">
+    <button class="carousel-arrow carousel-arrow-prev" onclick="moveCarousel(-1)" aria-label="Previous">
+      <i class="bi bi-chevron-left"></i>
+    </button>
+
+    <div class="carousel-viewport">
+      <div class="carousel-track" id="carouselTrack">
+        {% for event in upcoming_events %}
+        <div class="event-card">
+
+          <div class="event-card-media">
+            {% if event.image_url %}
+              <img src="{{ event.image_url }}" alt="{{ event.title }}">
+            {% else %}
+              <div class="event-card-placeholder">No image</div>
+            {% endif %}
+          </div>
+
+          <div class="event-card-body">
+            <span class="event-tag">{{ event.category if event.category else 'Community' }}</span>
+            <h3 class="event-card-title">{{ event.title }}</h3>
+
+            <div class="event-meta">
+              <span>
+                <i class="bi bi-calendar3"></i>
+                {{ event.event_date.strftime('%d %B %Y') if event.event_date else 'TBA' }}
+              </span>
+              <span>
+                <i class="bi bi-clock"></i>
+                {{ event.start_time if event.start_time else '' }}{% if event.end_time %} – {{ event.end_time }}{% endif %}
+              </span>
+              {% if event.location %}
+              <span>
+                <i class="bi bi-geo-alt"></i>
+                {{ event.location }}
+              </span>
+              {% endif %}
+            </div>
+
+            <p class="event-card-description">
+              {{ event.description[:120] }}{% if event.description|length > 120 %}…{% endif %}
+            </p>
+
+            <button class="btn-orange"
+                    onclick="window.location.href='{{ url_for('events.signup_event', event_id=event.id) }}'">
+              Sign Up
+            </button>
+          </div>
+
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <button class="carousel-arrow carousel-arrow-next" onclick="moveCarousel(1)" aria-label="Next">
+      <i class="bi bi-chevron-right"></i>
+    </button>
+  </div>
+  {% else %}
+  <div class="sc-empty-carousel">No upcoming events at the moment. Check back later!</div>
+  {% endif %}
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════
+     GET DIRECTIONS
+     ════════════════════════════════════════════════════════ -->
+<section class="sc-section directions-section">
+  <div class="container">
+
+    <div class="sc-section-header">
+      <span class="eyebrow">Plan Your Visit</span>
+      <h2>Get <em>Directions</em></h2>
+      <p>Plan your route from wherever you are</p>
+      <div class="sc-divider"></div>
+    </div>
+
+    <div class="directions-controls">
+      <div class="row g-3 align-items-end">
+
+        <div class="col-md-4">
+          <label class="form-label">Your Location</label>
+          <input type="text" class="form-control" id="userLocation" placeholder="e.g. Sengkang MRT">
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Select Event</label>
+          <select class="form-select" id="eventDestination">
+            <option value="">Choose an event…</option>
+            {% for event in my_events %}
+            <option value="{{ event.latitude }},{{ event.longitude }}"
+                    data-address="{{ event.location_address or event.location }}">
+              {{ event.title }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Travel Mode</label>
+          <select class="form-select" id="travelMode">
+            <option value="DRIVING">🚗 Driving</option>
+            <option value="WALKING">🚶 Walking</option>
+            <option value="BICYCLING">🚲 Cycling</option>
+            <option value="TRANSIT">🚌 Transit</option>
+          </select>
+        </div>
+
+        <div class="col-md-1">
+          <button class="btn-direction" onclick="getDirections()" aria-label="Get directions">
+            <i class="bi bi-arrow-right"></i>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <div id="map" class="map-container">
+      <div class="map-placeholder" id="mapPlaceholder">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#8a7260" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
+        </svg>
+        <p>Select an event to see directions</p>
+        <small>Map will appear once you choose a destination</small>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════
+     MY EVENTS
+     ════════════════════════════════════════════════════════ -->
+<section class="sc-section my-events-section">
+  <div class="container">
+
+    <div class="sc-section-header">
+      <span class="eyebrow">Your Schedule</span>
+      <h2>My <em>Events</em></h2>
+      <p>Your registered activities at a glance</p>
+      <div class="sc-divider"></div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="stats-row">
+      <div class="stat-chip">
+        <div class="stat-chip-icon"><i class="bi bi-calendar2-week"></i></div>
+        <div>
+          <div class="stat-chip-value">{{ my_events|length if my_events else 0 }}</div>
+          <div class="stat-chip-label">Upcoming</div>
+        </div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-chip-icon"><i class="bi bi-check2-circle"></i></div>
+        <div>
+          <div class="stat-chip-value">{{ my_events|length if my_events else 0 }}</div>
+          <div class="stat-chip-label">Registered</div>
+        </div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-chip-icon"><i class="bi bi-geo-alt"></i></div>
+        <div>
+          <div class="stat-chip-value">—</div>
+          <div class="stat-chip-label">Next Event</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="my-events-grid">
+
+      <!-- Left: events list or empty state -->
+      <div class="events-list-panel">
+        {% if my_events and my_events|length > 0 %}
+          {% for event in my_events %}
+          <div class="event-list-item">
+            <div class="event-list-thumb">
+              {% if event.image_url %}
+                <img src="{{ event.image_url }}" alt="{{ event.title }}">
+              {% else %}
+                No image
+              {% endif %}
+            </div>
+            <div class="event-list-info">
+              <div class="event-list-title" title="{{ event.title }}">{{ event.title }}</div>
+              <div class="event-list-date">
+                <i class="bi bi-calendar3" style="color:var(--orange);font-size:11px;"></i>
+                {{ event.event_date.strftime('%d %B %Y') if event.event_date else 'TBA' }}
+              </div>
+            </div>
+            <button class="btn-view" onclick="showEventModal({{ event.id }})">View</button>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-icon"><i class="bi bi-calendar-x"></i></div>
+            <h5>No events yet</h5>
+            <p>Browse upcoming events and sign up to see them appear here.</p>
+            <button class="btn-browse"
+                    onclick="document.querySelector('.upcoming-section').scrollIntoView({behavior:'smooth'})">
+              <i class="bi bi-search"></i> Browse Events
+            </button>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Right: Calendar -->
+      <div class="calendar-card">
+        <div class="cal-header">
+          <button class="cal-nav-btn" onclick="changeMonth(-1)" aria-label="Previous month">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+          <h5 id="calendarMonth">February 2026</h5>
+          <button class="cal-nav-btn" onclick="changeMonth(1)" aria-label="Next month">
+            <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+
+        <div class="cal-grid">
+          <div class="cal-day-name">Mo</div>
+          <div class="cal-day-name">Tu</div>
+          <div class="cal-day-name">We</div>
+          <div class="cal-day-name">Th</div>
+          <div class="cal-day-name">Fr</div>
+          <div class="cal-day-name">Sa</div>
+          <div class="cal-day-name">Su</div>
+        </div>
+        <div class="cal-grid mt-1" id="calendarDays" style="gap:4px;"></div>
+
+        <div class="cal-legend">
+          <div class="cal-legend-chip"><div class="cal-legend-ring"></div> Today</div>
+          <div class="cal-legend-chip"><div class="cal-legend-dot"></div> Has Event</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── EVENT DETAIL MODAL ────────────────────────────────── -->
+<div id="eventModal" class="event-modal">
+  <div class="event-modal-content">
+    <button class="event-modal-close" onclick="closeEventModal()" aria-label="Close">&times;</button>
+    <div id="modalContent"></div>
+  </div>
 </div>
 
 {% endblock %}
 
+
 {% block extra_js %}
-<script src="https://maps.googleapis.com/maps/api/js?key={{ maps_api_key }}&libraries=places"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{ maps_api_key }}&libraries=places&callback=initMap" async defer></script>
+
 <script>
-    // Smooth Sliding Carousel - slides to beginning when reaching end
-    const track = document.getElementById('carouselTrack');
-    const cards = Array.from(document.querySelectorAll('.event-card'));
-    const totalCards = cards.length;
-    let currentIndex = 0;
-    let isAnimating = false;
-    
-    if (totalCards > 0) {
-        const cardWidth = 250;
-        const centerCardWidth = 380;
-        const gap = 30;
-        
-        function updateCarouselPosition() {
-            const containerWidth = document.getElementById('eventCarousel').offsetWidth;
-            
-            // Center the current card - calculate offset with fixed card width
-            const baseOffset = (containerWidth / 2) - (centerCardWidth / 2);
-            const slideOffset = currentIndex * (cardWidth + gap);
-            
-            track.style.transform = `translateX(${baseOffset - slideOffset}px)`;
-            
-            // Update card classes for styling
-            cards.forEach((card, index) => {
-                card.classList.remove('carousel-center');
-                if (index === currentIndex) {
-                    card.classList.add('carousel-center');
-                }
-            });
-        }
-        
-        function moveCarousel(direction) {
-            if (isAnimating) return;
-            
-            isAnimating = true;
-            
-            const newIndex = currentIndex + direction;
-            
-            // Check boundaries - slide back to start/end when reaching limits
-            if (newIndex < 0) {
-                currentIndex = totalCards - 1; // Go to last card
-            } else if (newIndex >= totalCards) {
-                currentIndex = 0; // Go to first card
-            } else {
-                currentIndex = newIndex;
-            }
-            
-            updateCarouselPosition();
-            
-            setTimeout(() => {
-                isAnimating = false;
-            }, 600);
-        }
-        
-        // Initialize
-        updateCarouselPosition();
-        
-        // Recalculate on window resize
-        window.addEventListener('resize', updateCarouselPosition);
+/* ── TOAST AUTO-DISMISS ─────────────────────────────────── */
+const toast = document.getElementById('sc-toast');
+if (toast) setTimeout(() => toast.style.display = 'none', 4200);
+
+/* ── CAROUSEL ───────────────────────────────────────────── */
+const track = document.getElementById('carouselTrack');
+const cards = track ? Array.from(track.querySelectorAll('.event-card')) : [];
+let currentIndex = 0;
+
+function getVisible() {
+  if (window.innerWidth <= 600) return 1;
+  if (window.innerWidth <= 992) return 2;
+  return 3;
+}
+
+function updateCarousel() {
+  if (!cards.length) return;
+  const vis = getVisible();
+  const max = Math.max(0, cards.length - vis);
+  currentIndex = Math.min(Math.max(currentIndex, 0), max);
+
+  const gap  = parseFloat(getComputedStyle(track).gap) || 22;
+  const cardW = cards[0].getBoundingClientRect().width;
+  track.style.transform = `translateX(${-(currentIndex * (cardW + gap))}px)`;
+}
+
+function moveCarousel(dir) {
+  const vis = getVisible();
+  const max = Math.max(0, cards.length - vis);
+  currentIndex = Math.min(Math.max(currentIndex + dir, 0), max);
+  updateCarousel();
+}
+
+window.addEventListener('resize', updateCarousel);
+updateCarousel();
+
+/* ── GOOGLE MAPS ────────────────────────────────────────── */
+let map, directionsService, directionsRenderer;
+
+function initMap() {
+  const placeholder = document.getElementById('mapPlaceholder');
+  if (placeholder) placeholder.style.display = 'none';
+
+  map = new google.maps.Map(document.getElementById('map'), {
+    zoom: 12,
+    center: { lat: 1.3521, lng: 103.8198 },
+    styles: [
+      { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] }
+    ]
+  });
+
+  directionsService  = new google.maps.DirectionsService();
+  directionsRenderer = new google.maps.DirectionsRenderer({ suppressMarkers: false });
+  directionsRenderer.setMap(map);
+
+  new google.maps.places.Autocomplete(document.getElementById('userLocation'));
+}
+
+function getDirections() {
+  const origin = document.getElementById('userLocation').value.trim();
+  const sel     = document.getElementById('eventDestination');
+  const dest    = sel.options[sel.selectedIndex]?.getAttribute('data-address');
+  const mode    = document.getElementById('travelMode').value;
+
+  if (!origin || !dest) {
+    alert('Please enter your location and choose an event.');
+    return;
+  }
+
+  directionsService.route(
+    { origin, destination: dest, travelMode: google.maps.TravelMode[mode] },
+    (result, status) => {
+      if (status === 'OK') directionsRenderer.setDirections(result);
+      else alert('Could not calculate directions: ' + status);
     }
-    
-    // Google Maps
-    let map, directionsService, directionsRenderer;
-    
-    function initMap() {
-        const singapore = { lat: 1.3521, lng: 103.8198 };
-        
-        map = new google.maps.Map(document.getElementById('map'), {
-            zoom: 12,
-            center: singapore
-        });
-        
-        directionsService = new google.maps.DirectionsService();
-        directionsRenderer = new google.maps.DirectionsRenderer();
-        directionsRenderer.setMap(map);
-        
-        // Add autocomplete to user location
-        const input = document.getElementById('userLocation');
-        const autocomplete = new google.maps.places.Autocomplete(input);
-    }
-    
-    function getDirections() {
-        const origin = document.getElementById('userLocation').value;
-        const eventSelect = document.getElementById('eventDestination');
-        const destination = eventSelect.options[eventSelect.selectedIndex].getAttribute('data-address');
-        const travelMode = document.getElementById('travelMode').value;
-        
-        if (!origin || !destination) {
-            alert('Please enter both your location and select an event');
-            return;
-        }
-        
-        const request = {
-            origin: origin,
-            destination: destination,
-            travelMode: google.maps.TravelMode[travelMode]
-        };
-        
-        directionsService.route(request, function(result, status) {
-            if (status === 'OK') {
-                directionsRenderer.setDirections(result);
-            } else {
-                alert('Could not calculate directions: ' + status);
-            }
-        });
-    }
-    
-    // Initialize map on load
-    window.onload = initMap;
-    
-    // Calendar functionality
-    const myEvents = {{ my_events|tojson if my_events else '[]'|safe }};
-    let currentDate = new Date();
-    
-    function renderCalendar() {
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth();
-        
-        // Update header
-        const monthNames = ["January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December"];
-        document.getElementById('calendarMonth').textContent = monthNames[month] + ' ' + year;
-        
-        // Get event dates for current viewing month/year
-        const eventDatesForMonth = myEvents.filter(e => {
-            const date = new Date(e.event_date);
-            return date.getFullYear() === year && date.getMonth() === month;
-        }).map(e => {
-            const date = new Date(e.event_date);
-            return { day: date.getDate(), title: e.title };
-        });
-        
-        // Calculate days
-        const firstDay = new Date(year, month, 1).getDay();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        const adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1; // Adjust for Monday start
-        
-        const calendarDays = document.getElementById('calendarDays');
-        calendarDays.innerHTML = '';
-        
-        // Empty cells before first day
-        for (let i = 0; i < adjustedFirstDay; i++) {
-            const emptyDiv = document.createElement('div');
-            calendarDays.appendChild(emptyDiv);
-        }
-        
-        // Days
-        const today = new Date();
-        for (let day = 1; day <= daysInMonth; day++) {
-            const dayDiv = document.createElement('div');
-            dayDiv.className = 'calendar-day';
-            dayDiv.textContent = day;
-            
-            const eventForDay = eventDatesForMonth.find(e => e.day === day);
-            if (eventForDay) {
-                dayDiv.classList.add('has-event');
-                dayDiv.title = eventForDay.title;
-            }
-            
-            if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
-                dayDiv.classList.add('today');
-            }
-            
-            calendarDays.appendChild(dayDiv);
-        }
-    }
-    
-    function changeMonth(delta) {
-        currentDate.setMonth(currentDate.getMonth() + delta);
-        renderCalendar();
-    }
-    
-    renderCalendar();
-    
-    // Event modal
-    function showEventModal(eventId) {
-        fetch(`/events/event/${eventId}`)
-            .then(response => response.json())
-            .then(data => {
-                const event = data.event;
-                const isRegistered = data.is_registered;
-                
-                const modalContent = `
-                    <img src="${event.image_url || '/static/uploads/events/default-event.jpg'}" 
-                         class="event-modal-image" alt="${event.title}">
-                    <div class="event-modal-body">
-                        <h3 class="fw-bold mb-3">${event.title}</h3>
-                        <p><strong>Date:</strong> ${new Date(event.event_date).toLocaleDateString('en-US', {day: 'numeric', month: 'long', year: 'numeric'})}</p>
-                        <p><strong>Time:</strong> ${event.start_time} - ${event.end_time}</p>
-                        <p><strong>Location:</strong> ${event.location_address || event.location}</p>
-                        <p class="mt-3">${event.description}</p>
-                        ${isRegistered ? `
-                            <form method="POST" action="/events/optout/${event.id}">
-                                <button type="submit" class="optout-btn">Opt Out</button>
-                            </form>
-                        ` : ''}
-                    </div>
-                `;
-                
-                document.getElementById('modalContent').innerHTML = modalContent;
-                document.getElementById('eventModal').style.display = 'block';
-            })
-            .catch(error => {
-                console.error('Error loading event:', error);
-                alert('Error loading event details');
-            });
-    }
-    
-    function closeEventModal() {
-        document.getElementById('eventModal').style.display = 'none';
-    }
-    
-    // Close modal when clicking outside
-    window.onclick = function(event) {
-        const modal = document.getElementById('eventModal');
-        if (event.target === modal) {
-            closeEventModal();
-        }
-    }
+  );
+}
+
+/* ── CALENDAR ───────────────────────────────────────────── */
+const myEvents   = {{ my_events | tojson if my_events else '[]' | safe }};
+let   calCurrent = new Date();
+
+const MONTHS = ["January","February","March","April","May","June",
+                "July","August","September","October","November","December"];
+
+function renderCalendar() {
+  const y = calCurrent.getFullYear();
+  const m = calCurrent.getMonth();
+  document.getElementById('calendarMonth').textContent = MONTHS[m] + ' ' + y;
+
+  const eventDays = new Set(
+    myEvents
+      .filter(e => {
+        const d = new Date(e.event_date);
+        return d.getFullYear() === y && d.getMonth() === m;
+      })
+      .map(e => new Date(e.event_date).getDate())
+  );
+
+  const firstDay = (new Date(y, m, 1).getDay() + 6) % 7;
+  const total    = new Date(y, m + 1, 0).getDate();
+  const today    = new Date();
+  const grid     = document.getElementById('calendarDays');
+  grid.innerHTML = '';
+
+  for (let i = 0; i < firstDay; i++) {
+    grid.insertAdjacentHTML('beforeend', '<div></div>');
+  }
+
+  for (let d = 1; d <= total; d++) {
+    const isToday = d === today.getDate() && m === today.getMonth() && y === today.getFullYear();
+    const hasEv   = eventDays.has(d);
+    grid.insertAdjacentHTML('beforeend',
+      `<div class="cal-day${isToday ? ' today' : ''}${hasEv ? ' has-event' : ''}">${d}</div>`
+    );
+  }
+}
+
+function changeMonth(delta) {
+  calCurrent.setMonth(calCurrent.getMonth() + delta);
+  renderCalendar();
+}
+
+renderCalendar();
+
+/* ── EVENT MODAL ────────────────────────────────────────── */
+function showEventModal(eventId) {
+  fetch(`/events/event/${eventId}`)
+    .then(r => r.json())
+    .then(data => {
+      const ev  = data.event;
+      const reg = data.is_registered;
+      const dateStr = ev.event_date
+        ? new Date(ev.event_date).toLocaleDateString('en-SG', { day:'numeric', month:'long', year:'numeric' })
+        : 'TBA';
+
+      document.getElementById('modalContent').innerHTML = `
+        <img src="${ev.image_url || '/static/uploads/events/default-event.jpg'}"
+             class="event-modal-image" alt="${ev.title}">
+        <div class="event-modal-body">
+          <h3>${ev.title}</h3>
+          <p><strong>Date:</strong> ${dateStr}</p>
+          <p><strong>Time:</strong> ${ev.start_time} – ${ev.end_time}</p>
+          <p><strong>Location:</strong> ${ev.location_address || ev.location || '—'}</p>
+          <p style="margin-top:12px;color:var(--muted)">${ev.description}</p>
+          ${reg ? `
+            <form method="POST" action="/events/optout/${ev.id}">
+              <button type="submit" class="optout-btn">
+                <i class="bi bi-x-circle"></i> Opt Out
+              </button>
+            </form>` : ''}
+        </div>`;
+
+      document.getElementById('eventModal').style.display = 'block';
+    })
+    .catch(() => alert('Error loading event details.'));
+}
+
+function closeEventModal() {
+  document.getElementById('eventModal').style.display = 'none';
+}
+
+window.addEventListener('click', e => {
+  if (e.target === document.getElementById('eventModal')) closeEventModal();
+});
 </script>
 {% endblock %}

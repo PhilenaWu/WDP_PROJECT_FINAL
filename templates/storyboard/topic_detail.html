@@ -1,335 +1,829 @@
 {% extends "base.html" %}
 {% block title %}{{ topic.title }}{% endblock %}
 
-{% block content %}
-<!-- Header and main content inside container -->
-<div class="container py-5">
-  <!-- Header -->
-  <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-      <div>
-        <h2 class="fw-bold mb-1">{{ topic.title }}</h2>
-        <div class="text-muted">Explore stories shared by the community.</div>
-      </div>
-      <a class="btn btn-orange rounded-pill px-4 shadow-sm"
-         href="{{ url_for('storyboard.add_story', slug=topic.slug) }}">
-        + Add Story
-      </a>
-    </div>
-  </div>
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
 
-  <!-- Tabs -->
-  <div class="mb-4">
-    <div class="btn-group w-100">
-      <a class="btn {% if feed=='for_you' %}btn-orange{% else %}btn-outline-orange{% endif %}"
-         href="{{ url_for('storyboard.topic_detail', slug=topic.slug, feed='for_you') }}">
-        For You
-      </a>
-      <a class="btn {% if feed=='connections' %}btn-orange{% else %}btn-outline-orange{% endif %}"
-         href="{{ url_for('storyboard.topic_detail', slug=topic.slug, feed='connections') }}">
-        Connections
-      </a>
-      <a class="btn {% if feed=='mine' %}btn-orange{% else %}btn-outline-orange{% endif %}"
-         href="{{ url_for('storyboard.topic_detail', slug=topic.slug, feed='mine') }}">
-        Your Stories
-      </a>
+<style>
+/* ── ROOT ──────────────────────────────────────────────── */
+:root {
+  --orange:      #f39a1f;
+  --orange-deep: #d97f06;
+  --coral:       #ff8c61;
+  --cream:       #fbf8f5;
+  --text:        #1c1209;
+  --muted:       #8a7260;
+  --glow:        rgba(243,154,31,0.28);
+  --glow-strong: rgba(243,154,31,0.45);
+  --border:      rgba(243,154,31,0.14);
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: var(--cream);
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 9999;
+}
+
+/* ── PAGE HERO ─────────────────────────────────────────── */
+.topic-hero {
+  position: relative;
+  padding: 60px 24px 48px;
+  text-align: center;
+  overflow: hidden;
+}
+
+.blob { position: absolute; border-radius: 50%; filter: blur(90px); pointer-events: none; }
+.blob-a { width: 420px; height: 420px; background: radial-gradient(circle, rgba(243,154,31,0.16), transparent 70%); top: -100px; right: -80px; animation: drift 9s ease-in-out infinite alternate; }
+.blob-b { width: 300px; height: 300px; background: radial-gradient(circle, rgba(255,140,97,0.13), transparent 70%); bottom: -60px; left: -60px; animation: drift 12s ease-in-out infinite alternate-reverse; }
+@keyframes drift { from { transform: translate(0,0) scale(1); } to { transform: translate(20px,-18px) scale(1.07); } }
+
+.dotgrid {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image: radial-gradient(circle, rgba(243,154,31,0.1) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 100%);
+}
+
+.hero-inner {
+  position: relative; z-index: 2;
+  display: flex; align-items: center; justify-content: space-between;
+  max-width: 860px; margin: 0 auto; gap: 16px; flex-wrap: wrap;
+}
+
+.hero-left { text-align: left; }
+
+.hero-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(243,154,31,0.1); border: 1px solid rgba(243,154,31,0.28);
+  border-radius: 999px; padding: 5px 14px 5px 9px;
+  font-size: 0.7rem; font-weight: 700; color: var(--orange-deep);
+  letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 14px;
+}
+.hero-pill-dot { width: 7px; height: 7px; background: var(--orange); border-radius: 50%; animation: blink 2s ease-in-out infinite; }
+@keyframes blink { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(1.4); } }
+
+.topic-hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+  font-weight: 900; line-height: 1.12; margin-bottom: 8px;
+}
+.topic-hero h1 em {
+  font-style: italic;
+  background: linear-gradient(135deg, var(--orange), var(--coral));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.topic-hero p { font-size: 0.9rem; color: var(--muted); margin: 0; }
+
+.btn-add-story {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: linear-gradient(135deg, var(--orange), var(--coral));
+  color: #fff; text-decoration: none;
+  padding: 12px 26px; border-radius: 999px;
+  font-weight: 700; font-size: 0.88rem;
+  box-shadow: 0 6px 20px var(--glow);
+  transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s;
+  flex-shrink: 0;
+}
+.btn-add-story:hover {
+  transform: translateY(-3px) scale(1.04);
+  box-shadow: 0 12px 30px var(--glow-strong);
+  color: #fff;
+}
+
+/* ── FEED TABS ─────────────────────────────────────────── */
+.feed-tabs {
+  max-width: 860px; margin: 0 auto 32px;
+  padding: 0 24px;
+}
+.feed-tabs-inner {
+  display: flex; gap: 6px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 6px;
+  box-shadow: 0 4px 16px rgba(243,154,31,0.06);
+}
+.feed-tab {
+  flex: 1;
+  text-align: center;
+  text-decoration: none;
+  padding: 9px 16px;
+  border-radius: 10px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--muted);
+  transition: all 0.22s;
+}
+.feed-tab:hover { color: var(--orange); background: rgba(243,154,31,0.07); }
+.feed-tab.active {
+  background: linear-gradient(135deg, var(--orange), var(--coral));
+  color: #fff;
+  box-shadow: 0 4px 14px var(--glow);
+}
+
+/* ── MAIN FEED ─────────────────────────────────────────── */
+.feed-wrapper {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+/* ── STORY CARD ────────────────────────────────────────── */
+.story-card {
+  background: #fff;
+  border-radius: 22px;
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 32px rgba(243,154,31,0.06);
+  margin-bottom: 24px;
+  overflow: hidden;
+  transition: box-shadow 0.3s, transform 0.3s;
+}
+.story-card:hover {
+  box-shadow: 0 16px 48px rgba(243,154,31,0.11);
+  transform: translateY(-2px);
+}
+
+.story-card-body { padding: 24px; }
+
+/* author row */
+.author-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px; flex-wrap: wrap; gap: 10px;
+}
+.author-info { display: flex; align-items: center; gap: 12px; }
+.author-avatar {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(243,154,31,0.2);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.author-avatar:hover { transform: scale(1.08); }
+.author-name { font-weight: 700; font-size: 0.92rem; line-height: 1.2; }
+.author-date { font-size: 0.74rem; color: var(--muted); }
+
+.btn-delete {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1.5px solid rgba(220,53,69,0.3);
+  background: transparent; color: #dc3545;
+  border-radius: 999px; padding: 6px 14px;
+  font-size: 0.76rem; font-weight: 600;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-delete:hover { background: #dc3545; color: #fff; border-color: #dc3545; }
+
+/* story body */
+.story-title {
+  font-family: 'Playfair Display', serif;
+  font-weight: 900; font-size: 1.15rem;
+  margin-bottom: 10px; line-height: 1.3;
+}
+.story-body {
+  font-size: 0.9rem; color: var(--muted);
+  line-height: 1.7; margin-bottom: 16px;
+}
+
+/* audio */
+.story-audio {
+  width: 100%; margin-bottom: 16px;
+  border-radius: 10px;
+  accent-color: var(--orange);
+}
+
+/* media */
+.story-media-wrap {
+  display: flex; justify-content: center;
+  margin-bottom: 16px;
+}
+.story-media-inner {
+  width: 100%; max-width: 380px;
+  border-radius: 16px; overflow: hidden;
+  border: 1px solid var(--border);
+  background: #111;
+}
+
+/* carousel overrides */
+.carousel-control-prev,
+.carousel-control-next {
+  width: 38px; height: 38px;
+  background: rgba(0,0,0,0.35);
+  border-radius: 50%;
+  top: 50%; transform: translateY(-50%);
+  position: absolute;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.carousel-control-prev { left: 10px; }
+.carousel-control-next { right: 10px; }
+.carousel-control-prev:hover,
+.carousel-control-next:hover { background: rgba(243,154,31,0.7); }
+
+.carousel-indicators {
+  bottom: 8px;
+}
+.carousel-indicators button {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.5);
+  border: none;
+}
+.carousel-indicators button.active { background: var(--orange); }
+
+/* actions row */
+.actions-row {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 16px; flex-wrap: wrap;
+}
+
+.btn-like {
+  display: inline-flex; align-items: center; gap: 6px;
+  border-radius: 999px; padding: 7px 16px;
+  font-size: 0.82rem; font-weight: 700;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer; border: 1.5px solid;
+  transition: all 0.2s;
+}
+.btn-like.liked {
+  background: #dc3545; color: #fff; border-color: #dc3545;
+  box-shadow: 0 4px 12px rgba(220,53,69,0.25);
+}
+.btn-like.not-liked {
+  background: transparent; color: #dc3545; border-color: rgba(220,53,69,0.35);
+}
+.btn-like.not-liked:hover { background: rgba(220,53,69,0.08); }
+
+.comment-count {
+  font-size: 0.82rem; color: var(--muted);
+  display: flex; align-items: center; gap: 5px;
+}
+
+.btn-share {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1.5px solid var(--border);
+  background: transparent; color: var(--muted);
+  border-radius: 999px; padding: 7px 16px;
+  font-size: 0.82rem; font-weight: 600;
+  font-family: 'Poppins', sans-serif; cursor: pointer;
+  transition: all 0.2s; margin-left: auto;
+}
+.btn-share:hover { border-color: var(--orange); color: var(--orange); background: rgba(243,154,31,0.06); }
+
+/* ── COMMENTS ──────────────────────────────────────────── */
+.comments-section { border-top: 1px solid rgba(243,154,31,0.1); padding-top: 18px; }
+
+.btn-toggle-comments {
+  background: none; border: 1.5px solid var(--border);
+  border-radius: 999px; padding: 7px 16px;
+  font-size: 0.8rem; font-weight: 600; color: var(--muted);
+  font-family: 'Poppins', sans-serif; cursor: pointer;
+  transition: all 0.2s; margin-bottom: 16px;
+}
+.btn-toggle-comments:hover { border-color: var(--orange); color: var(--orange-deep); background: rgba(243,154,31,0.05); }
+
+.comment-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  margin-bottom: 12px;
+}
+.comment-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%; object-fit: cover;
+  flex-shrink: 0; cursor: pointer;
+  border: 1.5px solid rgba(243,154,31,0.2);
+  transition: transform 0.2s;
+}
+.comment-avatar:hover { transform: scale(1.1); }
+.comment-bubble {
+  flex: 1;
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 10px 14px;
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
+}
+.comment-meta-name { font-weight: 700; font-size: 0.8rem; }
+.comment-meta-date { font-size: 0.7rem; color: var(--muted); margin-bottom: 4px; }
+.comment-text { font-size: 0.83rem; color: var(--text); line-height: 1.5; }
+
+.comment-form {
+  display: flex; gap: 10px; margin-top: 14px;
+}
+.comment-input {
+  flex: 1;
+  border: 1.5px solid rgba(243,154,31,0.22);
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-size: 0.85rem;
+  font-family: 'Poppins', sans-serif;
+  background: var(--cream);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.comment-input:focus {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 3px var(--glow);
+  background: #fff;
+}
+.btn-post-comment {
+  background: linear-gradient(135deg, var(--orange), var(--coral));
+  color: #fff; border: none;
+  border-radius: 999px; padding: 10px 22px;
+  font-size: 0.85rem; font-weight: 700;
+  font-family: 'Poppins', sans-serif; cursor: pointer;
+  transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.25s;
+}
+.btn-post-comment:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 18px var(--glow);
+}
+
+/* ── EMPTY STATE ───────────────────────────────────────── */
+.empty-state {
+  text-align: center; padding: 64px 24px; color: var(--muted);
+}
+.empty-icon { font-size: 3rem; margin-bottom: 14px; }
+.empty-state p { font-size: 0.95rem; }
+
+/* ── SCROLL REVEAL ─────────────────────────────────────── */
+.reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.55s ease, transform 0.55s cubic-bezier(.16,1,.3,1); }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ── MODALS ────────────────────────────────────────────── */
+.sc-modal .modal-content {
+  border: none;
+  border-radius: 22px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.16);
+  font-family: 'Poppins', sans-serif;
+  overflow: hidden;
+}
+.sc-modal .modal-header {
+  background: linear-gradient(135deg, var(--orange), var(--coral));
+  color: #fff; border: none;
+  padding: 18px 24px;
+}
+.sc-modal .modal-title {
+  font-family: 'Playfair Display', serif;
+  font-weight: 900; font-size: 1.1rem;
+}
+.sc-modal .btn-close { filter: brightness(0) invert(1); }
+.sc-modal .modal-body { padding: 28px 24px; background: var(--cream); }
+.sc-modal .modal-footer {
+  background: var(--cream);
+  border-top: 1px solid var(--border);
+  padding: 16px 24px;
+}
+
+.modal-avatar {
+  width: 72px; height: 72px;
+  border-radius: 50%; object-fit: cover;
+  border: 3px solid rgba(243,154,31,0.3);
+  margin-bottom: 16px;
+}
+
+.sc-form-select {
+  border: 1.5px solid rgba(243,154,31,0.22);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+  font-family: 'Poppins', sans-serif;
+  background: #fff;
+  color: var(--text);
+  width: 100%;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.sc-form-select:focus {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 3px var(--glow);
+}
+
+.btn-sc-primary {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: linear-gradient(135deg, var(--orange), var(--coral));
+  color: #fff; border: none;
+  border-radius: 999px; padding: 9px 22px;
+  font-size: 0.85rem; font-weight: 700;
+  font-family: 'Poppins', sans-serif; cursor: pointer;
+  transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.25s;
+  box-shadow: 0 4px 14px var(--glow);
+}
+.btn-sc-primary:hover { transform: scale(1.04); box-shadow: 0 8px 22px var(--glow-strong); color: #fff; }
+
+.btn-sc-secondary {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: transparent; color: var(--muted);
+  border: 1.5px solid rgba(0,0,0,0.12);
+  border-radius: 999px; padding: 8px 20px;
+  font-size: 0.85rem; font-weight: 600;
+  font-family: 'Poppins', sans-serif; cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-sc-secondary:hover { border-color: var(--muted); color: var(--text); }
+
+.btn-sc-connect {
+  background: linear-gradient(135deg, var(--orange), var(--coral));
+  color: #fff; border: none;
+  border-radius: 999px; padding: 9px 22px;
+  font-size: 0.85rem; font-weight: 700;
+  font-family: 'Poppins', sans-serif; cursor: pointer;
+  box-shadow: 0 4px 14px var(--glow);
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+.btn-sc-connect:hover { transform: scale(1.04); box-shadow: 0 8px 22px var(--glow-strong); }
+
+.connected-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(40,167,69,0.1); color: #1e7e34;
+  border-radius: 999px; padding: 7px 16px;
+  font-size: 0.82rem; font-weight: 700;
+}
+
+/* ── RESPONSIVE ────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .hero-inner { flex-direction: column; align-items: flex-start; }
+  .feed-tabs-inner { flex-direction: column; }
+  .feed-tab { text-align: left; }
+  .story-card-body { padding: 18px; }
+}
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<!-- ════════════════════════════════════════════════════════
+     HERO
+     ════════════════════════════════════════════════════════ -->
+<div class="topic-hero">
+  <div class="blob blob-a"></div>
+  <div class="blob blob-b"></div>
+  <div class="dotgrid"></div>
+
+  <div class="hero-inner">
+    <div class="hero-left">
+      <div class="hero-pill"><span class="hero-pill-dot"></span> Community Storyboard</div>
+      <h1>{{ topic.title }}</h1>
+      <p>Explore stories shared by the community</p>
     </div>
+    <a class="btn-add-story" href="{{ url_for('storyboard.add_story', slug=topic.slug) }}">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Story
+    </a>
   </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════
+     FEED TABS
+     ════════════════════════════════════════════════════════ -->
+<div class="feed-tabs">
+  <div class="feed-tabs-inner">
+    <a class="feed-tab {% if feed=='for_you' %}active{% endif %}"
+       href="{{ url_for('storyboard.topic_detail', slug=topic.slug, feed='for_you') }}">
+      ✦ For You
+    </a>
+    <a class="feed-tab {% if feed=='connections' %}active{% endif %}"
+       href="{{ url_for('storyboard.topic_detail', slug=topic.slug, feed='connections') }}">
+      🤝 Connections
+    </a>
+    <a class="feed-tab {% if feed=='mine' %}active{% endif %}"
+       href="{{ url_for('storyboard.topic_detail', slug=topic.slug, feed='mine') }}">
+      📖 Your Stories
+    </a>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════
+     STORY FEED
+     ════════════════════════════════════════════════════════ -->
+<div class="feed-wrapper">
 
   {% if stories|length == 0 %}
-    <div class="text-center text-muted mt-5">No stories yet.</div>
+  <div class="empty-state">
+    <div class="empty-icon">📭</div>
+    <p>No stories here yet. Be the first to share one!</p>
+  </div>
   {% endif %}
 
-  <!-- Stories -->
   {% for s in stories %}
-    <div class="card border-0 shadow-sm rounded-4 mb-4">
-      <div class="card-body">
-        <!-- Header -->
-        <div class="d-flex justify-content-between align-items-start mb-3">
-          <div class="d-flex align-items-center gap-3">
-            <img
-              src="{{ s.avatar_url }}"
-              onerror="this.onerror=null;this.src='{{ url_for('static', filename='uploads/main_topics_images/defaultProfile.webp') }}';"
-              class="rounded-circle"
-              style="width:42px;height:42px;object-fit:cover;"
-              alt="avatar">
+  <div class="story-card reveal">
+    <div class="story-card-body">
 
-            <div>
-              <div class="fw-semibold">{{ s.username }}</div>
-              <div class="text-muted small">
-                {% if s.created_at.strftime %}{{ s.created_at.strftime('%d %b %Y, %I:%M %p') }}{% else %}{{ s.created_at }}{% endif %}
-              </div>
+      <!-- Author Row -->
+      <div class="author-row">
+        <div class="author-info">
+          <img src="{{ s.avatar_url }}"
+               onerror="this.onerror=null;this.src='{{ url_for('static', filename='uploads/main_topics_images/defaultProfile.webp') }}';"
+               class="author-avatar commentor-profile-pic"
+               alt="avatar"
+               data-username="{{ s.username }}"
+               data-age-group="{{ s.age_group if s.age_group is defined else '' }}"
+               data-profile-pic="{{ s.avatar_url }}"
+               data-user-id="{{ s.user_id if s.user_id is defined else '' }}"
+               data-rel-status="{{ s.rel_status if s.rel_status is defined else 'none' }}">
+          <div>
+            <div class="author-name">{{ s.username }}</div>
+            <div class="author-date">
+              {% if s.created_at.strftime %}{{ s.created_at.strftime('%d %b %Y, %I:%M %p') }}{% else %}{{ s.created_at }}{% endif %}
             </div>
           </div>
-
-          {% if feed == 'mine' %}
-            <form method="POST" action="{{ url_for('storyboard.delete_story', story_id=s.id) }}">
-              <button class="btn btn-sm btn-outline-danger rounded-pill">Delete</button>
-            </form>
-          {% endif %}
         </div>
 
-        <!-- Title -->
-        <h5 class="fw-bold mb-2">{{ s.title }}</h5>
-
-        {% if s.body %}
-          <div class="text-muted mb-3">{{ s.body }}</div>
-        {% endif %}
-
-        {% if s.audio_path %}
-          <audio controls class="w-100 mb-3">
-            <source src="{{ url_for('static', filename=s.audio_path) }}">
-          </audio>
-        {% endif %}
-
-        <!-- ================= MEDIA (Instagram smaller centered) ================= -->
-        {% if s.media and s.media|length > 0 %}
-          {% set carousel_id = "carousel_" ~ s.id %}
-
-          <div class="d-flex justify-content-center mb-3">
-            <div class="border rounded-4 overflow-hidden bg-dark"
-                 style="max-width: 360px; width: 100%;">
-
-              {% if s.media|length == 1 %}
-                {% set m = s.media[0] %}
-                <div class="ratio ratio-1x1">
-                  {% if m.media_type == 'image' %}
-                    <img src="{{ url_for('static', filename=m.file_path) }}"
-                         class="w-100 h-100 object-fit-cover"
-                         alt="story media">
-                  {% else %}
-                    <video controls class="w-100 h-100 object-fit-cover">
-                      <source src="{{ url_for('static', filename=m.file_path) }}">
-                    </video>
-                  {% endif %}
-                </div>
-
-              {% else %}
-                <div id="{{ carousel_id }}" class="carousel slide" data-bs-ride="false">
-
-                  <div class="carousel-inner">
-                    {% for m in s.media %}
-                      <div class="carousel-item {% if loop.first %}active{% endif %}">
-                        <div class="ratio ratio-1x1">
-                          {% if m.media_type == 'image' %}
-                            <img src="{{ url_for('static', filename=m.file_path) }}"
-                                 class="w-100 h-100 object-fit-cover"
-                                 alt="story media">
-                          {% else %}
-                            <video controls class="w-100 h-100 object-fit-cover">
-                              <source src="{{ url_for('static', filename=m.file_path) }}">
-                            </video>
-                          {% endif %}
-                        </div>
-                      </div>
-                    {% endfor %}
-                  </div>
-
-                  <button class="carousel-control-prev"
-                          type="button"
-                          data-bs-target="#{{ carousel_id }}"
-                          data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon"></span>
-                  </button>
-
-                  <button class="carousel-control-next"
-                          type="button"
-                          data-bs-target="#{{ carousel_id }}"
-                          data-bs-slide="next">
-                    <span class="carousel-control-next-icon"></span>
-                  </button>
-
-                  <div class="carousel-indicators">
-                    {% for _ in s.media %}
-                      <button type="button"
-                              data-bs-target="#{{ carousel_id }}"
-                              data-bs-slide-to="{{ loop.index0 }}"
-                              class="{% if loop.first %}active{% endif %}">
-                      </button>
-                    {% endfor %}
-                  </div>
-
-                </div>
-              {% endif %}
-
-            </div>
-          </div>
-        {% endif %}
-
-        <!-- Like and Share -->
-        <div class="d-flex align-items-center gap-3 mb-3">
-          <form method="POST" action="{{ url_for('storyboard.toggle_story_like', story_id=s.id) }}">
-            <button class="btn btn-sm rounded-pill {% if s.liked_by_me %}btn-danger{% else %}btn-outline-danger{% endif %}">
-              ♥ {{ s.like_count }}
-            </button>
-          </form>
-          <span class="text-muted small">💬 {{ s.comment_count }}</span>
-          <!-- Share Button -->
-          <button class="btn btn-sm btn-outline-primary rounded-pill" onclick="openShareModal({{ s.id }})">Share</button>
-        </div>
-
-        <!-- Comments -->
-        <div class="border-top pt-3">
-          <button class="btn btn-sm btn-outline-secondary rounded-pill mb-3"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#comments_{{ s.id }}">
-            View comments ({{ s.comment_count }})
+        {% if feed == 'mine' %}
+        <form method="POST" action="{{ url_for('storyboard.delete_story', story_id=s.id) }}">
+          <button class="btn-delete">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            Delete
           </button>
+        </form>
+        {% endif %}
+      </div>
 
-          <div class="collapse" id="comments_{{ s.id }}">
+      <!-- Title + Body -->
+      <div class="story-title">{{ s.title }}</div>
+      {% if s.body %}
+        <div class="story-body">{{ s.body }}</div>
+      {% endif %}
 
-            {% for c in s.comments %}
-              <div class="d-flex align-items-start gap-3 mb-3">
-                <img
-                  src="{% if c.profile_pic %}{{ url_for('static', filename=c.profile_pic) }}{% else %}{{ url_for('static', filename='uploads/main_topics_images/default_pfp.png') }}{% endif %}"
-                  class="rounded-circle commentor-profile-pic"
-                  style="width:32px;height:32px;object-fit:cover;cursor:pointer;"
-                  alt="avatar"
-                  data-username="{{ c.username }}"
-                  data-age-group="{{ c.age_group }}"
-                  data-profile-pic="{% if c.profile_pic %}{{ url_for('static', filename=c.profile_pic) }}{% else %}{{ url_for('static', filename='uploads/main_topics_images/default_pfp.png') }}{% endif %}"
-                  data-user-id="{{ c.user_id }}"
-                  data-rel-status="{{ c.rel_status if c.rel_status is defined else 'none' }}"
-                >
-                <div class="flex-grow-1 bg-light rounded-3 p-2 d-flex align-items-center justify-content-between">
-                  <div>
-                    <div class="small fw-semibold">{{ c.username }}</div>
-                    <div class="small text-muted mb-1">
-                      {% if c.created_at.strftime %}{{ c.created_at.strftime('%d %b %Y') }}{% else %}{{ c.created_at.split(',')[0] if ',' in c.created_at else c.created_at }}{% endif %}
+      <!-- Audio -->
+      {% if s.audio_path %}
+        <audio controls class="story-audio">
+          <source src="{{ url_for('static', filename=s.audio_path) }}">
+        </audio>
+      {% endif %}
+
+      <!-- Media -->
+      {% if s.media and s.media|length > 0 %}
+        {% set carousel_id = "carousel_" ~ s.id %}
+        <div class="story-media-wrap">
+          <div class="story-media-inner">
+
+            {% if s.media|length == 1 %}
+              {% set m = s.media[0] %}
+              <div class="ratio ratio-1x1">
+                {% if m.media_type == 'image' %}
+                  <img src="{{ url_for('static', filename=m.file_path) }}" class="w-100 h-100 object-fit-cover" alt="story media">
+                {% else %}
+                  <video controls class="w-100 h-100 object-fit-cover">
+                    <source src="{{ url_for('static', filename=m.file_path) }}">
+                  </video>
+                {% endif %}
+              </div>
+
+            {% else %}
+              <div id="{{ carousel_id }}" class="carousel slide" data-bs-ride="false">
+                <div class="carousel-inner">
+                  {% for m in s.media %}
+                    <div class="carousel-item {% if loop.first %}active{% endif %}">
+                      <div class="ratio ratio-1x1">
+                        {% if m.media_type == 'image' %}
+                          <img src="{{ url_for('static', filename=m.file_path) }}" class="w-100 h-100 object-fit-cover" alt="story media">
+                        {% else %}
+                          <video controls class="w-100 h-100 object-fit-cover">
+                            <source src="{{ url_for('static', filename=m.file_path) }}">
+                          </video>
+                        {% endif %}
+                      </div>
                     </div>
-                    <div class="small">{{ c.body }}</div>
-                  </div>
-                  {% if c.can_delete %}
-                  <form method="POST" action="{{ url_for('storyboard.delete_comment', comment_id=c.id) }}" style="margin-left:16px;">
-                    <button class="btn btn-sm btn-outline-danger rounded-pill">Delete</button>
-                  </form>
-                  {% endif %}
+                  {% endfor %}
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#{{ carousel_id }}" data-bs-slide="prev">
+                  <span class="carousel-control-prev-icon"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#{{ carousel_id }}" data-bs-slide="next">
+                  <span class="carousel-control-next-icon"></span>
+                </button>
+                <div class="carousel-indicators">
+                  {% for _ in s.media %}
+                    <button type="button" data-bs-target="#{{ carousel_id }}" data-bs-slide-to="{{ loop.index0 }}" class="{% if loop.first %}active{% endif %}"></button>
+                  {% endfor %}
                 </div>
               </div>
-            {% endfor %}
-
-            <form method="POST"
-                  action="{{ url_for('storyboard.add_comment', story_id=s.id) }}"
-                  class="d-flex gap-2">
-              <input class="form-control rounded-pill"
-                     name="comment"
-                     placeholder="Write a comment..."
-                     required>
-              <button class="btn btn-orange rounded-pill px-3">Post</button>
-            </form>
+            {% endif %}
 
           </div>
         </div>
+      {% endif %}
 
+      <!-- Actions Row -->
+      <div class="actions-row">
+        <form method="POST" action="{{ url_for('storyboard.toggle_story_like', story_id=s.id) }}">
+          <button class="btn-like {% if s.liked_by_me %}liked{% else %}not-liked{% endif %}">
+            ♥ {{ s.like_count }}
+          </button>
+        </form>
+
+        <span class="comment-count">💬 {{ s.comment_count }}</span>
+
+        <button class="btn-share" onclick="openShareModal({{ s.id }})">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Share
+        </button>
       </div>
+
+      <!-- Comments -->
+      <div class="comments-section">
+        <button class="btn-toggle-comments"
+                data-bs-toggle="collapse"
+                data-bs-target="#comments_{{ s.id }}">
+          💬 View comments ({{ s.comment_count }})
+        </button>
+
+        <div class="collapse" id="comments_{{ s.id }}">
+
+          {% for c in s.comments %}
+          <div class="comment-item">
+            <img src="{% if c.profile_pic %}{{ url_for('static', filename=c.profile_pic) }}{% else %}{{ url_for('static', filename='uploads/main_topics_images/default_pfp.png') }}{% endif %}"
+                 class="comment-avatar commentor-profile-pic"
+                 alt="avatar"
+                 data-username="{{ c.username }}"
+                 data-age-group="{{ c.age_group }}"
+                 data-profile-pic="{% if c.profile_pic %}{{ url_for('static', filename=c.profile_pic) }}{% else %}{{ url_for('static', filename='uploads/main_topics_images/default_pfp.png') }}{% endif %}"
+                 data-user-id="{{ c.user_id }}"
+                 data-rel-status="{{ c.rel_status if c.rel_status is defined else 'none' }}">
+
+            <div class="comment-bubble">
+              <div>
+                <div class="comment-meta-name">{{ c.username }}</div>
+                <div class="comment-meta-date">
+                  {% if c.created_at.strftime %}{{ c.created_at.strftime('%d %b %Y') }}{% else %}{{ c.created_at.split(',')[0] if ',' in c.created_at else c.created_at }}{% endif %}
+                </div>
+                <div class="comment-text">{{ c.body }}</div>
+              </div>
+
+              {% if c.can_delete %}
+              <form method="POST" action="{{ url_for('storyboard.delete_comment', comment_id=c.id) }}">
+                <button class="btn-delete" style="padding:4px 10px;font-size:0.72rem;">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+                </button>
+              </form>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+
+          <!-- Add comment -->
+          <form method="POST" action="{{ url_for('storyboard.add_comment', story_id=s.id) }}" class="comment-form">
+            <input class="comment-input" name="comment" placeholder="Write a comment…" required>
+            <button type="submit" class="btn-post-comment">Post</button>
+          </form>
+
+        </div>
+      </div>
+
     </div>
+  </div>
   {% endfor %}
-</div>
-<!-- Modal and script OUTSIDE container so footer is full width -->
-<!-- Profile Modal -->
-<div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
+
+</div><!-- /feed-wrapper -->
+
+
+<!-- ════════════════════════════════════════════════════════
+     PROFILE MODAL
+     ════════════════════════════════════════════════════════ -->
+<div class="modal fade sc-modal" id="profileModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="profileModalLabel">User Profile</h5>
+        <h5 class="modal-title">Member Profile</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body text-center">
-        <img id="modalProfilePic" src="" class="rounded-circle mb-3" style="width:64px;height:64px;object-fit:cover;" alt="avatar">
-        <p><strong>Username:</strong> <span id="modalUsername"></span></p>
-        <p><strong>Age Category:</strong> <span id="modalAgeGroup"></span></p>
+        <img id="modalProfilePic" src="" class="modal-avatar" alt="avatar">
+        <p style="font-weight:700;font-size:1rem;margin-bottom:6px;" id="modalUsername"></p>
+        <p style="font-size:0.82rem;color:var(--muted);">Age Group: <span id="modalAgeGroup"></span></p>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" id="connectBtn">Connect</button>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <span id="connectedStatus" style="display:none;font-weight:bold;color:green;">Connected</span>
+      <div class="modal-footer justify-content-center gap-10" style="gap:10px;">
+        <button class="btn-sc-connect" id="connectBtn">Connect</button>
+        <button type="button" class="btn-sc-secondary" data-bs-dismiss="modal">Close</button>
+        <span id="connectedStatus" style="display:none;" class="connected-badge">✓ Connected</span>
       </div>
     </div>
   </div>
 </div>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  let selectedUserId = null;
-  let selectedRelStatus = 'none';
-  // Listen for clicks on all commentor profile pics
-  document.querySelectorAll('.commentor-profile-pic').forEach(function(img) {
-    img.addEventListener('click', function() {
-      selectedUserId = img.getAttribute('data-user-id');
-      selectedRelStatus = img.getAttribute('data-rel-status');
-      document.getElementById('modalProfilePic').src = img.getAttribute('data-profile-pic');
-      document.getElementById('modalUsername').textContent = img.getAttribute('data-username');
-      document.getElementById('modalAgeGroup').textContent = img.getAttribute('data-age-group');
-      // Show/hide connect button and connected status
-      if (selectedRelStatus === 'connected') {
-        document.getElementById('connectBtn').style.display = 'none';
-        document.getElementById('connectedStatus').style.display = 'inline-block';
-      } else {
-        document.getElementById('connectBtn').style.display = 'inline-block';
-        document.getElementById('connectedStatus').style.display = 'none';
-      }
-      var modal = new bootstrap.Modal(document.getElementById('profileModal'));
-      modal.show();
-    });
-  });
 
-  // Handle connect button click
-  document.getElementById('connectBtn').addEventListener('click', function() {
-    if (!selectedUserId) return;
-    fetch('/connections/request', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ user_id: selectedUserId })
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success || data.ok) {
-        alert('Connection request sent!');
-        var modal = bootstrap.Modal.getInstance(document.getElementById('profileModal'));
-        if (modal) modal.hide();
-      } else {
-        alert('Failed to send request: ' + (data.message || 'Unknown error'));
-      }
-    })
-    .catch(() => {
-      alert('Error sending request.');
-    });
-  });
-});
-</script>
 
-<!-- Share Modal -->
-<div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
+<!-- ════════════════════════════════════════════════════════
+     SHARE MODAL
+     ════════════════════════════════════════════════════════ -->
+<div class="modal fade sc-modal" id="shareModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="shareModalLabel">Share Storyboard</h5>
+        <h5 class="modal-title">Share Story</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <label for="recipientSelect">Send to:</label>
-        <select id="recipientSelect" class="form-select">
+        <label style="font-size:0.84rem;font-weight:600;color:var(--text);margin-bottom:8px;display:block;">Send to a connection</label>
+        <select id="recipientSelect" class="sc-form-select">
           {% for conn in connections %}
             <option value="{{ conn.id }}">{{ conn.username }}</option>
           {% endfor %}
         </select>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" id="sendShareBtn">Send</button>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      <div class="modal-footer" style="gap:10px;">
+        <button class="btn-sc-primary" id="sendShareBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Send
+        </button>
+        <button type="button" class="btn-sc-secondary" data-bs-dismiss="modal">Cancel</button>
       </div>
     </div>
   </div>
 </div>
 
+
+<!-- ════════════════════════════════════════════════════════
+     SCRIPTS (logic unchanged from original)
+     ════════════════════════════════════════════════════════ -->
 <script>
+/* ── SCROLL REVEAL ──────────────────────────────────────── */
+const revealObs = new IntersectionObserver((entries) => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('visible'), i * 60);
+      revealObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.06 });
+document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+/* ── BLOB PARALLAX ──────────────────────────────────────── */
+document.addEventListener('mousemove', (e) => {
+  const x = (e.clientX / window.innerWidth - 0.5) * 2;
+  const y = (e.clientY / window.innerHeight - 0.5) * 2;
+  const a = document.querySelector('.blob-a');
+  const b = document.querySelector('.blob-b');
+  if (a) a.style.transform = `translate(${x * 14}px, ${y * 10}px)`;
+  if (b) b.style.transform = `translate(${x * -10}px, ${y * -8}px)`;
+});
+
+/* ── PROFILE MODAL ──────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', function() {
+  let selectedUserId = null;
+  let selectedRelStatus = 'none';
+
+  document.querySelectorAll('.commentor-profile-pic').forEach(function(img) {
+    img.addEventListener('click', function() {
+      selectedUserId   = img.getAttribute('data-user-id');
+      selectedRelStatus = img.getAttribute('data-rel-status');
+      document.getElementById('modalProfilePic').src = img.getAttribute('data-profile-pic');
+      document.getElementById('modalUsername').textContent  = img.getAttribute('data-username');
+      document.getElementById('modalAgeGroup').textContent  = img.getAttribute('data-age-group');
+
+      if (selectedRelStatus === 'connected') {
+        document.getElementById('connectBtn').style.display   = 'none';
+        document.getElementById('connectedStatus').style.display = 'inline-flex';
+      } else {
+        document.getElementById('connectBtn').style.display   = 'inline-flex';
+        document.getElementById('connectedStatus').style.display = 'none';
+      }
+
+      new bootstrap.Modal(document.getElementById('profileModal')).show();
+    });
+  });
+
+  document.getElementById('connectBtn').addEventListener('click', function() {
+    if (!selectedUserId) return;
+    fetch('/connections/request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: selectedUserId })
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success || data.ok) {
+        alert('Connection request sent!');
+        const modal = bootstrap.Modal.getInstance(document.getElementById('profileModal'));
+        if (modal) modal.hide();
+      } else {
+        alert('Failed to send request: ' + (data.message || 'Unknown error'));
+      }
+    })
+    .catch(() => alert('Error sending request.'));
+  });
+});
+
+/* ── SHARE MODAL ────────────────────────────────────────── */
 let shareStoryId = null;
+
 function openShareModal(storyId) {
   shareStoryId = storyId;
-  var modal = new bootstrap.Modal(document.getElementById('shareModal'));
-  modal.show();
+  new bootstrap.Modal(document.getElementById('shareModal')).show();
 }
+
 document.getElementById('sendShareBtn').addEventListener('click', function() {
   const recipientId = document.getElementById('recipientSelect').value;
   if (!recipientId || !shareStoryId) return;
@@ -338,19 +832,17 @@ document.getElementById('sendShareBtn').addEventListener('click', function() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ recipient_id: recipientId, story_id: shareStoryId })
   })
-  .then(response => response.json())
+  .then(r => r.json())
   .then(data => {
     if (data.success) {
-      alert('Storyboard shared!');
-      var modal = bootstrap.Modal.getInstance(document.getElementById('shareModal'));
+      alert('Story shared!');
+      const modal = bootstrap.Modal.getInstance(document.getElementById('shareModal'));
       if (modal) modal.hide();
     } else {
       alert('Failed to share: ' + (data.message || 'Unknown error'));
     }
   })
-  .catch(() => {
-    alert('Error sharing storyboard.');
-  });
+  .catch(() => alert('Error sharing story.'));
 });
 </script>
 

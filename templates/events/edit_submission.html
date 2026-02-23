@@ -1,587 +1,618 @@
 {% extends "base.html" %}
 
-{% block title %}Edit Submission - StoryConnect{% endblock %}
+{% block title %}Edit Submission – Genlink{% endblock %}
 
 {% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
 <style>
-    .submission-container {
-        max-width: 900px;
-        margin: 50px auto;
-        padding-bottom: 50px;
+    :root {
+        --orange: #0e9e9e;
+        --orange-deep: #0a7a7a;
+        --coral: #3ab8c0;
+        --cream: #f4fbfb;
+        --text: #0a1f1f;
+        --muted: #4a7c7c;
+        --glow: rgba(14,158,158,0.28);
+        --glow-strong: rgba(14,158,158,0.45);
     }
-    
-    .submission-header {
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: var(--cream);
+        color: var(--text);
+        min-height: 100vh;
+        position: relative;
+    }
+
+    /* ── Background ── */
+    body::before {
+        content: '';
+        position: fixed; inset: 0;
+        background-image: radial-gradient(circle, rgba(14,158,158,0.07) 1px, transparent 1px);
+        background-size: 40px 40px;
+        pointer-events: none; z-index: 0;
+    }
+    .blob {
+        position: fixed; border-radius: 50%; filter: blur(90px);
+        pointer-events: none; z-index: 0;
+    }
+    .blob-a { width: 580px; height: 580px; background: radial-gradient(circle, rgba(14,158,158,0.13), transparent 70%); top: -130px; right: -140px; animation: drift 11s ease-in-out infinite alternate; }
+    .blob-b { width: 380px; height: 380px; background: radial-gradient(circle, rgba(58,184,192,0.1), transparent 70%); bottom: -80px; left: -80px; animation: drift 14s ease-in-out infinite alternate-reverse; }
+
+    @keyframes drift  { from{transform:translate(0,0) scale(1)} to{transform:translate(22px,-18px) scale(1.06)} }
+    @keyframes slideUp{ from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes blink  { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.4)} }
+    @keyframes pulse  { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+    /* ── Page wrapper ── */
+    .page-wrapper {
+        position: relative; z-index: 1;
+        max-width: 880px; margin: 0 auto;
+        padding: 48px 24px 80px;
+    }
+
+    /* ── Back link ── */
+    .back-link {
+        display: inline-flex; align-items: center; gap: 6px;
+        color: var(--muted); font-size: 13px; font-weight: 600;
+        text-decoration: none; margin-bottom: 28px; transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--orange); }
+
+    /* ── Page header ── */
+    .page-header {
         text-align: center;
-        margin-bottom: 40px;
+        margin-bottom: 44px;
+        animation: slideUp 0.55s cubic-bezier(.16,1,.3,1) both;
     }
-    
-    .submission-header h2 {
-        font-weight: 700;
-        color: #333;
-        margin-bottom: 15px;
+    .header-icon {
+        width: 64px; height: 64px; border-radius: 20px;
+        background: linear-gradient(135deg, var(--orange), var(--coral));
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 18px;
+        box-shadow: 0 8px 24px var(--glow);
+        font-size: 1.6rem;
     }
-    
-    .submission-header p {
-        color: #666;
-        font-size: 1.1rem;
+    .page-eyebrow {
+        font-size: 10px; font-weight: 800; letter-spacing: 0.1em;
+        text-transform: uppercase; color: var(--orange);
+        margin-bottom: 8px; display: flex; align-items: center;
+        justify-content: center; gap: 8px;
     }
-    
-    .heart-icon {
-        background: #fff3e6;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 20px;
+    .eyebrow-dot { width: 7px; height: 7px; background: var(--orange); border-radius: 50%; animation: blink 2s ease-in-out infinite; }    .page-title {
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(1.6rem, 3.5vw, 2.3rem);
+        font-weight: 900; color: var(--text); line-height: 1.1; margin-bottom: 8px;
     }
-    
-    .heart-icon i {
-        font-size: 1.8rem;
-        color: #f0ad4e;
+    .page-title em {
+        font-style: italic;
+        background: linear-gradient(135deg, var(--orange), var(--coral));
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
-    
+    .page-subtitle { color: var(--muted); font-size: 0.9rem; font-weight: 400; margin: 0; }
+
+    /* ── Form section card ── */
     .form-section {
-        background: white;
-        border-radius: 15px;
-        padding: 40px;
-        margin-bottom: 30px;
-        box-shadow: 0 2px 15px rgba(0,0,0,0.08);
-        border-left: 5px solid #17a2b8;
+        background: #fff;
+        border-radius: 24px;
+        padding: 32px 36px;
+        margin-bottom: 22px;
+        box-shadow: 0 4px 24px rgba(10,31,31,0.07), 0 0 0 1px rgba(14,158,158,0.08);
+        animation: slideUp 0.5s cubic-bezier(.16,1,.3,1) both;
+        position: relative;
+        overflow: hidden;
     }
-    
+    .form-section::before {
+        content: '';
+        position: absolute; top: 0; left: 0; right: 0; height: 3px;
+        background: linear-gradient(90deg, var(--orange), var(--coral));
+    }
+    .form-section:nth-child(2) { animation-delay: 0.06s; }
+    .form-section:nth-child(3) { animation-delay: 0.12s; }
+    .form-section:nth-child(4) { animation-delay: 0.18s; }
+    .form-section:nth-child(5) { animation-delay: 0.24s; }
+
+    /* Section header row */
+    .section-header {
+        display: flex; align-items: center; gap: 14px;
+        margin-bottom: 28px;
+    }
     .section-number {
-        background: #17a2b8;
-        color: white;
-        width: 45px;
-        height: 45px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
-        font-size: 1.3rem;
-        margin-bottom: 15px;
+        width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0;
+        background: linear-gradient(135deg, var(--orange), var(--coral));
+        color: white; font-weight: 900; font-size: 1rem;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 4px 12px var(--glow);
+        font-family: 'Playfair Display', serif;
     }
-    
     .section-title {
-        font-weight: 700;
-        color: #333;
-        margin-bottom: 25px;
-        font-size: 1.4rem;
+        font-family: 'Playfair Display', serif;
+        font-size: 1.15rem; font-weight: 900;
+        color: var(--text); margin: 0;
     }
-    
-    .form-label {
-        font-weight: 600;
-        color: #555;
-        margin-bottom: 8px;
-    }
-    
-    .form-label .text-danger {
-        margin-left: 3px;
-    }
-    
-    .form-control, .form-select {
-        border-radius: 8px;
-        border: 2px solid #e0e0e0;
-        padding: 12px;
-        transition: border-color 0.3s;
-    }
-    
-    .form-control:focus, .form-select:focus {
-        border-color: #17a2b8;
-        box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
-    }
-    
-    textarea.form-control {
-        min-height: 120px;
-        resize: vertical;
-    }
-    
-    .char-counter {
-        font-size: 0.875rem;
-        color: #666;
-        text-align: right;
-        margin-top: 5px;
-    }
-    
-    .submit-section {
-        background: #e7f6f8;
-        border-radius: 15px;
-        padding: 40px;
-        text-align: center;
-        margin-top: 40px;
-    }
-    
-    .submit-btn {
-        background: #17a2b8;
-        color: white;
-        border: none;
-        padding: 18px 60px;
-        border-radius: 35px;
-        font-weight: 600;
-        font-size: 1.2rem;
-        cursor: pointer;
-        transition: all 0.3s;
-        box-shadow: 0 4px 15px rgba(23, 162, 184, 0.3);
-    }
-    
-    .submit-btn:hover {
-        background: #138496;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(23, 162, 184, 0.4);
-    }
-    
-    .submit-info {
-        color: #666;
-        margin-top: 20px;
-        font-size: 1rem;
-    }
-    
-    .back-btn {
-        background: white;
-        color: #17a2b8;
-        border: 2px solid #17a2b8;
-        padding: 10px 25px;
-        border-radius: 25px;
-        text-decoration: none;
-        display: inline-block;
-        margin-bottom: 30px;
-        transition: all 0.3s;
-    }
-    
-    .back-btn:hover {
-        background: #17a2b8;
-        color: white;
-    }
-    
-    /* Speech Button Styles */
-    .speech-controls {
-        display: inline-flex;
-        gap: 5px;
-        margin-left: 8px;
-        vertical-align: middle;
-    }
-    
-    .speech-btn {
-        background: #6c757d;
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 32px;
-        height: 32px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.3s;
-        font-size: 0.9rem;
-        padding: 0;
-    }
-    
-    .speech-btn:hover {
-        transform: scale(1.1);
-    }
-    
-    .speech-btn.listen-btn {
-        background: #007bff;
-    }
-    
-    .speech-btn.listen-btn:hover {
-        background: #0056b3;
-    }
-    
-    .speech-btn.listen-btn.listening {
-        background: #dc3545;
-        animation: pulse 1s infinite;
-    }
-    
-    .speech-btn.speak-btn {
-        background: #28a745;
-    }
-    
-    .speech-btn.speak-btn:hover {
-        background: #1e7e34;
-    }
-    
-    .speech-btn.speak-btn.speaking {
-        animation: pulse 1s infinite;
-    }
-    
-    @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.5; }
-    }
-    
+
+    /* ── Form elements ── */
+    .field-group { margin-bottom: 18px; }
+
     .form-label-wrapper {
-        display: flex;
-        align-items: center;
-        margin-bottom: 8px;
+        display: flex; align-items: center; gap: 8px; margin-bottom: 7px;
     }
-    
-    .form-label-wrapper .form-label {
-        margin-bottom: 0;
+    .form-label {
+        font-size: 11px; font-weight: 800; color: var(--text);
+        text-transform: uppercase; letter-spacing: 0.07em; margin: 0;
+    }
+    .required-dot {
+        display: inline-block; width: 6px; height: 6px;
+        background: var(--coral); border-radius: 50%;
+        margin-left: 3px; vertical-align: middle;
+    }
+
+    .form-control, .form-select {
+        width: 100%;
+        padding: 11px 15px;
+        border: 1.5px solid rgba(14,158,158,0.18);
+        border-radius: 12px;
+        font-size: 13.5px; font-family: 'Poppins', sans-serif; font-weight: 500;
+        color: var(--text); background: var(--cream); outline: none;
+        transition: all 0.2s;
+    }
+    .form-control::placeholder { color: rgba(138,114,96,0.45); font-weight: 400; }
+    .form-control:focus, .form-select:focus {
+        border-color: var(--orange); background: #fff;
+        box-shadow: 0 0 0 3px rgba(14,158,158,0.08);
+    }
+    .form-control:read-only {
+        background: rgba(14,158,158,0.05);
+        color: var(--muted); cursor: default;
+        border-color: rgba(14,158,158,0.1);
+    }
+    .form-control.is-invalid, .form-select.is-invalid {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 3px rgba(239,68,68,0.06);
+    }
+    textarea.form-control { min-height: 110px; resize: vertical; }
+
+    .invalid-feedback {
+        display: none; font-size: 11.5px; color: #dc2626;
+        font-weight: 600; margin-top: 5px; padding-left: 2px;
+    }
+    .was-validated .form-control:invalid ~ .invalid-feedback,
+    .was-validated .form-select:invalid ~ .invalid-feedback,
+    .form-control.is-invalid ~ .invalid-feedback { display: block; }
+
+    .field-hint {
+        font-size: 11px; color: rgba(138,114,96,0.65);
+        font-weight: 500; margin-top: 5px; padding-left: 2px;
+    }
+
+    /* Char counter */
+    .char-counter {
+        font-size: 11px; color: var(--muted); font-weight: 600;
+        text-align: right; margin-top: 5px;
+    }
+    .char-counter span { color: var(--orange-deep); }
+
+    /* Input with icon */
+    .input-wrapper { position: relative; }
+    .input-icon {
+        position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+        color: rgba(138,114,96,0.4); font-size: 13px; pointer-events: none;
+    }
+    .input-wrapper .form-control { padding-left: 38px; }
+
+    /* ── Speech buttons ── */
+    .speech-controls { display: inline-flex; gap: 5px; margin-left: 6px; }
+    .speech-btn {
+        width: 28px; height: 28px; border-radius: 8px; border: none;
+        display: inline-flex; align-items: center; justify-content: center;
+        cursor: pointer; font-size: 0.78rem; padding: 0;
+        transition: all 0.2s; flex-shrink: 0;
+    }
+    .speech-btn.speak-btn {
+        background: rgba(34,197,94,0.1); color: #15803d;
+        border: 1.5px solid rgba(34,197,94,0.25);
+    }
+    .speech-btn.speak-btn:hover { background: rgba(34,197,94,0.18); transform: scale(1.08); }
+    .speech-btn.speak-btn.speaking { animation: pulse 1s infinite; }
+    .speech-btn.listen-btn {
+        background: rgba(59,130,246,0.1); color: #1d4ed8;
+        border: 1.5px solid rgba(59,130,246,0.25);
+    }
+    .speech-btn.listen-btn:hover { background: rgba(59,130,246,0.18); transform: scale(1.08); }
+    .speech-btn.listen-btn.listening {
+        background: rgba(239,68,68,0.12); color: #dc2626;
+        border-color: rgba(239,68,68,0.3); animation: pulse 1s infinite;
+    }
+
+    /* ── Current image ── */
+    .current-image-wrap {
+        background: var(--cream); border-radius: 14px;
+        border: 1px solid rgba(14,158,158,0.12);
+        padding: 14px 16px; margin-bottom: 14px;
+        display: flex; align-items: center; gap: 14px;
+    }
+    .current-image-wrap img {
+        width: 80px; height: 80px; object-fit: cover;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(10,31,31,0.1);
+    }
+    .current-image-label {
+        font-size: 11px; font-weight: 800; text-transform: uppercase;
+        letter-spacing: 0.07em; color: var(--muted); margin-bottom: 3px;
+    }
+    .current-image-name { font-size: 13px; font-weight: 600; color: var(--text); }
+
+    /* ── Submit section ── */
+    .submit-section {
+        background: linear-gradient(135deg, var(--orange) 0%, var(--coral) 100%);
+        border-radius: 24px; padding: 40px 36px;
+        text-align: center; margin-top: 8px;
+        position: relative; overflow: hidden;
+        animation: slideUp 0.5s cubic-bezier(.16,1,.3,1) 0.3s both;
+        box-shadow: 0 8px 32px var(--glow);
+    }
+    .submit-section::before {
+        content: '';
+        position: absolute; inset: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.07'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");
+        pointer-events: none;
+    }
+    .submit-section h3 {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.4rem; font-weight: 900;
+        color: #fff; margin-bottom: 6px;
+        position: relative; z-index: 1;
+    }
+    .submit-section p {
+        color: rgba(255,255,255,0.8);
+        font-size: 0.85rem; margin-bottom: 28px;
+        position: relative; z-index: 1;
+    }
+    .submit-btn {
+        display: inline-flex; align-items: center; gap: 10px;
+        padding: 15px 44px;
+        background: rgba(255,255,255,0.22);
+        border: 2px solid rgba(255,255,255,0.45);
+        color: white; border-radius: 14px;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700; font-size: 0.95rem; cursor: pointer;
+        transition: all 0.25s cubic-bezier(.34,1.56,.64,1);
+        backdrop-filter: blur(8px);
+        position: relative; z-index: 1;
+        letter-spacing: 0.02em;
+    }
+    .submit-btn:hover {
+        background: rgba(255,255,255,0.32);
+        border-color: rgba(255,255,255,0.7);
+        transform: translateY(-2px) scale(1.03);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    /* ── File error ── */
+    #editSubmissionFileError {
+        font-size: 11.5px; color: #dc2626; font-weight: 600;
+        margin-top: 6px; display: none;
+    }
+
+    @media (max-width: 600px) {
+        .form-section { padding: 22px 18px; }
+        .submit-section { padding: 30px 20px; }
     }
 </style>
 {% endblock %}
 
-
-
 {% block content %}
-<div class="container submission-container">
-    <!-- Header -->
-    <div class="submission-header">
-        <div class="heart-icon">
-            <i class="bi bi-pencil-fill"></i>
-        </div>
-        <h2>Edit Your Event Submission</h2>
-        <p>Update your event details below</p>
+<div class="blob blob-a"></div>
+<div class="blob blob-b"></div>
+
+<div class="page-wrapper">
+
+    <!-- Back link -->
+    <a href="{{ url_for('events.my_submissions') }}" class="back-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        Back to Submissions
+    </a>
+
+    <!-- Page header -->
+    <div class="page-header">
+        <div class="header-icon">✏️</div>
+        <div class="page-eyebrow"><span class="eyebrow-dot"></span> Event Proposal</div>
+        <h1 class="page-title">Edit Your <em>Submission</em></h1>
+        <p class="page-subtitle">Update your event details below — changes will be reviewed again.</p>
     </div>
-    
-    <div class="text-start">
-        <a href="{{ url_for('events.my_submissions') }}" class="back-btn">
-            <i class="bi bi-arrow-left"></i> Back to Submissions
-        </a>
-    </div>
-    
-    <form method="POST" action="{{ url_for('events.edit_submission', submission_id=submission.id) }}" enctype="multipart/form-data" id="editSubmissionForm" novalidate>
-        <!-- Section 1: Who You Are -->
+
+    <form method="POST" action="{{ url_for('events.edit_submission', submission_id=submission.id) }}"
+          enctype="multipart/form-data" id="editSubmissionForm" novalidate>
+
+        <!-- ── Section 1: Who You Are ── -->
         <div class="form-section">
-            <div class="section-number">1</div>
-            <h3 class="section-title">Who You Are</h3>
-            
-            <div class="row">
-                <div class="col-md-12 mb-3">
+            <div class="section-header">
+                <div class="section-number">1</div>
+                <h3 class="section-title">Who You Are</h3>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-12 field-group">
                     <div class="form-label-wrapper">
-                        <label for="organizer_name" class="form-label">
-                            Full Name<span class="text-danger">*</span>
-                        </label>
+                        <label for="organizer_name" class="form-label">Full Name <span class="required-dot"></span></label>
                         <div class="speech-controls">
-                            <button type="button" class="speech-btn speak-btn" data-text="Full Name" title="Read question aloud">
-                                <i class="bi bi-volume-up-fill"></i>
-                            </button>
-                            <button type="button" class="speech-btn listen-btn" data-target="organizer_name" title="Speak your answer">
-                                <i class="bi bi-mic-fill"></i>
-                            </button>
+                            <button type="button" class="speech-btn speak-btn" data-text="Full Name" title="Read aloud"><i class="bi bi-volume-up-fill"></i></button>
+                            <button type="button" class="speech-btn listen-btn" data-target="organizer_name" title="Speak answer"><i class="bi bi-mic-fill"></i></button>
                         </div>
                     </div>
-                    <input type="text" class="form-control" id="organizer_name" name="organizer_name" 
-                           placeholder="Enter your full name" value="{{ submission.organizer_name }}" 
-                           minlength="2" required>
+                    <div class="input-wrapper">
+                        <i class="bi bi-person input-icon"></i>
+                        <input type="text" class="form-control" id="organizer_name" name="organizer_name"
+                               placeholder="Your full name" value="{{ submission.organizer_name }}" minlength="2" required>
+                    </div>
                     <div class="invalid-feedback">Please enter your full name (at least 2 characters).</div>
                 </div>
-                
-                <div class="col-md-6 mb-3">
-                    <label for="organizer_dob" class="form-label">
-                        Date of Birth<span class="text-danger">*</span>
-                    </label>
-                          <input type="date" class="form-control" id="organizer_dob" name="organizer_dob" 
-                              value="{{ submission.organizer_dob.strftime('%Y-%m-%d') if submission.organizer_dob else '' }}" required>
-                    <small class="text-muted">Must be at least 13 years old</small>
+
+                <div class="col-md-6 field-group">
+                    <label class="form-label" for="organizer_dob">Date of Birth <span class="required-dot"></span></label>
+                    <div class="input-wrapper">
+                        <i class="bi bi-calendar input-icon"></i>
+                        <input type="date" class="form-control" id="organizer_dob" name="organizer_dob"
+                               value="{{ submission.organizer_dob.strftime('%Y-%m-%d') if submission.organizer_dob else '' }}" required>
+                    </div>
+                    <div class="field-hint">Must be at least 13 years old</div>
                 </div>
-                
-                <div class="col-md-6 mb-3">
-                    <label for="organizer_age_group" class="form-label">
-                        Age Group<span class="text-danger">*</span>
-                    </label>
-                    <input type="text" class="form-control" id="organizer_age_group" name="organizer_age_group" 
-                           value="{{ submission.organizer_age_group or '' }}" readonly 
-                           style="background-color: #e9ecef;">
+
+                <div class="col-md-6 field-group">
+                    <label class="form-label" for="organizer_age_group">Age Group <span class="required-dot"></span></label>
+                    <input type="text" class="form-control" id="organizer_age_group" name="organizer_age_group"
+                           value="{{ submission.organizer_age_group or '' }}" readonly>
                 </div>
-                
-                <div class="col-md-6 mb-3">
+
+                <div class="col-md-6 field-group">
                     <div class="form-label-wrapper">
-                        <label for="organizer_email" class="form-label">
-                            Email<span class="text-danger">*</span>
-                        </label>
+                        <label for="organizer_email" class="form-label">Email <span class="required-dot"></span></label>
                         <div class="speech-controls">
-                            <button type="button" class="speech-btn speak-btn" data-text="Email" title="Read question aloud">
-                                <i class="bi bi-volume-up-fill"></i>
-                            </button>
-                            <button type="button" class="speech-btn listen-btn" data-target="organizer_email" title="Speak your answer">
-                                <i class="bi bi-mic-fill"></i>
-                            </button>
+                            <button type="button" class="speech-btn speak-btn" data-text="Email" title="Read aloud"><i class="bi bi-volume-up-fill"></i></button>
+                            <button type="button" class="speech-btn listen-btn" data-target="organizer_email" title="Speak answer"><i class="bi bi-mic-fill"></i></button>
                         </div>
                     </div>
-                    <input type="email" class="form-control" id="organizer_email" name="organizer_email" 
-                           placeholder="johndoe@gmail.com" value="{{ submission.organizer_email }}"
-                           pattern="[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}" required>
-                    <div class="invalid-feedback">Please enter a valid email address with a real domain (e.g., user@gmail.com, user@yahoo.com).</div>
+                    <div class="input-wrapper">
+                        <i class="bi bi-envelope input-icon"></i>
+                        <input type="email" class="form-control" id="organizer_email" name="organizer_email"
+                               placeholder="you@gmail.com" value="{{ submission.organizer_email }}"
+                               pattern="[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}" required>
+                    </div>
+                    <div class="invalid-feedback">Please enter a valid email (e.g. user@gmail.com).</div>
                 </div>
-                
-                <div class="col-md-6 mb-3">
+
+                <div class="col-md-6 field-group">
                     <div class="form-label-wrapper">
-                        <label for="organizer_phone" class="form-label">
-                            Phone Number<span class="text-danger">*</span>
-                        </label>
+                        <label for="organizer_phone" class="form-label">Phone Number <span class="required-dot"></span></label>
                         <div class="speech-controls">
-                            <button type="button" class="speech-btn speak-btn" data-text="Phone Number" title="Read question aloud">
-                                <i class="bi bi-volume-up-fill"></i>
-                            </button>
-                            <button type="button" class="speech-btn listen-btn" data-target="organizer_phone" title="Speak your answer">
-                                <i class="bi bi-mic-fill"></i>
-                            </button>
+                            <button type="button" class="speech-btn speak-btn" data-text="Phone Number" title="Read aloud"><i class="bi bi-volume-up-fill"></i></button>
+                            <button type="button" class="speech-btn listen-btn" data-target="organizer_phone" title="Speak answer"><i class="bi bi-mic-fill"></i></button>
                         </div>
                     </div>
-                    <input type="tel" class="form-control" id="organizer_phone" name="organizer_phone" 
-                           placeholder="81234567" pattern="[89][0-9]{7}" maxlength="8" inputmode="numeric"
-                           value="{{ submission.organizer_phone }}" required>
-                    <div class="invalid-feedback">Please enter a valid phone number (8 digits starting with 8 or 9).</div>
+                    <div class="input-wrapper">
+                        <i class="bi bi-telephone input-icon"></i>
+                        <input type="tel" class="form-control" id="organizer_phone" name="organizer_phone"
+                               placeholder="81234567" pattern="[89][0-9]{7}" maxlength="8" inputmode="numeric"
+                               value="{{ submission.organizer_phone }}" required>
+                    </div>
+                    <div class="invalid-feedback">8-digit Singapore number starting with 8 or 9.</div>
                 </div>
-                
-                <div class="col-md-12 mb-3">
+
+                <div class="col-12 field-group">
                     <div class="form-label-wrapper">
-                        <label for="organizer_location" class="form-label">
-                            Location<span class="text-danger">*</span>
-                        </label>
+                        <label for="organizer_location" class="form-label">Location <span class="required-dot"></span></label>
                         <div class="speech-controls">
-                            <button type="button" class="speech-btn speak-btn" data-text="Location" title="Read question aloud">
-                                <i class="bi bi-volume-up-fill"></i>
-                            </button>
-                            <button type="button" class="speech-btn listen-btn" data-target="organizer_location" title="Speak your answer">
-                                <i class="bi bi-mic-fill"></i>
-                            </button>
+                            <button type="button" class="speech-btn speak-btn" data-text="Location" title="Read aloud"><i class="bi bi-volume-up-fill"></i></button>
+                            <button type="button" class="speech-btn listen-btn" data-target="organizer_location" title="Speak answer"><i class="bi bi-mic-fill"></i></button>
                         </div>
                     </div>
-                    <input type="text" class="form-control" id="organizer_location" name="organizer_location" 
-                           placeholder="E.g. Wild Wild Wet - 519599" value="{{ submission.organizer_location or '' }}" required>
+                    <div class="input-wrapper">
+                        <i class="bi bi-geo-alt input-icon"></i>
+                        <input type="text" class="form-control" id="organizer_location" name="organizer_location"
+                               placeholder="E.g. Bishan Community Club – 579758"
+                               value="{{ submission.organizer_location or '' }}" required>
+                    </div>
                     <div class="invalid-feedback">Please enter a location.</div>
                 </div>
             </div>
         </div>
-        
-        <!-- Section 2: Your Event Idea -->
+
+        <!-- ── Section 2: Your Event Idea ── -->
         <div class="form-section">
-            <div class="section-number">2</div>
-            <h3 class="section-title">Your Event Idea</h3>
-            
-            <div class="mb-3">
+            <div class="section-header">
+                <div class="section-number">2</div>
+                <h3 class="section-title">Your Event Idea</h3>
+            </div>
+
+            <div class="field-group">
                 <div class="form-label-wrapper">
-                    <label for="event_title" class="form-label">
-                        Event Title<span class="text-danger">*</span>
-                    </label>
+                    <label for="event_title" class="form-label">Event Title <span class="required-dot"></span></label>
                     <div class="speech-controls">
-                        <button type="button" class="speech-btn speak-btn" data-text="Event Title" title="Read question aloud">
-                            <i class="bi bi-volume-up-fill"></i>
-                        </button>
-                        <button type="button" class="speech-btn listen-btn" data-target="event_title" title="Speak your answer">
-                            <i class="bi bi-mic-fill"></i>
-                        </button>
+                        <button type="button" class="speech-btn speak-btn" data-text="Event Title" title="Read aloud"><i class="bi bi-volume-up-fill"></i></button>
+                        <button type="button" class="speech-btn listen-btn" data-target="event_title" title="Speak answer"><i class="bi bi-mic-fill"></i></button>
                     </div>
                 </div>
-                <input type="text" class="form-control" id="event_title" name="event_title" 
-                       placeholder="Give your event a memorable name" value="{{ submission.event_title }}" 
-                       minlength="3" required>
+                <input type="text" class="form-control" id="event_title" name="event_title"
+                       placeholder="Give your event a memorable name"
+                       value="{{ submission.event_title }}" minlength="3" required>
                 <div class="invalid-feedback">Event title is required (at least 3 characters).</div>
             </div>
-            
-            <div class="mb-3">
+
+            <div class="field-group">
                 <div class="form-label-wrapper">
-                    <label for="event_summary" class="form-label">
-                        Event Summary<span class="text-danger">*</span>
-                    </label>
+                    <label for="event_summary" class="form-label">Event Summary <span class="required-dot"></span></label>
                     <div class="speech-controls">
-                        <button type="button" class="speech-btn speak-btn" data-text="Event Summary" title="Read question aloud">
-                            <i class="bi bi-volume-up-fill"></i>
-                        </button>
-                        <button type="button" class="speech-btn listen-btn" data-target="event_summary" title="Speak your answer">
-                            <i class="bi bi-mic-fill"></i>
-                        </button>
+                        <button type="button" class="speech-btn speak-btn" data-text="Event Summary" title="Read aloud"><i class="bi bi-volume-up-fill"></i></button>
+                        <button type="button" class="speech-btn listen-btn" data-target="event_summary" title="Speak answer"><i class="bi bi-mic-fill"></i></button>
                     </div>
                 </div>
-                <textarea class="form-control" id="event_summary" name="event_summary" 
-                          placeholder="Limit: 150 characters" 
+                <textarea class="form-control" id="event_summary" name="event_summary"
+                          placeholder="Brief description of your event…"
                           maxlength="150" minlength="10" required>{{ submission.event_summary }}</textarea>
-                <div class="char-counter">
-                    <span id="charCount">0</span> / 150
-                </div>
-                <div class="invalid-feedback">Event summary is required (10-150 characters).</div>
-                <small class="text-muted">Brief summary of your event (max 150 characters)</small>
+                <div class="char-counter"><span id="charCount">0</span> / 150 characters</div>
+                <div class="invalid-feedback">Event summary is required (10–150 characters).</div>
             </div>
-            
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label for="event_type" class="form-label">
-                        Event Type<span class="text-danger">*</span>
-                    </label>
+
+            <div class="row g-3">
+                <div class="col-md-4 field-group">
+                    <label class="form-label" for="event_type">Event Type <span class="required-dot"></span></label>
                     <select class="form-select" id="event_type" name="event_type" required>
-                        <option value="">Select event type</option>
-                        <option value="Social" {% if submission.event_type == 'Social' %}selected{% endif %}>Social</option>
-                        <option value="Educational" {% if submission.event_type == 'Educational' %}selected{% endif %}>Educational</option>
-                        <option value="Cultural" {% if submission.event_type == 'Cultural' %}selected{% endif %}>Cultural</option>
-                        <option value="Sports" {% if submission.event_type == 'Sports' %}selected{% endif %}>Sports</option>
-                        <option value="Community" {% if submission.event_type == 'Community' %}selected{% endif %}>Community</option>
-                        <option value="Arts & Crafts" {% if submission.event_type == 'Arts & Crafts' %}selected{% endif %}>Arts & Crafts</option>
-                        <option value="Technology" {% if submission.event_type == 'Technology' %}selected{% endif %}>Technology</option>
-                        <option value="Other" {% if submission.event_type == 'Other' %}selected{% endif %}>Other</option>
+                        <option value="">— Select type —</option>
+                        {% for t in ['Social','Educational','Cultural','Sports','Community','Arts & Crafts','Technology','Other'] %}
+                        <option value="{{ t }}" {% if submission.event_type == t %}selected{% endif %}>{{ t }}</option>
+                        {% endfor %}
                     </select>
                 </div>
-                
-                <div class="col-md-4 mb-3">
-                    <label for="preferred_date" class="form-label">
-                        Preferred Date<span class="text-danger">*</span>
-                    </label>
-                    <input type="date" class="form-control" id="preferred_date" name="preferred_date" 
-                           value="{{ submission.preferred_date.strftime('%Y-%m-%d') if submission.preferred_date else '' }}" required>
-                    <small class="text-muted">Must be at least 1 week from today</small>
+
+                <div class="col-md-4 field-group">
+                    <label class="form-label" for="preferred_date">Preferred Date <span class="required-dot"></span></label>
+                    <div class="input-wrapper">
+                        <i class="bi bi-calendar-event input-icon"></i>
+                        <input type="date" class="form-control" id="preferred_date" name="preferred_date"
+                               value="{{ submission.preferred_date.strftime('%Y-%m-%d') if submission.preferred_date else '' }}" required>
+                    </div>
+                    <div class="field-hint">At least 1 week from today</div>
                 </div>
-                
-                <div class="col-md-4 mb-3">
-                    <label for="expected_participants" class="form-label">
-                        Expected Participants<span class="text-danger">*</span>
-                    </label>
+
+                <div class="col-md-4 field-group">
+                    <label class="form-label" for="expected_participants">Expected Participants <span class="required-dot"></span></label>
                     <select class="form-select" id="expected_participants" name="expected_participants" required>
-                        <option value="">Select range</option>
-                        <option value="1-20" {% if submission.expected_participants == '1-20' %}selected{% endif %}>1-20</option>
-                        <option value="21-50" {% if submission.expected_participants == '21-50' %}selected{% endif %}>21-50</option>
-                        <option value="51-100" {% if submission.expected_participants == '51-100' %}selected{% endif %}>51-100</option>
-                        <option value="100+" {% if submission.expected_participants == '100+' %}selected{% endif %}>100+</option>
+                        <option value="">— Select range —</option>
+                        {% for r in ['1-20','21-50','51-100','100+'] %}
+                        <option value="{{ r }}" {% if submission.expected_participants == r %}selected{% endif %}>{{ r }}</option>
+                        {% endfor %}
                     </select>
                 </div>
             </div>
         </div>
-        
-        <!-- Section 3: Tell Us More -->
+
+        <!-- ── Section 3: Tell Us More ── -->
         <div class="form-section">
-            <div class="section-number">3</div>
-            <h3 class="section-title">Tell Us More</h3>
-            
-            <div class="mb-3">
+            <div class="section-header">
+                <div class="section-number">3</div>
+                <h3 class="section-title">Tell Us More</h3>
+            </div>
+
+            <div class="field-group">
                 <div class="form-label-wrapper">
-                    <label for="why_meaningful" class="form-label">
-                        Why is this event meaningful to you?<span class="text-danger">*</span>
-                    </label>
+                    <label for="why_meaningful" class="form-label">Why is this event meaningful? <span class="required-dot"></span></label>
                     <div class="speech-controls">
-                        <button type="button" class="speech-btn speak-btn" data-text="Why is this event meaningful to you?" title="Read question aloud">
-                            <i class="bi bi-volume-up-fill"></i>
-                        </button>
-                        <button type="button" class="speech-btn listen-btn" data-target="why_meaningful" title="Speak your answer">
-                            <i class="bi bi-mic-fill"></i>
-                        </button>
+                        <button type="button" class="speech-btn speak-btn" data-text="Why is this event meaningful to you?" title="Read aloud"><i class="bi bi-volume-up-fill"></i></button>
+                        <button type="button" class="speech-btn listen-btn" data-target="why_meaningful" title="Speak answer"><i class="bi bi-mic-fill"></i></button>
                     </div>
                 </div>
-                <textarea class="form-control" id="why_meaningful" name="why_meaningful" 
-                          placeholder="Share your story and what inspires you to organize this event..." 
+                <textarea class="form-control" id="why_meaningful" name="why_meaningful"
+                          placeholder="Share your story and what inspires you to organise this event…"
                           minlength="20" required>{{ submission.why_meaningful }}</textarea>
                 <div class="invalid-feedback">Please explain why this event is meaningful (at least 20 characters).</div>
             </div>
-            
-            <div class="mb-3">
+
+            <div class="field-group">
                 <div class="form-label-wrapper">
-                    <label for="previous_experience" class="form-label">
-                        Previous Experience (Optional)
-                    </label>
+                    <label for="previous_experience" class="form-label">Previous Experience <span style="font-size:10px;font-weight:500;color:var(--muted);margin-left:4px;">(Optional)</span></label>
                     <div class="speech-controls">
-                        <button type="button" class="speech-btn speak-btn" data-text="Previous Experience" title="Read question aloud">
-                            <i class="bi bi-volume-up-fill"></i>
-                        </button>
-                        <button type="button" class="speech-btn listen-btn" data-target="previous_experience" title="Speak your answer">
-                            <i class="bi bi-mic-fill"></i>
-                        </button>
+                        <button type="button" class="speech-btn speak-btn" data-text="Previous Experience" title="Read aloud"><i class="bi bi-volume-up-fill"></i></button>
+                        <button type="button" class="speech-btn listen-btn" data-target="previous_experience" title="Speak answer"><i class="bi bi-mic-fill"></i></button>
                     </div>
                 </div>
-                <textarea class="form-control" id="previous_experience" name="previous_experience" 
-                          placeholder="Have you organized similar events before? Tell us about it...">{{ submission.previous_experience or '' }}</textarea>
+                <textarea class="form-control" id="previous_experience" name="previous_experience"
+                          placeholder="Have you organised similar events before? Tell us about it…">{{ submission.previous_experience or '' }}</textarea>
             </div>
-            
-            <div class="mb-3">
+
+            <div class="field-group">
                 <div class="form-label-wrapper">
-                    <label for="accessibility" class="form-label">
-                        Accessibility Considerations<span class="text-danger">*</span>
-                    </label>
+                    <label for="accessibility" class="form-label">Accessibility Considerations <span class="required-dot"></span></label>
                     <div class="speech-controls">
-                        <button type="button" class="speech-btn speak-btn" data-text="Accessibility Considerations" title="Read question aloud">
-                            <i class="bi bi-volume-up-fill"></i>
-                        </button>
-                        <button type="button" class="speech-btn listen-btn" data-target="accessibility" title="Speak your answer">
-                            <i class="bi bi-mic-fill"></i>
-                        </button>
+                        <button type="button" class="speech-btn speak-btn" data-text="Accessibility Considerations" title="Read aloud"><i class="bi bi-volume-up-fill"></i></button>
+                        <button type="button" class="speech-btn listen-btn" data-target="accessibility" title="Speak answer"><i class="bi bi-mic-fill"></i></button>
                     </div>
                 </div>
-                <textarea class="form-control" id="accessibility" name="accessibility" 
-                          placeholder="How will you ensure the event is accessible for both youth and elderly?" 
+                <textarea class="form-control" id="accessibility" name="accessibility"
+                          placeholder="How will you ensure the event is accessible for both youth and elderly?"
                           minlength="20" required>{{ submission.accessibility_considerations }}</textarea>
                 <div class="invalid-feedback">Please provide accessibility considerations (at least 20 characters).</div>
             </div>
         </div>
-        
-        <!-- Image Upload (required if no existing image) -->
+
+        <!-- ── Section 4: Event Image ── -->
         <div class="form-section">
+            <div class="section-header">
+                <div class="section-number">4</div>
+                <h3 class="section-title">Event Image</h3>
+            </div>
+
             {% if submission.image_url %}
-            <div class="mb-3">
-                <label class="form-label">Current Image</label>
+            <div class="current-image-wrap">
+                <img src="{{ submission.image_url }}" alt="Current event image">
                 <div>
-                    <img src="{{ submission.image_url }}" alt="Event image" style="max-width:260px;border-radius:8px;">
+                    <div class="current-image-label">Current Image</div>
+                    <div class="current-image-name">Upload a new image to replace it</div>
                 </div>
             </div>
             {% endif %}
 
-            <div class="mb-3">
-                <label for="edit_submission_image" class="form-label">
-                    Event Image {% if not (submission.image_url or submission.submission_image) %}<span class="text-danger">*</span>{% endif %}
+            <div class="field-group">
+                <label class="form-label" for="edit_submission_image">
+                    {% if not (submission.image_url or submission.submission_image) %}
+                    Upload Image <span class="required-dot"></span>
+                    {% else %}
+                    Replace Image <span style="font-size:10px;font-weight:500;color:var(--muted);margin-left:4px;">(Optional)</span>
+                    {% endif %}
                 </label>
-                <input type="file" class="form-control" id="edit_submission_image" name="submission_image" accept="image/*" onchange="validateEditSubmissionFileSize(this)" {% if not (submission.image_url or submission.submission_image) %}required{% endif %}>
+                <input type="file" class="form-control" id="edit_submission_image" name="submission_image"
+                       accept="image/*" onchange="validateEditSubmissionFileSize(this)"
+                       {% if not (submission.image_url or submission.submission_image) %}required{% endif %}>
                 <div class="invalid-feedback">Please upload an event image (max 5MB).</div>
-                <small class="text-muted">Accepted formats: JPG, PNG. Max size: 5MB.</small>
-                <div id="editSubmissionFileError" class="text-danger mt-2" style="display:none;">File is too large. Max 5MB.</div>
+                <div class="field-hint">Accepted formats: JPG, PNG. Max size: 5MB.</div>
+                <div id="editSubmissionFileError">⚠ File is too large. Max size is 5MB.</div>
             </div>
         </div>
 
-        <!-- Submit Section -->
+        <!-- ── Submit ── -->
         <div class="submit-section">
+            <h3>Ready to update?</h3>
+            <p>Your updated submission will go through review again before going live.</p>
             <button type="submit" class="submit-btn">
-                <i class="bi bi-check-circle"></i> Update Submission
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Update Submission
             </button>
-            <p class="submit-info">
-                Your updated submission will be reviewed again.
-            </p>
         </div>
+
     </form>
 </div>
-
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    // ===== SYNC LANGUAGE FROM BACKEND TO LOCALSTORAGE =====
+    // ── Sync language ──
     (function() {
         const userLanguage = "{{ user_language or 'en' }}";
         if (userLanguage && userLanguage !== 'en') {
             localStorage.setItem('siteLanguage', userLanguage);
-            // Trigger the translation function from base.html if it exists
-            if (typeof setSiteLanguage === 'function') {
-                setSiteLanguage(userLanguage);
-            }
+            if (typeof setSiteLanguage === 'function') setSiteLanguage(userLanguage);
         }
     })();
 
-    // List of known email domains
+    // ── Email validation ──
     const knownEmailDomains = [
-        'gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'aol.com',
-        'mail.com', 'protonmail.com', 'zoho.com', 'yandex.com', 'icloud.com',
-        'me.com', 'mac.com', 'qq.com', 'aliyun.com', 'sina.com', '163.com',
-        'sohu.com', 'foxmail.com', 'live.com', 'msn.com', 'standardmail.com',
-        'inbox.com', 'mail.co.uk', 'googlemail.com', 'rediffmail.com', 'mailinator.com'
+        'gmail.com','yahoo.com','outlook.com','hotmail.com','aol.com','mail.com',
+        'protonmail.com','zoho.com','yandex.com','icloud.com','me.com','mac.com',
+        'qq.com','aliyun.com','sina.com','163.com','sohu.com','foxmail.com',
+        'live.com','msn.com','standardmail.com','inbox.com','mail.co.uk',
+        'googlemail.com','rediffmail.com','mailinator.com'
     ];
-    
-    // Email validation function
     function validateEmail(email) {
-        const emailRegex = /^[A-Za-z0-9._%+-]+@([A-Za-z0-9.-]+\.[A-Za-z]{2,})$/;
-        const match = email.match(emailRegex);
-        
+        const match = email.match(/^[A-Za-z0-9._%+-]+@([A-Za-z0-9.-]+\.[A-Za-z]{2,})$/);
         if (!match) return false;
-        
-        const domain = match[1].toLowerCase();
-        return knownEmailDomains.includes(domain) || domain.includes('company') || domain.includes('work') || domain.includes('org');
+        const d = match[1].toLowerCase();
+        return knownEmailDomains.includes(d) || d.includes('company') || d.includes('work') || d.includes('org');
     }
-    
-    // Add custom validation to email fields
-    const emailInputs = document.querySelectorAll('input[type="email"]');
-    emailInputs.forEach(input => {
+    document.querySelectorAll('input[type="email"]').forEach(input => {
         input.addEventListener('change', function() {
             if (this.value && !validateEmail(this.value)) {
-                this.setCustomValidity('Please use a valid email domain (gmail.com, yahoo.com, outlook.com, etc)');
+                this.setCustomValidity('Please use a valid email domain (gmail.com, yahoo.com, etc.)');
                 this.classList.add('is-invalid');
             } else {
                 this.setCustomValidity('');
@@ -589,369 +620,159 @@
             }
         });
     });
-    
-    // Character counter for event summary
+
+    // ── Char counter ──
     const eventSummary = document.getElementById('event_summary');
     const charCount = document.getElementById('charCount');
-    
-    function updateCharCount() {
-        charCount.textContent = eventSummary.value.length;
-    }
-    
+    function updateCharCount() { charCount.textContent = eventSummary.value.length; }
     eventSummary.addEventListener('input', updateCharCount);
-    updateCharCount(); // Initialize
-    
-    // Auto-compute age group from date of birth
+    updateCharCount();
+
+    // ── DOB / age group ──
     const dobInput = document.getElementById('organizer_dob');
     const ageGroupInput = document.getElementById('organizer_age_group');
-    
     function calculateAgeGroup(dob) {
-        const today = new Date();
-        const birthDate = new Date(dob);
+        const today = new Date(); const birthDate = new Date(dob);
         let age = today.getFullYear() - birthDate.getFullYear();
-        const monthDiff = today.getMonth() - birthDate.getMonth();
-        
-        // Adjust age if birthday hasn't occurred yet this year
-        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-            age--;
-        }
-        
-        // Check minimum age requirement (must be exactly 13 or older)
-        if (age < 13) {
-            return null;
-        }
-        
-        // Determine age group
-        if (age >= 13 && age <= 20) {
-            return 'Youth';
-        } else if (age >= 21 && age <= 59) {
-            return 'Adult';
-        } else if (age >= 60) {
-            return 'Elderly';
-        }
-        
-        return null;
+        const m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+        if (age < 13) return null;
+        if (age <= 20) return 'Youth';
+        if (age <= 59) return 'Adult';
+        return 'Elderly';
     }
-    
     function updateAgeGroup() {
         const dob = dobInput.value;
         if (dob) {
-            const ageGroup = calculateAgeGroup(dob);
-            if (ageGroup) {
-                ageGroupInput.value = ageGroup;
-                dobInput.setCustomValidity('');
-            } else {
-                ageGroupInput.value = '';
-                dobInput.setCustomValidity('You must be at least 13 years old to create an event.');
-            }
-        } else {
-            ageGroupInput.value = '';
-            dobInput.setCustomValidity('');
-        }
+            const g = calculateAgeGroup(dob);
+            if (g) { ageGroupInput.value = g; dobInput.setCustomValidity(''); }
+            else { ageGroupInput.value = ''; dobInput.setCustomValidity('You must be at least 13 years old.'); }
+        } else { ageGroupInput.value = ''; dobInput.setCustomValidity(''); }
     }
-    
     dobInput.addEventListener('change', updateAgeGroup);
-    updateAgeGroup(); // Initialize
-    
-    // Date restrictions for DOB (must be 13+ years old)
-    function setDOBRestrictions() {
-        // Calculate the max date (13 years ago from today)
-        const today = new Date();
-        const maxDate = new Date(today.getFullYear() - 13, today.getMonth(), today.getDate());
-        
-        // Set max attribute to ensure user is at least 13 years old
-        dobInput.setAttribute('max', maxDate.toISOString().split('T')[0]);
-    }
-    
-    setDOBRestrictions();
-    
-    // Date restrictions for preferred_date (Singapore Time - must be at least 1 week away)
+    updateAgeGroup();
+    const today = new Date();
+    dobInput.setAttribute('max', new Date(today.getFullYear()-13, today.getMonth(), today.getDate()).toISOString().split('T')[0]);
+
+    // ── Preferred date restriction ──
     const preferredDateInput = document.getElementById('preferred_date');
-    
-    function setDateRestrictions() {
-        // Get current date in Singapore timezone (UTC+8)
-        const now = new Date();
-        const singaporeOffset = 8 * 60; // Singapore is UTC+8
-        const localOffset = now.getTimezoneOffset(); // Local offset in minutes (negative for ahead of UTC)
-        const offsetDiff = singaporeOffset + localOffset;
-        
-        // Adjust to Singapore time
-        const singaporeTime = new Date(now.getTime() + (offsetDiff * 60 * 1000));
-        
-        // 1 week from today (7 days from today)
-        const oneWeekFromToday = new Date(singaporeTime);
-        oneWeekFromToday.setDate(oneWeekFromToday.getDate() + 7);
-        
-        // Format date as YYYY-MM-DD
-        const minDate = oneWeekFromToday.toISOString().split('T')[0];
-        
-        preferredDateInput.setAttribute('min', minDate);
-    }
-    
-    setDateRestrictions();
-    
-    // Phone number restrictions (digits only, max 8)
-    const organizerPhoneInput = document.getElementById('organizer_phone');
-
-    function normalizePhoneInput(input) {
-        let value = input.value.replace(/\D/g, '').slice(0, 8);
-
-        while (value.length > 0 && !/^[89]/.test(value)) {
-            value = value.slice(1);
-        }
-
-        input.value = value;
-    }
-
-    organizerPhoneInput.addEventListener('input', function() {
-        normalizePhoneInput(organizerPhoneInput);
-    });
-    normalizePhoneInput(organizerPhoneInput);
-
-    // Bootstrap form validation with auto-scroll to first error
     (function() {
-        'use strict';
-        
-        const form = document.querySelector('form');
-        
+        const now = new Date();
+        const sgOffset = 8*60; const localOffset = now.getTimezoneOffset();
+        const sgTime = new Date(now.getTime() + (sgOffset + localOffset) * 60000);
+        const minDate = new Date(sgTime); minDate.setDate(minDate.getDate() + 7);
+        preferredDateInput.setAttribute('min', minDate.toISOString().split('T')[0]);
+    })();
+
+    // ── Phone normalization ──
+    const phoneInput = document.getElementById('organizer_phone');
+    function normalizePhone(input) {
+        let v = input.value.replace(/\D/g, '').slice(0,8);
+        while (v.length > 0 && !/^[89]/.test(v)) v = v.slice(1);
+        input.value = v;
+    }
+    phoneInput.addEventListener('input', function() { normalizePhone(this); });
+    normalizePhone(phoneInput);
+
+    // ── Form validation ──
+    (function() {
+        const form = document.getElementById('editSubmissionForm');
         form.addEventListener('submit', function(event) {
-            // Validate DOB age
             updateAgeGroup();
-            
-            // Validate emails
-            emailInputs.forEach(input => {
+            document.querySelectorAll('input[type="email"]').forEach(input => {
                 if (input.value && !validateEmail(input.value)) {
                     input.setCustomValidity('Please use a valid email domain');
                     input.classList.add('is-invalid');
                 }
             });
-            
             if (!form.checkValidity()) {
-                event.preventDefault();
-                event.stopPropagation();
-                
-                // Scroll to first invalid field
+                event.preventDefault(); event.stopPropagation();
                 const firstInvalid = form.querySelector('.form-control:invalid, .form-select:invalid');
-                if (firstInvalid) {
-                    firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    firstInvalid.focus();
-                }
+                if (firstInvalid) { firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' }); firstInvalid.focus(); }
             }
-            
             form.classList.add('was-validated');
         }, false);
     })();
 
-    // Validate edit submission image file size (max 5MB)
+    // ── File size validation ──
     function validateEditSubmissionFileSize(input) {
         const file = input.files && input.files[0];
-        const maxSize = 5 * 1024 * 1024; // 5MB
+        const maxSize = 5 * 1024 * 1024;
         const errDiv = document.getElementById('editSubmissionFileError');
-
         if (file && file.size > maxSize) {
-            input.classList.add('is-invalid');
-            input.setCustomValidity('File too large');
+            input.classList.add('is-invalid'); input.setCustomValidity('File too large');
             if (errDiv) errDiv.style.display = 'block';
         } else {
-            input.classList.remove('is-invalid');
-            input.setCustomValidity('');
+            input.classList.remove('is-invalid'); input.setCustomValidity('');
             if (errDiv) errDiv.style.display = 'none';
         }
     }
+    const fileInput = document.getElementById('edit_submission_image');
+    if (fileInput) fileInput.addEventListener('change', function() { validateEditSubmissionFileSize(this); });
 
-    const editSubmissionFileInput = document.getElementById('edit_submission_image');
-    if (editSubmissionFileInput) {
-        editSubmissionFileInput.addEventListener('change', function() { validateEditSubmissionFileSize(this); });
-    }
-
-    // ========== SPEECH FUNCTIONALITY ==========
+    // ── Speech functionality ──
     (function() {
         const userLanguage = "{{ user_language or 'en' }}";
-        
-        // Language mapping for Web Speech API
-        const languageMap = {
-            'en': 'en-US',
-            'zh-CN': 'zh-CN',
-            'zh': 'zh-CN',
-            'ta': 'ta-IN',
-            'ms': 'ms-MY'
-        };
-        
+        const languageMap = { 'en':'en-US','zh-CN':'zh-CN','zh':'zh-CN','ta':'ta-IN','ms':'ms-MY' };
         const speechLang = languageMap[userLanguage] || 'en-US';
-        
-        // Translation dictionary for form labels
+
         const translations = {
-            'Full Name': {
-                'en': 'Full Name',
-                'zh-CN': '全名',
-                'ta': 'முழு பெயர்',
-                'ms': 'Nama Penuh'
-            },
-            'Date of Birth': {
-                'en': 'Date of Birth',
-                'zh-CN': '出生日期',
-                'ta': 'பிறந்த தேதி',
-                'ms': 'Tarikh Lahir'
-            },
-            'Email': {
-                'en': 'Email',
-                'zh-CN': '电子邮件',
-                'ta': 'மின்னஞ்சல்',
-                'ms': 'Emel'
-            },
-            'Phone Number': {
-                'en': 'Phone Number',
-                'zh-CN': '电话号码',
-                'ta': 'தொலைபேசி எண்',
-                'ms': 'Nombor Telefon'
-            },
-            'Location': {
-                'en': 'Location',
-                'zh-CN': '地点',
-                'ta': 'இடம்',
-                'ms': 'Lokasi'
-            },
-            'Event Title': {
-                'en': 'Event Title',
-                'zh-CN': '活动标题',
-                'ta': 'நிகழ்வு தலைப்பு',
-                'ms': 'Tajuk Acara'
-            },
-            'Event Summary': {
-                'en': 'Event Summary',
-                'zh-CN': '活动摘要',
-                'ta': 'நிகழ்வு சுருக்கம்',
-                'ms': 'Ringkasan Acara'
-            },
-            'Why is this event meaningful to you?': {
-                'en': 'Why is this event meaningful to you?',
-                'zh-CN': '为什么这个活动对你有意义？',
-                'ta': 'இந்த நிகழ்வு உங்களுக்கு ஏன் அர்த்தமுள்ளதாக இருக்கிறது?',
-                'ms': 'Mengapa acara ini bermakna kepada anda?'
-            },
-            'Previous Experience': {
-                'en': 'Previous Experience',
-                'zh-CN': '以往经验',
-                'ta': 'முந்தைய அனுபவம்',
-                'ms': 'Pengalaman Terdahulu'
-            },
-            'Accessibility Considerations': {
-                'en': 'Accessibility Considerations',
-                'zh-CN': '无障碍考虑',
-                'ta': 'அணுகல் கருத்தில் கொள்ளல்கள்',
-                'ms': 'Pertimbangan Kebolehcapaian'
-            }
+            'Full Name':{ 'en':'Full Name','zh-CN':'全名','ta':'முழு பெயர்','ms':'Nama Penuh' },
+            'Email':{ 'en':'Email','zh-CN':'电子邮件','ta':'மின்னஞ்சல்','ms':'Emel' },
+            'Phone Number':{ 'en':'Phone Number','zh-CN':'电话号码','ta':'தொலைபேசி எண்','ms':'Nombor Telefon' },
+            'Location':{ 'en':'Location','zh-CN':'地点','ta':'இடம்','ms':'Lokasi' },
+            'Event Title':{ 'en':'Event Title','zh-CN':'活动标题','ta':'நிகழ்வு தலைப்பு','ms':'Tajuk Acara' },
+            'Event Summary':{ 'en':'Event Summary','zh-CN':'活动摘要','ta':'நிகழ்வு சுருக்கம்','ms':'Ringkasan Acara' },
+            'Why is this event meaningful to you?':{ 'en':'Why is this event meaningful to you?','zh-CN':'为什么这个活动对你有意义？','ta':'இந்த நிகழ்வு உங்களுக்கு ஏன் அர்த்தமுள்ளதாக இருக்கிறது?','ms':'Mengapa acara ini bermakna kepada anda?' },
+            'Previous Experience':{ 'en':'Previous Experience','zh-CN':'以往经验','ta':'முந்தைய அனுபவம்','ms':'Pengalaman Terdahulu' },
+            'Accessibility Considerations':{ 'en':'Accessibility Considerations','zh-CN':'无障碍考虑','ta':'அணுகல் கருத்தில் கொள்ளல்கள்','ms':'Pertimbangan Kebolehcapaian' }
         };
-        
-        // Function to translate text
+
         function translateText(text) {
-            if (translations[text] && translations[text][userLanguage]) {
-                return translations[text][userLanguage];
-            }
-            return text; // Return original if no translation found
+            return (translations[text] && translations[text][userLanguage]) ? translations[text][userLanguage] : text;
         }
-        
-        // Text-to-Speech function
+
         function speakText(text, button) {
-            if ('speechSynthesis' in window) {
-                // Cancel any ongoing speech
-                window.speechSynthesis.cancel();
-                
-                // Translate the text to user's language
-                const translatedText = translateText(text);
-                
-                const utterance = new SpeechSynthesisUtterance(translatedText);
-                utterance.lang = speechLang;
-                utterance.rate = 0.9;
-                utterance.pitch = 1;
-                
-                button.classList.add('speaking');
-                
-                utterance.onend = function() {
-                    button.classList.remove('speaking');
-                };
-                
-                utterance.onerror = function() {
-                    button.classList.remove('speaking');
-                    console.error('Speech synthesis error');
-                };
-                
-                window.speechSynthesis.speak(utterance);
-            } else {
-                alert('Text-to-speech is not supported in your browser.');
-            }
+            if (!('speechSynthesis' in window)) { alert('Text-to-speech is not supported in your browser.'); return; }
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(translateText(text));
+            utterance.lang = speechLang; utterance.rate = 0.9; utterance.pitch = 1;
+            button.classList.add('speaking');
+            utterance.onend = () => button.classList.remove('speaking');
+            utterance.onerror = () => button.classList.remove('speaking');
+            window.speechSynthesis.speak(utterance);
         }
-        
-        // Speech-to-Text function
+
         function listenForSpeech(inputElement, button) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            
-            if (!SpeechRecognition) {
-                alert('Speech recognition is not supported in your browser. Please use Chrome or Edge.');
-                return;
-            }
-            
-            const recognition = new SpeechRecognition();
-            recognition.lang = speechLang;
-            recognition.continuous = false;
-            recognition.interimResults = false;
-            
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) { alert('Speech recognition is not supported. Please use Chrome or Edge.'); return; }
+            const recognition = new SR();
+            recognition.lang = speechLang; recognition.continuous = false; recognition.interimResults = false;
             button.classList.add('listening');
-            button.title = 'Listening... (will stop automatically when you finish speaking)';
-            
-            recognition.onresult = function(event) {
-                const transcript = event.results[0][0].transcript;
-                inputElement.value = transcript;
+            recognition.onresult = (event) => {
+                inputElement.value = event.results[0][0].transcript;
                 inputElement.dispatchEvent(new Event('input', { bubbles: true }));
                 button.classList.remove('listening');
-                button.title = 'Click to speak your answer (auto-stops when done)';
             };
-            
-            recognition.onerror = function(event) {
+            recognition.onerror = (event) => {
                 button.classList.remove('listening');
-                button.title = 'Click to speak your answer (auto-stops when done)';
-                if (event.error !== 'no-speech' && event.error !== 'aborted') {
-                    console.error('Speech recognition error:', event.error);
-                    alert('Speech recognition error: ' + event.error);
-                }
+                if (event.error !== 'no-speech' && event.error !== 'aborted') alert('Speech error: ' + event.error);
             };
-            
-            recognition.onend = function() {
-                button.classList.remove('listening');
-                button.title = 'Click to speak your answer (auto-stops when done)';
-            };
-            
+            recognition.onend = () => button.classList.remove('listening');
             recognition.start();
         }
-        
-        // Initialize speech buttons
-        function initSpeechButtons() {
-            // Get all speak buttons
-            document.querySelectorAll('.speak-btn').forEach(button => {
-                button.title = 'Click to hear question read aloud';
-                button.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const labelText = this.getAttribute('data-text');
-                    speakText(labelText, this);
-                });
+
+        document.querySelectorAll('.speak-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => { e.preventDefault(); speakText(btn.getAttribute('data-text'), btn); });
+        });
+        document.querySelectorAll('.listen-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const el = document.getElementById(btn.getAttribute('data-target'));
+                if (el) listenForSpeech(el, btn);
             });
-            
-            // Get all listen buttons
-            document.querySelectorAll('.listen-btn').forEach(button => {
-                button.title = 'Click to speak your answer (auto-stops when done)';
-                button.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const targetId = this.getAttribute('data-target');
-                    const inputElement = document.getElementById(targetId);
-                    if (inputElement) {
-                        listenForSpeech(inputElement, this);
-                    }
-                });
-            });
-        }
-        
-        // Initialize on page load
-        initSpeechButtons();
+        });
     })();
 </script>
 {% endblock %}
+

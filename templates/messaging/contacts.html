@@ -2,324 +2,724 @@
 {% block title %}Contacts & Groups - Genlink{% endblock %}
 
 {% block extra_css %}
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
+
 <style>
-  .gl-title { font-family: 'Sora', sans-serif; }
+/* ── ROOT ──────────────────────────────────────────────── */
+:root {
+  --orange:      #f39a1f;
+  --orange-deep: #d97f06;
+  --coral:       #ff8c61;
+  --cream:       #fbf8f5;
+  --text:        #1c1209;
+  --muted:       #8a7260;
+  --glow:        rgba(243,154,31,0.28);
+  --glow-strong: rgba(243,154,31,0.45);
+  --border:      rgba(243,154,31,0.15);
+}
 
-  /* ── Sidebar ── */
-  .gl-sidebar { position: sticky; top: 88px; }
+body {
+  font-family: 'Poppins', sans-serif;
+  background: var(--cream);
+  color: var(--text);
+  overflow-x: hidden;
+}
 
-  .gl-sidebar-tabs { display: flex; border-bottom: 1px solid #dee2e6; }
-  .gl-sidebar-tab { flex: 1; padding: 13px 10px; background: transparent; border: none; font-size: 13px; font-weight: 600; cursor: pointer; color: #6c757d; border-bottom: 2.5px solid transparent; margin-bottom: -1px; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; font-family: inherit; }
-  .gl-sidebar-tab:hover { color: #495057; background: #f8f9fa; }
-  .gl-sidebar-tab.active { color: #ff6b35; border-bottom-color: #ff6b35; background: #fff8f5; }
-  .gl-sidebar-tab .gl-tab-count { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 100px; }
-  .gl-sidebar-tab.active .gl-tab-count { background: #ff6b35; color: white; }
-  .gl-sidebar-tab:not(.active) .gl-tab-count { background: #e9ecef; color: #6c757d; }
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 9999;
+}
 
-  .gl-sb-panel { display: none; }
-  .gl-sb-panel.active { display: block; }
+/* ── PAGE HERO ─────────────────────────────────────────── */
+.page-hero {
+  position: relative;
+  padding: 56px 24px 40px;
+  overflow: hidden;
+}
 
-  .gl-contact-mini { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; text-decoration: none !important; color: inherit !important; transition: background 0.15s; }
-  .gl-contact-mini:hover { background: #f8f9fa; }
+.blob { position: absolute; border-radius: 50%; filter: blur(90px); pointer-events: none; }
+.blob-a { width: 400px; height: 400px; background: radial-gradient(circle, rgba(243,154,31,0.15), transparent 70%); top: -100px; right: -80px; animation: drift 9s ease-in-out infinite alternate; }
+.blob-b { width: 280px; height: 280px; background: radial-gradient(circle, rgba(255,140,97,0.12), transparent 70%); bottom: -60px; left: -60px; animation: drift 12s ease-in-out infinite alternate-reverse; }
+@keyframes drift { from { transform: translate(0,0) scale(1); } to { transform: translate(20px,-18px) scale(1.07); } }
 
-  .gl-avatar { border-radius: 50%; background: linear-gradient(135deg, #F05A1A, #F0A01A); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0; }
-  .gl-avatar-sm { width: 32px; height: 32px; font-size: 12px; }
-  .gl-avatar-md { width: 36px; height: 36px; font-size: 14px; }
-  .gl-avatar-lg { width: 48px; height: 48px; font-size: 18px; }
-  .gl-avatar-group { border-radius: 12px; }
-  .gl-avatar.teal { background: linear-gradient(135deg, #0FA87E, #3AB8C0); }
-  .gl-avatar.indigo { background: linear-gradient(135deg, #5B4FD4, #8B7FFF); }
-  .gl-avatar.rose { background: linear-gradient(135deg, #E84470, #F07A9A); }
+.dotgrid {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image: radial-gradient(circle, rgba(243,154,31,0.09) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 30%, black 20%, transparent 100%);
+}
 
-  .gl-btn-new-group { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px; border-radius: 10px; border: 1.5px dashed #dee2e6; background: transparent; color: #6c757d; font-size: 13px; font-weight: 500; text-decoration: none !important; transition: all 0.2s; width: 100%; }
-  .gl-btn-new-group:hover { border-color: #F05A1A; color: #F05A1A !important; background: #fff5f0; }
+.hero-inner {
+  position: relative; z-index: 2;
+  display: flex; align-items: flex-end; justify-content: space-between;
+  flex-wrap: wrap; gap: 16px;
+  max-width: 1100px; margin: 0 auto;
+}
 
-  /* ── Main view toggle ── */
-  .gl-view { display: none; }
-  .gl-view.active { display: block; }
-  .gl-view-groups.active { display: flex; flex-direction: column; min-height: 50vh; }
+.hero-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(243,154,31,0.1); border: 1px solid rgba(243,154,31,0.28);
+  border-radius: 999px; padding: 5px 14px 5px 9px;
+  font-size: 0.7rem; font-weight: 700; color: var(--orange-deep);
+  letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px;
+}
+.hero-pill-dot { width: 7px; height: 7px; background: var(--orange); border-radius: 50%; animation: blink 2s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(1.4);} }
 
-  /* ── Contact row animation ── */
-  .gl-contact-row { animation: glFadeUp 0.3s ease both; }
-  @keyframes glFadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.page-hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+  font-weight: 900; line-height: 1.1; margin-bottom: 6px;
+}
+.page-hero h1 em {
+  font-style: italic;
+  background: linear-gradient(135deg, var(--orange), var(--coral));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.page-hero p { font-size: 0.88rem; color: var(--muted); margin: 0; }
 
-  /* ── Action buttons ── */
-  .gl-btn-chat { background: #E8F4FF; color: #3A8FE8; border-color: #C5DEFF; }
-  .gl-btn-chat:hover { background: #3A8FE8; color: white; border-color: #3A8FE8; }
-  .gl-btn-edit { color: #4A3F35; border-color: #dee2e6; }
-  .gl-btn-edit:hover { background: #f8f9fa; border-color: #4A3F35; color: #1A1410; }
-  .gl-btn-remove { color: #E8445A; border-color: #FFCCD3; }
-  .gl-btn-remove:hover { background: #E8445A; color: white; border-color: #E8445A; }
+/* ── LAYOUT ────────────────────────────────────────────── */
+.page-body {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 22px;
+  align-items: start;
+}
+@media (max-width: 768px) {
+  .page-body { grid-template-columns: 1fr; }
+}
 
-  /* ── Group card ── */
-  .gl-grp-banner { height: 68px; position: relative; overflow: hidden; border-radius: 0.75rem 0.75rem 0 0; }
-  .gl-grp-banner.c0 { background: linear-gradient(135deg, #F05A1A, #F0A01A); }
-  .gl-grp-banner.c1 { background: linear-gradient(135deg, #0FA87E, #3AB8C0); }
-  .gl-grp-banner.c2 { background: linear-gradient(135deg, #5B4FD4, #8B7FFF); }
-  .gl-grp-banner.c3 { background: linear-gradient(135deg, #E84470, #F07A9A); }
-  .gl-grp-banner-icon { position: absolute; bottom: -14px; left: 18px; width: 48px; height: 48px; border-radius: 13px; background: white; border: 2px solid #EDE8E0; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-  .gl-grp-card { transition: all 0.2s; animation: glFadeUp 0.3s ease both; }
-  .gl-grp-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08) !important; }
+/* ── SIDEBAR ───────────────────────────────────────────── */
+.sidebar-card {
+  background: #fff;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 28px rgba(243,154,31,0.06);
+  position: sticky; top: 88px;
+  overflow: hidden;
+}
 
-  .gl-create-card { border: 2px dashed #dee2e6; border-radius: 0.75rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 36px 20px; cursor: pointer; transition: all 0.2s; min-height: 190px; color: #6c757d; text-decoration: none !important; }
-  .gl-create-card:hover { border-color: #F05A1A; background: #fff8f5; color: #F05A1A !important; }
-  .gl-create-icon { width: 42px; height: 42px; border-radius: 12px; background: #f8f9fa; display: flex; align-items: center; justify-content: center; font-size: 20px; transition: all 0.2s; }
-  .gl-create-card:hover .gl-create-icon { background: #FFE8DC; }
+.sidebar-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(243,154,31,0.12);
+}
+.sidebar-tab {
+  flex: 1; padding: 13px 10px;
+  background: transparent; border: none;
+  font-size: 12.5px; font-weight: 700;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer; color: var(--muted);
+  border-bottom: 2.5px solid transparent;
+  margin-bottom: -1px;
+  transition: all 0.18s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.sidebar-tab:hover { color: var(--orange-deep); background: rgba(243,154,31,0.04); }
+.sidebar-tab.active {
+  color: var(--orange-deep);
+  border-bottom-color: var(--orange);
+  background: rgba(243,154,31,0.06);
+}
 
-  /* ── Section label ── */
-  .gl-section-label { font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #6c757d; }
+.tab-count {
+  font-size: 10px; font-weight: 800;
+  padding: 1px 7px; border-radius: 999px;
+}
+.sidebar-tab.active .tab-count { background: var(--orange); color: #fff; }
+.sidebar-tab:not(.active) .tab-count { background: rgba(243,154,31,0.12); color: var(--muted); }
+
+.sb-panel { display: none; padding: 8px; }
+.sb-panel.active { display: block; }
+
+/* contact mini item */
+.sb-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 10px; border-radius: 12px;
+  text-decoration: none !important;
+  color: var(--text) !important;
+  transition: background 0.15s;
+}
+.sb-item:hover { background: rgba(243,154,31,0.07); }
+
+/* avatars */
+.sc-avatar {
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--orange), var(--coral));
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 800; flex-shrink: 0;
+  font-size: 12px;
+}
+.sc-avatar.sm { width: 32px; height: 32px; }
+.sc-avatar.md { width: 38px; height: 38px; font-size: 14px; }
+.sc-avatar.lg { width: 48px; height: 48px; font-size: 18px; }
+.sc-avatar.square { border-radius: 12px; }
+.sc-avatar.teal   { background: linear-gradient(135deg, #0FA87E, #3AB8C0); }
+.sc-avatar.indigo { background: linear-gradient(135deg, #5B4FD4, #8B7FFF); }
+.sc-avatar.rose   { background: linear-gradient(135deg, #E84470, #F07A9A); }
+
+.sb-item-name  { font-size: 0.83rem; font-weight: 600; line-height: 1.2; }
+.sb-item-sub   { font-size: 11px; color: var(--muted); }
+
+.sb-new-group {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px; border-radius: 12px;
+  border: 1.5px dashed rgba(243,154,31,0.3);
+  background: transparent; color: var(--muted);
+  font-size: 13px; font-weight: 600;
+  font-family: 'Poppins', sans-serif;
+  text-decoration: none !important; width: 100%;
+  transition: all 0.2s; cursor: pointer;
+}
+.sb-new-group:hover {
+  border-color: var(--orange);
+  color: var(--orange-deep) !important;
+  background: rgba(243,154,31,0.06);
+}
+
+/* ── MAIN VIEW TOGGLE ──────────────────────────────────── */
+.main-view { display: none; }
+.main-view.active { display: block; }
+.main-view.groups-view.active { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 18px; }
+
+/* ── SECTION CARD ──────────────────────────────────────── */
+.sc-card {
+  background: #fff;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 28px rgba(243,154,31,0.06);
+  overflow: hidden;
+}
+
+.sc-card-header {
+  padding: 22px 24px 16px;
+  border-bottom: 1px solid rgba(243,154,31,0.1);
+}
+.sc-card-header h2 {
+  font-family: 'Playfair Display', serif;
+  font-weight: 900; font-size: 1.2rem; margin-bottom: 4px;
+}
+
+.sc-card-body { padding: 22px 24px; }
+
+/* ── FORM CONTROLS ─────────────────────────────────────── */
+.field-label {
+  font-size: 0.8rem; font-weight: 700;
+  color: var(--text); margin-bottom: 7px; display: block;
+}
+.field-req { color: var(--coral); }
+.field-opt { color: var(--muted); font-weight: 400; }
+
+.form-control-sc,
+.form-select-sc {
+  width: 100%;
+  border: 1.5px solid rgba(243,154,31,0.22);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+  font-family: 'Poppins', sans-serif;
+  background: var(--cream); color: var(--text);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-control-sc:focus, .form-select-sc:focus {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 3px var(--glow);
+  background: #fff;
+}
+.form-control-sc::placeholder { color: rgba(138,114,96,0.55); }
+
+.btn-add-contact {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: linear-gradient(135deg, var(--orange), var(--coral));
+  color: #fff; border: none;
+  border-radius: 999px; padding: 10px 22px;
+  font-size: 0.85rem; font-weight: 700;
+  font-family: 'Poppins', sans-serif; cursor: pointer;
+  box-shadow: 0 4px 14px var(--glow);
+  transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.25s;
+}
+.btn-add-contact:hover { transform: scale(1.04); box-shadow: 0 8px 22px var(--glow-strong); }
+
+/* ── CONTACTS LIST ─────────────────────────────────────── */
+.contacts-divider {
+  border: none; border-top: 1px solid rgba(243,154,31,0.1);
+  margin: 18px 0;
+}
+
+.contacts-list-header {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+}
+.contacts-list-header h3 {
+  font-family: 'Playfair Display', serif;
+  font-weight: 900; font-size: 1.05rem; margin: 0;
+}
+.count-pill {
+  display: inline-flex;
+  background: rgba(243,154,31,0.12); color: var(--orange-deep);
+  border-radius: 999px; padding: 2px 10px;
+  font-size: 0.75rem; font-weight: 800;
+}
+
+/* contact row */
+.contact-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(243,154,31,0.08);
+  animation: fadeUp 0.3s ease both;
+}
+.contact-row:last-child { border-bottom: none; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+
+.contact-info { flex: 1; min-width: 0; }
+.contact-name { font-weight: 700; font-size: 0.9rem; line-height: 1.2; }
+.contact-meta { font-size: 0.76rem; color: var(--muted); display: flex; align-items: center; gap: 8px; margin-top: 2px; }
+
+.age-badge {
+  display: inline-block;
+  background: rgba(243,154,31,0.1); color: var(--orange-deep);
+  border-radius: 999px; padding: 1px 9px;
+  font-size: 11px; font-weight: 700;
+}
+
+/* action buttons */
+.contact-actions { display: flex; align-items: center; gap: 7px; flex-shrink: 0; }
+
+.btn-act {
+  display: inline-flex; align-items: center; gap: 5px;
+  border-radius: 999px; padding: 6px 13px;
+  font-size: 0.76rem; font-weight: 700;
+  font-family: 'Poppins', sans-serif; cursor: pointer;
+  border: 1.5px solid;
+  transition: all 0.2s; text-decoration: none;
+}
+
+.btn-act-chat {
+  background: rgba(58,143,232,0.1); color: #3A8FE8; border-color: rgba(58,143,232,0.3);
+}
+.btn-act-chat:hover { background: #3A8FE8; color: #fff; border-color: #3A8FE8; }
+
+.btn-act-edit {
+  background: transparent; color: var(--muted); border-color: rgba(0,0,0,0.12);
+}
+.btn-act-edit:hover { background: var(--cream); color: var(--text); border-color: var(--muted); }
+
+.btn-act-remove {
+  background: transparent; color: #E8445A; border-color: rgba(232,68,90,0.25);
+}
+.btn-act-remove:hover { background: #E8445A; color: #fff; border-color: #E8445A; }
+
+/* ── GROUP CARDS ───────────────────────────────────────── */
+.grp-card {
+  background: #fff;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  box-shadow: 0 6px 22px rgba(243,154,31,0.06);
+  overflow: hidden;
+  transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.25s;
+  animation: fadeUp 0.3s ease both;
+}
+.grp-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 16px 40px rgba(243,154,31,0.12);
+}
+
+.grp-banner {
+  height: 70px; position: relative; overflow: hidden;
+}
+.grp-banner.c0 { background: linear-gradient(135deg, var(--orange), var(--coral)); }
+.grp-banner.c1 { background: linear-gradient(135deg, #0FA87E, #3AB8C0); }
+.grp-banner.c2 { background: linear-gradient(135deg, #5B4FD4, #8B7FFF); }
+.grp-banner.c3 { background: linear-gradient(135deg, #E84470, #F07A9A); }
+
+.grp-banner-icon {
+  position: absolute; bottom: -14px; left: 18px;
+  width: 48px; height: 48px; border-radius: 14px;
+  background: #fff; border: 2px solid rgba(243,154,31,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+}
+
+.grp-body { padding: 22px 18px 14px; }
+.grp-name {
+  font-family: 'Playfair Display', serif;
+  font-weight: 900; font-size: 0.98rem; margin-bottom: 4px;
+}
+.grp-meta { font-size: 0.75rem; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.grp-dot { width: 3px; height: 3px; background: var(--muted); border-radius: 50%; }
+.grp-desc { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.grp-footer {
+  padding: 10px 14px 14px;
+  display: flex; gap: 8px;
+}
+
+.btn-open-chat {
+  flex: 1;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  background: linear-gradient(135deg, var(--orange), var(--coral));
+  color: #fff; border: none; border-radius: 999px;
+  padding: 9px 14px; font-size: 0.8rem; font-weight: 700;
+  font-family: 'Poppins', sans-serif; cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 4px 12px var(--glow);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.btn-open-chat:hover { transform: scale(1.03); box-shadow: 0 8px 20px var(--glow-strong); color: #fff; }
+
+.btn-grp-settings {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: transparent; color: var(--muted);
+  text-decoration: none; transition: all 0.2s;
+}
+.btn-grp-settings:hover { border-color: var(--orange); color: var(--orange-deep); background: rgba(243,154,31,0.07); }
+
+/* create group card */
+.grp-create-card {
+  background: #fff;
+  border-radius: 20px;
+  border: 1.5px dashed rgba(243,154,31,0.3);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 10px; padding: 36px 20px;
+  cursor: pointer; min-height: 190px;
+  color: var(--muted); text-decoration: none !important;
+  transition: all 0.25s;
+}
+.grp-create-card:hover {
+  border-color: var(--orange);
+  background: rgba(243,154,31,0.04);
+  color: var(--orange-deep) !important;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(243,154,31,0.1);
+}
+.grp-create-icon {
+  width: 46px; height: 46px; border-radius: 14px;
+  background: rgba(243,154,31,0.1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; transition: background 0.2s;
+}
+.grp-create-card:hover .grp-create-icon { background: rgba(243,154,31,0.2); }
+.grp-create-label {
+  font-family: 'Playfair Display', serif;
+  font-weight: 900; font-size: 0.95rem;
+}
+.grp-create-sub { font-size: 0.76rem; opacity: 0.75; }
+
+/* empty states */
+.sc-empty {
+  text-align: center; padding: 48px 24px; color: var(--muted);
+  font-size: 0.88rem;
+}
+.sc-empty-icon { font-size: 2.4rem; margin-bottom: 12px; }
+
+/* ── SCROLL REVEAL ─────────────────────────────────────── */
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.5s ease, transform 0.5s cubic-bezier(.16,1,.3,1); }
+.reveal.visible { opacity: 1; transform: none; }
 </style>
 {% endblock %}
 
+
 {% block content %}
-<div class="container py-5" style="max-width: 1100px;">
 
-  <!-- Page Header (updates when switching tabs) -->
-  <div class="d-flex align-items-end justify-content-between mb-4">
+<!-- ════════════════════════════════════════════════════════
+     PAGE HERO
+     ════════════════════════════════════════════════════════ -->
+<div class="page-hero">
+  <div class="blob blob-a"></div>
+  <div class="blob blob-b"></div>
+  <div class="dotgrid"></div>
+  <div class="hero-inner">
     <div>
-      <h1 class="gl-title fw-bold" id="pageTitle">Contacts</h1>
-      <p class="text-muted small mb-0" id="pageSubtitle">Manage your network and stay connected</p>
-    </div>
-  </div>
-
-  <div class="row g-4">
-
-    <!-- ═══════ SIDEBAR ═══════ -->
-    <div class="col-md-4 col-lg-3">
-      <div class="card rounded-4 gl-sidebar">
-
-        <!-- Tab Toggle -->
-        <div class="gl-sidebar-tabs">
-          <button class="gl-sidebar-tab active" onclick="switchView('contacts', this)">
-            <i class="bi bi-person"></i> Contacts
-            <span class="gl-tab-count">{{ contacts|length }}</span>
-          </button>
-          <button class="gl-sidebar-tab" onclick="switchView('groups', this)">
-            <i class="bi bi-people"></i> Groups
-            <span class="gl-tab-count">{{ groups|length }}</span>
-          </button>
-        </div>
-
-        <!-- Contacts Panel -->
-        <div class="gl-sb-panel active" id="sb-contacts">
-          <div class="card-body p-2">
-            {% if contacts %}
-              {% for contact in contacts %}
-              <a href="{{ url_for('messaging.chat_direct', contact_id=contact.contact_user_id) }}" class="gl-contact-mini">
-                <div class="gl-avatar gl-avatar-sm">{{ (contact.contact_display_name or '?')[0].upper() }}</div>
-                <div>
-                  <div class="fw-medium small">
-                    {{ contact.nickname or contact.contact_display_name }}
-                    {% if contact.is_favorite %}<span class="text-warning">★</span>{% endif %}
-                  </div>
-                  <div class="text-muted" style="font-size:11px;">{{ contact.contact_age_group or '' }}</div>
-                </div>
-              </a>
-              {% endfor %}
-            {% else %}
-              <p class="text-muted text-center py-4 mb-0 small">No contacts yet</p>
-            {% endif %}
-          </div>
-        </div>
-
-        <!-- Groups Panel -->
-        <div class="gl-sb-panel" id="sb-groups">
-          <div class="card-body p-2">
-            {% if groups %}
-              {% set grp_colors = ['', 'teal', 'indigo', 'rose'] %}
-              {% set grp_icons = ['🏘️', '👥', '🌐', '🎯', '💬', '🤝'] %}
-              {% for g in groups %}
-              <a href="{{ url_for('messaging.chat_group', group_id=g.id) }}" class="gl-contact-mini">
-                <div class="gl-avatar gl-avatar-md gl-avatar-group {{ grp_colors[loop.index0 % 4] }}">{{ grp_icons[loop.index0 % 6] }}</div>
-                <div>
-                  <div class="fw-medium small">{{ g.name }}</div>
-                  <div class="text-muted" style="font-size:11px;">{{ g.member_count }} member{{ 's' if g.member_count != 1 else '' }}</div>
-                </div>
-              </a>
-              {% endfor %}
-            {% else %}
-              <p class="text-muted text-center py-4 mb-0 small">No groups yet</p>
-            {% endif %}
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- ═══════ MAIN PANEL ═══════ -->
-    <div class="col-md-8 col-lg-9">
-
-        <!-- ── CONTACTS VIEW ── -->
-        <div class="gl-view active" id="view-contacts">
-
-            <!-- Add Contact -->
-            <div class="card rounded-4 mb-4" id="contactsBlock">
-            <div class="card-header bg-transparent">
-                <h5 class="gl-title fw-bold mb-0">Contacts</h5>
-                <div class="d-flex align-items-center gap-2 mt-2">
-                <span class="gl-section-label mb-0">Add New Contacts</span>
-                </div>
-            </div>
-            <div class="card-body">
-                <!-- Add Contact Form -->
-                <form method="POST" action="{{ url_for('messaging.add_contact') }}">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                    <label for="contact_user_id" class="form-label small fw-semibold">Select User <span class="text-danger">*</span></label>
-                    <select id="contact_user_id" name="contact_user_id" class="form-select" required>
-                        <option value="">— Choose a user —</option>
-                        {% for user in available_users %}
-                        <option value="{{ user.id }}">{{ user.display_name or user.username }} ({{ user.age_group or 'N/A' }})</option>
-                        {% endfor %}
-                    </select>
-                    </div>
-                    <div class="col-md-6">
-                    <label for="nickname" class="form-label small fw-semibold">Nickname <span class="text-muted fw-normal">(Optional)</span></label>
-                    <input type="text" class="form-control" id="nickname" name="nickname" placeholder="e.g., Uncle Lim" minlength="2" maxlength="50">
-                    </div>
-                </div>
-                <div class="d-flex align-items-center gap-3 mt-3">
-                    <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-plus-lg me-1"></i> Add Contact
-                    </button>
-                    <span class="text-muted small">They'll be notified once added</span>
-                </div>
-                </form>
-                <hr>
-                <div class="d-flex align-items-center gap-1">
-                <div>
-                    <h5 class="mb-0">Your Contacts</h5>
-                </div>
-                <span class="badge rounded-pill bg-primary">{{ contacts|length }}</span>
-                </div>
-                <!-- Contacts List -->
-                {% if contacts %}
-                {% for contact in contacts %}
-                <div class="d-flex align-items-center gap-3 py-3 gl-contact-row {{ '' if loop.last else 'border-bottom' }}" style="animation-delay: {{ loop.index0 * 0.06 }}s">
-                    <div class="gl-avatar gl-avatar-lg">{{ (contact.contact_display_name or '?')[0].upper() }}</div>
-                    <div class="flex-grow-1" style="min-width:0;">
-                    <div class="fw-semibold">
-                        {{ contact.nickname or contact.contact_display_name }}
-                        {% if contact.is_favorite %}<span class="text-warning">★</span>{% endif %}
-                    </div>
-                    <div class="text-muted small d-flex align-items-center gap-2">
-                        @{{ contact.contact_username }}
-                        {% if contact.contact_age_group %}
-                        <span class="badge bg-warning bg-opacity-10 text-warning-emphasis rounded-pill" style="font-size:11px;">{{ contact.contact_age_group }}</span>
-                        {% endif %}
-                    </div>
-                    </div>
-                    <div class="d-flex align-items-center gap-2 flex-shrink-0">
-                    <a href="{{ url_for('messaging.chat_direct', contact_id=contact.contact_user_id) }}" class="btn btn-sm gl-btn-chat">
-                        <i class="bi bi-chat-dots me-1"></i>Chat
-                    </a>
-                    <a href="{{ url_for('messaging.edit_contact', contact_id=contact.id) }}" class="btn btn-sm btn-outline-secondary gl-btn-edit">
-                        <i class="bi bi-pencil me-1"></i>Edit
-                    </a>
-                    <form method="POST" action="{{ url_for('messaging.delete_contact', contact_id=contact.id) }}" class="d-inline m-0 p-0" onsubmit="return confirm('Remove this contact?');">
-                        <button type="submit" class="btn btn-sm btn-outline-danger gl-btn-remove">
-                        <i class="bi bi-x-lg me-1"></i>Remove
-                        </button>
-                    </form>
-                    </div>
-                </div>
-                {% endfor %}
-                {% else %}
-                <p class="text-muted text-center py-5 mb-0">No contacts yet. Add someone to get started!</p>
-                {% endif %}
-            </div>
-            </div>
-        </div>
-
-        <!-- ── GROUPS VIEW ── -->
-                <div class="gl-view gl-view-groups" id="view-groups">
-                    <div class="row g-3">
-                    {% if groups %}
-                        {% set banner_icons = ['🏘️', '👥', '🌐', '🎯', '💬', '🤝'] %}
-                        {% for group in groups %}
-                        <div class="col-sm-6 col-lg-4">
-                        <div class="card rounded-4 border gl-grp-card h-100" style="animation-delay: {{ loop.index0 * 0.05 }}s">
-                            <div class="gl-grp-banner c{{ loop.index0 % 4 }}">
-                            <div class="gl-grp-banner-icon">{{ banner_icons[loop.index0 % 6] }}</div>
-                            </div>
-                            <div class="card-body pt-4 pb-3 px-3">
-                            <h6 class="gl-title fw-bold mb-1">{{ group.name }}</h6>
-                            <div class="d-flex align-items-center gap-2 text-muted small mb-2">
-                                <span>{{ group.member_count }} member{{ 's' if group.member_count != 1 else '' }}</span>
-                                {% if group.description %}
-                                <span style="width:3px;height:3px;border-radius:50%;background:#adb5bd;"></span>
-                                <span class="text-truncate" style="max-width:140px;">{{ group.description }}</span>
-                                {% endif %}
-                            </div>
-                            </div>
-                            <div class="card-footer bg-transparent d-flex align-items-center gap-2 px-3 py-2">
-                            <a href="{{ url_for('messaging.chat_group', group_id=group.id) }}" class="btn btn-primary btn-sm flex-grow-1 d-flex align-items-center justify-content-center gap-1">
-                                <i class="bi bi-chat-dots"></i> Open Chat
-                            </a>
-                            <a href="{{ url_for('messaging.edit_group', group_id=group.id) }}" class="btn btn-outline-secondary btn-sm" title="Settings">
-                                <i class="bi bi-gear"></i>
-                            </a>
-                            </div>
-                        </div>
-                        </div>
-                        {% endfor %}
-                    {% endif %}
-
-                    <!-- Create New Group -->
-                    <div class="col-sm-6 col-lg-4">
-                        <a href="{{ url_for('messaging.create_group') }}" class="gl-create-card h-100">
-                        <div class="gl-create-icon"><i class="bi bi-plus-lg"></i></div>
-                        <div class="fw-semibold gl-title">New Group</div>
-                        <div class="small opacity-75">Bring your people together</div>
-                        </a>
-                    </div>
-                </div>
-      </div>
+      <div class="hero-pill"><span class="hero-pill-dot"></span> Your Network</div>
+      <h1 id="pageTitle"><em>Contacts</em> &amp; Groups</h1>
+      <p id="pageSubtitle">Manage your network and stay connected</p>
     </div>
   </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
+
+<!-- ════════════════════════════════════════════════════════
+     BODY LAYOUT
+     ════════════════════════════════════════════════════════ -->
+<div class="page-body">
+
+  <!-- ── SIDEBAR ─────────────────────────────────────────── -->
+  <aside>
+    <div class="sidebar-card reveal">
+
+      <div class="sidebar-tabs">
+        <button class="sidebar-tab active" onclick="switchView('contacts', this)">
+          <i class="bi bi-person"></i> Contacts
+          <span class="tab-count">{{ contacts|length }}</span>
+        </button>
+        <button class="sidebar-tab" onclick="switchView('groups', this)">
+          <i class="bi bi-people"></i> Groups
+          <span class="tab-count">{{ groups|length }}</span>
+        </button>
+      </div>
+
+      <!-- Contacts Panel -->
+      <div class="sb-panel active" id="sb-contacts">
+        {% if contacts %}
+          {% for contact in contacts %}
+          <a href="{{ url_for('messaging.chat_direct', contact_id=contact.contact_user_id) }}" class="sb-item">
+            <div class="sc-avatar sm">{{ (contact.contact_display_name or '?')[0].upper() }}</div>
+            <div>
+              <div class="sb-item-name">
+                {{ contact.nickname or contact.contact_display_name }}
+                {% if contact.is_favorite %}<span style="color:var(--orange);">★</span>{% endif %}
+              </div>
+              <div class="sb-item-sub">{{ contact.contact_age_group or '' }}</div>
+            </div>
+          </a>
+          {% endfor %}
+        {% else %}
+          <div class="sc-empty" style="padding:24px;">
+            <div class="sc-empty-icon">👤</div>
+            <p style="margin:0;font-size:0.8rem;">No contacts yet</p>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Groups Panel -->
+      <div class="sb-panel" id="sb-groups">
+        {% if groups %}
+          {% set grp_colors = ['', 'teal', 'indigo', 'rose'] %}
+          {% set grp_icons  = ['🏘️','👥','🌐','🎯','💬','🤝'] %}
+          {% for g in groups %}
+          <a href="{{ url_for('messaging.chat_group', group_id=g.id) }}" class="sb-item">
+            <div class="sc-avatar md square {{ grp_colors[loop.index0 % 4] }}">{{ grp_icons[loop.index0 % 6] }}</div>
+            <div>
+              <div class="sb-item-name">{{ g.name }}</div>
+              <div class="sb-item-sub">{{ g.member_count }} member{{ 's' if g.member_count != 1 else '' }}</div>
+            </div>
+          </a>
+          {% endfor %}
+        {% else %}
+          <div class="sc-empty" style="padding:24px;">
+            <div class="sc-empty-icon">👥</div>
+            <p style="margin:0;font-size:0.8rem;">No groups yet</p>
+          </div>
+        {% endif %}
+        <div style="padding:8px 0 4px;">
+          <a href="{{ url_for('messaging.create_group') }}" class="sb-new-group">
+            <i class="bi bi-plus-lg"></i> New Group
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </aside>
+
+
+  <!-- ── MAIN PANEL ───────────────────────────────────────── -->
+  <main>
+
+    <!-- ════ CONTACTS VIEW ════ -->
+    <div class="main-view active" id="view-contacts">
+      <div class="sc-card reveal">
+
+        <!-- Add contact form -->
+        <div class="sc-card-header">
+          <h2>Add a New Contact</h2>
+          <p style="font-size:0.82rem;color:var(--muted);margin:0;">They'll be notified once added</p>
+        </div>
+        <div class="sc-card-body">
+          <form method="POST" action="{{ url_for('messaging.add_contact') }}">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+              <div>
+                <label class="field-label" for="contact_user_id">
+                  Select User <span class="field-req">*</span>
+                </label>
+                <select id="contact_user_id" name="contact_user_id" class="form-select-sc" required>
+                  <option value="">— Choose a user —</option>
+                  {% for user in available_users %}
+                  <option value="{{ user.id }}">{{ user.display_name or user.username }} ({{ user.age_group or 'N/A' }})</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div>
+                <label class="field-label" for="nickname">
+                  Nickname <span class="field-opt">(Optional)</span>
+                </label>
+                <input type="text" class="form-control-sc" id="nickname" name="nickname"
+                       placeholder="e.g. Uncle Lim" minlength="2" maxlength="50">
+              </div>
+            </div>
+            <button type="submit" class="btn-add-contact">
+              <i class="bi bi-plus-lg"></i> Add Contact
+            </button>
+          </form>
+
+          <hr class="contacts-divider">
+
+          <!-- Contacts list -->
+          <div class="contacts-list-header">
+            <h3>Your Contacts</h3>
+            <span class="count-pill">{{ contacts|length }}</span>
+          </div>
+
+          {% if contacts %}
+            {% for contact in contacts %}
+            <div class="contact-row" style="animation-delay:{{ loop.index0 * 0.06 }}s;">
+              <div class="sc-avatar lg">{{ (contact.contact_display_name or '?')[0].upper() }}</div>
+              <div class="contact-info">
+                <div class="contact-name">
+                  {{ contact.nickname or contact.contact_display_name }}
+                  {% if contact.is_favorite %}<span style="color:var(--orange);margin-left:3px;">★</span>{% endif %}
+                </div>
+                <div class="contact-meta">
+                  @{{ contact.contact_username }}
+                  {% if contact.contact_age_group %}
+                    <span class="age-badge">{{ contact.contact_age_group }}</span>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="contact-actions">
+                <a href="{{ url_for('messaging.chat_direct', contact_id=contact.contact_user_id) }}" class="btn-act btn-act-chat">
+                  <i class="bi bi-chat-dots"></i> Chat
+                </a>
+                <a href="{{ url_for('messaging.edit_contact', contact_id=contact.id) }}" class="btn-act btn-act-edit">
+                  <i class="bi bi-pencil"></i> Edit
+                </a>
+                <form method="POST" action="{{ url_for('messaging.delete_contact', contact_id=contact.id) }}"
+                      style="display:inline;margin:0;" onsubmit="return confirm('Remove this contact?');">
+                  <button type="submit" class="btn-act btn-act-remove">
+                    <i class="bi bi-x-lg"></i> Remove
+                  </button>
+                </form>
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="sc-empty">
+              <div class="sc-empty-icon">📭</div>
+              <p>No contacts yet. Add someone to get started!</p>
+            </div>
+          {% endif %}
+
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ════ GROUPS VIEW ════ -->
+    <div class="main-view groups-view" id="view-groups">
+
+      {% if groups %}
+        {% set banner_icons = ['🏘️','👥','🌐','🎯','💬','🤝'] %}
+        {% for group in groups %}
+        <div class="grp-card reveal" style="animation-delay:{{ loop.index0 * 0.05 }}s;">
+          <div class="grp-banner c{{ loop.index0 % 4 }}">
+            <div class="grp-banner-icon">{{ banner_icons[loop.index0 % 6] }}</div>
+          </div>
+          <div class="grp-body">
+            <div class="grp-name">{{ group.name }}</div>
+            <div class="grp-meta">
+              <span>{{ group.member_count }} member{{ 's' if group.member_count != 1 else '' }}</span>
+              {% if group.description %}
+                <span class="grp-dot"></span>
+                <span class="grp-desc">{{ group.description }}</span>
+              {% endif %}
+            </div>
+          </div>
+          <div class="grp-footer">
+            <a href="{{ url_for('messaging.chat_group', group_id=group.id) }}" class="btn-open-chat">
+              <i class="bi bi-chat-dots"></i> Open Chat
+            </a>
+            <a href="{{ url_for('messaging.edit_group', group_id=group.id) }}" class="btn-grp-settings" title="Settings">
+              <i class="bi bi-gear"></i>
+            </a>
+          </div>
+        </div>
+        {% endfor %}
+      {% endif %}
+
+      <!-- Create new group card -->
+      <a href="{{ url_for('messaging.create_group') }}" class="grp-create-card reveal">
+        <div class="grp-create-icon">
+          <i class="bi bi-plus-lg"></i>
+        </div>
+        <div class="grp-create-label">New Group</div>
+        <div class="grp-create-sub">Bring your people together</div>
+      </a>
+
+    </div>
+
+  </main>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════
+     SCRIPTS
+     ════════════════════════════════════════════════════════ -->
 <script>
-(function() {
-    var viewConfig = {
-        contacts: {
-            title: 'Contacts',
-            subtitle: 'Manage your network and stay connected',
-            ctaHtml: '<button class="btn btn-primary d-flex align-items-center gap-2" onclick="document.getElementById(\'addContactForm\').scrollIntoView({behavior:\'smooth\'})"><i class="bi bi-plus-lg"></i> Add Contact</button>'
-        },
-        groups: {
-            title: 'My Groups',
-            subtitle: 'Collaborate and stay connected with your communities',
-            ctaHtml: '<a href="{{ url_for("messaging.create_group") }}" class="btn btn-primary d-flex align-items-center gap-2"><i class="bi bi-plus-lg"></i> Create Group</a>'
-        }
-    };
+/* ── SCROLL REVEAL ──────────────────────────────────────── */
+const revealObs = new IntersectionObserver((entries) => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('visible'), i * 70);
+      revealObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.07 });
+document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
 
-    window.switchView = function(view, btn) {
-        // Sidebar tabs
-        document.querySelectorAll('.gl-sidebar-tab').forEach(function(t) { t.classList.remove('active'); });
-        if (btn) btn.classList.add('active');
+/* ── BLOB PARALLAX ──────────────────────────────────────── */
+document.addEventListener('mousemove', (e) => {
+  const x = (e.clientX / window.innerWidth - 0.5) * 2;
+  const y = (e.clientY / window.innerHeight - 0.5) * 2;
+  const a = document.querySelector('.blob-a');
+  const b = document.querySelector('.blob-b');
+  if (a) a.style.transform = `translate(${x * 14}px, ${y * 10}px)`;
+  if (b) b.style.transform = `translate(${x * -10}px, ${y * -8}px)`;
+});
 
-        // Sidebar panels
-        document.querySelectorAll('.gl-sb-panel').forEach(function(p) { p.classList.remove('active'); });
-        var sbPanel = document.getElementById('sb-' + view);
-        if (sbPanel) sbPanel.classList.add('active');
+/* ── VIEW SWITCHER ──────────────────────────────────────── */
+const pageTitle    = document.getElementById('pageTitle');
+const pageSubtitle = document.getElementById('pageSubtitle');
 
-        // Main views
-        document.querySelectorAll('.gl-view').forEach(function(v) { v.classList.remove('active'); });
-        var mainView = document.getElementById('view-' + view);
-        if (mainView) mainView.classList.add('active');
+const viewConfig = {
+  contacts: {
+    title:    '<em>Contacts</em>',
+    subtitle: 'Manage your network and stay connected'
+  },
+  groups: {
+    title:    '<em>Groups</em>',
+    subtitle: 'Collaborate and stay connected with your communities'
+  }
+};
 
-        // Update header
-        var config = viewConfig[view];
-        if (config) {
-            document.getElementById('pageTitle').textContent = config.title;
-            document.getElementById('pageSubtitle').textContent = config.subtitle;
-            document.getElementById('headerCta').innerHTML = config.ctaHtml;
-        }
-    };
-})();
+window.switchView = function(view, btn) {
+  // Sidebar tabs
+  document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  // Sidebar panels
+  document.querySelectorAll('.sb-panel').forEach(p => p.classList.remove('active'));
+  const sbPanel = document.getElementById('sb-' + view);
+  if (sbPanel) sbPanel.classList.add('active');
+
+  // Main views
+  document.querySelectorAll('.main-view').forEach(v => v.classList.remove('active'));
+  const mainView = document.getElementById('view-' + view);
+  if (mainView) mainView.classList.add('active');
+
+  // Hero text
+  const cfg = viewConfig[view];
+  if (cfg) {
+    pageTitle.innerHTML = cfg.title;
+    pageSubtitle.textContent = cfg.subtitle;
+  }
+};
 </script>
+
 {% endblock %}
+
