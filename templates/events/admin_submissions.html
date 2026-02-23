@@ -524,7 +524,7 @@
   <div id="folder-pending" class="folder-content active">
     <div class="drag-instruction">
       <i class="bi bi-hand-index"></i>
-      Drag submissions to <strong>&nbsp;Approved&nbsp;</strong> or <strong>&nbsp;Rejected&nbsp;</strong> folders to change their status
+      Drag submissions to Approved or Rejected folders to change their status
     </div>
 
     {% set pending_submissions = submissions|selectattr('status', 'equalto', 'pending')|list %}
@@ -588,7 +588,7 @@
   <div id="folder-approved" class="folder-content">
     <div class="drag-instruction">
       <i class="bi bi-hand-index"></i>
-      Drag approved submissions to <strong>&nbsp;Pending&nbsp;</strong> to revoke approval
+      Drag approved submissions to Pending to revoke approval
     </div>
 
     {% set approved_submissions = submissions|selectattr('status', 'equalto', 'approved')|list %}
