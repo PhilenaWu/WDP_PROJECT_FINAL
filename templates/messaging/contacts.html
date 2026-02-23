@@ -427,10 +427,6 @@ body::after {
 
 
 {% block content %}
-
-<!-- ════════════════════════════════════════════════════════
-     PAGE HERO
-     ════════════════════════════════════════════════════════ -->
 <div class="page-hero">
   <div class="blob blob-a"></div>
   <div class="blob blob-b"></div>
@@ -444,23 +440,12 @@ body::after {
   </div>
 
   <div class="row g-4">
-
-    
-
-
-
       </div>
     </div>
   </div>
 </div>
 
-
-<!-- ════════════════════════════════════════════════════════
-     BODY LAYOUT
-     ════════════════════════════════════════════════════════ -->
 <div class="page-body">
-
-  <!-- ── SIDEBAR ─────────────────────────────────────────── -->
   <aside>
     <div class="sidebar-card reveal">
 
@@ -524,18 +509,12 @@ body::after {
           </a>
         </div>
       </div>
-
     </div>
   </aside>
 
-
-  <!-- ── MAIN PANEL ───────────────────────────────────────── -->
   <main>
-
-    <!-- ════ CONTACTS VIEW ════ -->
     <div class="main-view active" id="view-contacts">
       <div class="sc-card reveal">
-
         <!-- Add contact form -->
         <div class="sc-card-header">
           <h2>Add a New Contact</h2>
@@ -567,9 +546,7 @@ body::after {
               <i class="bi bi-plus-lg"></i> Add Contact
             </button>
           </form>
-
           <hr class="contacts-divider">
-
           <!-- Contacts list -->
           <div class="contacts-list-header">
             <h3>Your Contacts</h3>
@@ -614,15 +591,12 @@ body::after {
               <p>No contacts yet. Add someone to get started!</p>
             </div>
           {% endif %}
-
         </div>
       </div>
     </div>
 
-
     <!-- ════ GROUPS VIEW ════ -->
     <div class="main-view groups-view" id="view-groups">
-
       {% if groups %}
         {% set banner_icons = ['🏘️','👥','🌐','🎯','💬','🤝'] %}
         {% for group in groups %}
@@ -660,18 +634,11 @@ body::after {
         <div class="grp-create-label">New Group</div>
         <div class="grp-create-sub">Bring your people together</div>
       </a>
-
     </div>
-
   </main>
 </div>
 
-
-<!-- ════════════════════════════════════════════════════════
-     SCRIPTS
-     ════════════════════════════════════════════════════════ -->
 <script>
-/* ── SCROLL REVEAL ──────────────────────────────────────── */
 const revealObs = new IntersectionObserver((entries) => {
   entries.forEach((e, i) => {
     if (e.isIntersecting) {
@@ -682,7 +649,6 @@ const revealObs = new IntersectionObserver((entries) => {
 }, { threshold: 0.07 });
 document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
 
-/* ── BLOB PARALLAX ──────────────────────────────────────── */
 document.addEventListener('mousemove', (e) => {
   const x = (e.clientX / window.innerWidth - 0.5) * 2;
   const y = (e.clientY / window.innerHeight - 0.5) * 2;
@@ -692,7 +658,6 @@ document.addEventListener('mousemove', (e) => {
   if (b) b.style.transform = `translate(${x * -10}px, ${y * -8}px)`;
 });
 
-/* ── VIEW SWITCHER ──────────────────────────────────────── */
 const pageTitle    = document.getElementById('pageTitle');
 const pageSubtitle = document.getElementById('pageSubtitle');
 
