@@ -394,6 +394,11 @@ def chat_direct(contact_id):
             AND m.is_deleted = FALSE
         ORDER BY m.created_at ASC
     """, (user_id, contact_id, contact_id, user_id), fetch_all=True) or []
+    # Normalize sender profile picture paths for message bubbles
+    for m in messages:
+        pfp = m.get('sender_profile_picture')
+        if pfp and not pfp.startswith('uploads/') and not pfp.startswith('static/'):
+            m['sender_profile_picture'] = f"uploads/profile_pics/{pfp}"
 
     # Fetch story details for story_share messages
     from story_service import get_story, get_media
@@ -463,7 +468,7 @@ def chat_direct(contact_id):
         pfp = c.get('contact_profile_picture')
         if pfp and not pfp.startswith('uploads/') and not pfp.startswith('static/'):
             c['contact_profile_picture'] = f"uploads/profile_pics/{pfp}"
-            
+
     all_groups = execute_query("""
         SELECT g.*,
             (SELECT COUNT(*) FROM group_members WHERE group_id = g.id) AS member_count
@@ -505,6 +510,11 @@ def chat_group(group_id):
         WHERE m.group_id = %s AND m.is_deleted = FALSE
         ORDER BY m.created_at ASC
     """, (group_id,), fetch_all=True) or []
+    # Normalize sender profile picture paths for message bubbles
+    for m in messages:
+        pfp = m.get('sender_profile_picture')
+        if pfp and not pfp.startswith('uploads/') and not pfp.startswith('static/'):
+            m['sender_profile_picture'] = f"uploads/profile_pics/{pfp}"
 
     is_admin = membership['is_admin'] if membership else False
 
