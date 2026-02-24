@@ -191,48 +191,6 @@
     </div>
   </div>
 
-  <!-- STORYBOARD PREVIEW -->
-  <div class="gl-section reveal">
-    <div class="gl-section-header">
-      <h2 class="gl-section-title">From your connections</h2>
-      <a href="{{ url_for('main.storyboard') }}" class="gl-view-all">View storyboard →</a>
-    </div>
-    <div class="gl-stories-grid">
-      {% if storyboard_preview and storyboard_preview|length > 0 %}
-        {% for t in storyboard_preview %}
-          <div class="gl-story-card">
-            <div class="gl-story-header">
-              <img src="{{ url_for('static', filename=(t.profile_picture if t.profile_picture else 'images/default-avatar.png')) }}" alt="avatar" class="gl-story-avatar">
-              <div>
-                <div class="gl-story-name">{{ t.display_name or t.username }}</div>
-                <div class="gl-story-date">{{ t.created_at }}</div>
-              </div>
-            </div>
-            <h4 class="gl-story-post-title">{{ t.title or "Storyboard post" }}</h4>
-            {% if t.topic_title %}<div class="gl-story-topic">{{ t.topic_title }}</div>{% endif %}
-            {% if t.audio_path %}
-              <audio controls class="gl-story-audio"><source src="{{ url_for('static', filename=t.audio_path) }}"></audio>
-            {% endif %}
-            {% if t.image_path %}
-              <img src="{{ url_for('static', filename=t.image_path) }}" alt="story media" class="gl-story-media">
-            {% endif %}
-            {% if t.body %}<p class="gl-story-body">{{ t.body }}</p>{% endif %}
-            <div class="gl-story-actions">
-              <form method="POST" action="{{ url_for('storyboard.toggle_story_like', story_id=t.id) }}">
-                <button type="submit" class="gl-story-btn gl-story-btn-like">♥ {{ t.like_count or 0 }}</button>
-              </form>
-              <a class="gl-story-btn" href="{{ url_for('storyboard.topic_detail', slug=t.topic_slug) }}">💬 {{ t.comment_count or 0 }}</a>
-            </div>
-          </div>
-        {% endfor %}
-      {% else %}
-        <div class="gl-empty-state" style="grid-column:1/-1;">
-          <span>💬</span><p>No storyboard updates from your connections yet.</p>
-        </div>
-      {% endif %}
-    </div>
-  </div>
-
   <!-- CONNECTIONS -->
   <div class="gl-section reveal">
   <div class="gl-section-header gl-section-header--with-bell">
