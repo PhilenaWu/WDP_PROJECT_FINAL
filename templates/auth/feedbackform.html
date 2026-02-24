@@ -3,161 +3,666 @@
 {% block title %}Genlink | Feedback{% endblock %}
 {% block body_class %}class="editprofile-page"{% endblock %}
 
+{% block extra_css %}
+<style>
+  /* ══════════════════════════════════════════════════
+     RESET — neutralise ALL global.css overrides that
+     target .feedback-card and .feedback-header so we
+     get one clean card with no double box / shadow.
+  ══════════════════════════════════════════════════ */
+  body.editprofile-page .profile-card.feedback-card,
+  body.editprofile-page .feedback-card {
+    max-width: 800px !important;
+    margin: 0 auto !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  body.editprofile-page .feedback-header {
+    /* wipe the global gradient header — we redeclare below */
+    all: unset;
+    display: block;
+  }
+
+  body.editprofile-page .profile-form {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+
+  /* ══════════════════════════════════════════════════
+     BRAND TOKENS
+  ══════════════════════════════════════════════════ */
+  :root {
+    --fb-orange:      #f39a1f;
+    --fb-coral:       #ff8c61;
+    --fb-glow:        rgba(243,154,31,0.26);
+    --fb-glow-hi:     rgba(243,154,31,0.46);
+    /* light mode surfaces */
+    --fb-card-bg:     #ffffff;
+    --fb-hdr-from:    #fff9f0;
+    --fb-hdr-to:      #fff4e8;
+    --fb-input-bg:    #fbf8f5;
+    --fb-border:      rgba(139,114,96,0.18);
+    --fb-text:        #1c1209;
+    --fb-muted:       #8a7260;
+    --fb-pill-sel-bg: rgba(243,154,31,0.08);
+    --fb-entry-bg:    #fbf8f5;
+    --fb-quote-bg:    #ffffff;
+  }
+
+  html[data-theme='dark'] {
+    --fb-card-bg:     var(--app-surface-1);
+    --fb-hdr-from:    #1a2438;
+    --fb-hdr-to:      #1e2b40;
+    --fb-input-bg:    var(--app-surface-2);
+    --fb-border:      #2e4060;
+    --fb-text:        var(--app-text);
+    --fb-muted:       var(--app-muted);
+    --fb-pill-sel-bg: rgba(243,154,31,0.14);
+    --fb-entry-bg:    var(--app-surface-2);
+    --fb-quote-bg:    var(--app-surface-1);
+  }
+
+  /* ══════════════════════════════════════════════════
+     REAL CARD SHELL
+  ══════════════════════════════════════════════════ */
+  .fb-card {
+    background: var(--fb-card-bg);
+    border-radius: 22px;
+    border: 1px solid rgba(243,154,31,0.18);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04), 0 14px 44px rgba(243,154,31,0.10);
+    overflow: hidden;
+  }
+
+  html[data-theme='dark'] .fb-card {
+    border-color: rgba(243,154,31,0.22);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25), 0 14px 44px rgba(0,0,0,0.30);
+  }
+
+  /* ══════════════════════════════════════════════════
+     CARD HEADER
+  ══════════════════════════════════════════════════ */
+  .fb-hdr {
+    padding: 28px 32px 22px;
+    background: linear-gradient(135deg, var(--fb-hdr-from) 0%, var(--fb-hdr-to) 100%);
+    border-bottom: 1px solid rgba(243,154,31,0.14);
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  html[data-theme='dark'] .fb-hdr {
+    border-bottom-color: rgba(243,154,31,0.18);
+  }
+
+  .fb-hdr::after {
+    content: '💬';
+    position: absolute;
+    right: 32px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 3rem;
+    opacity: 0.09;
+    pointer-events: none;
+  }
+
+  .fb-eyebrow {
+    font-size: 0.67rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fb-orange) !important;
+    margin-bottom: 5px;
+  }
+
+  .fb-title {
+    font-size: 1.55rem !important;
+    font-weight: 800 !important;
+    color: var(--fb-text) !important;
+    line-height: 1.2 !important;
+    margin: 0 0 6px !important;
+  }
+
+  .fb-title em {
+    font-style: italic;
+    background: linear-gradient(135deg, var(--fb-orange), var(--fb-coral));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .fb-hdr-sub {
+    font-size: 0.83rem !important;
+    color: var(--fb-muted) !important;
+    margin: 0 !important;
+  }
+
+  /* ══════════════════════════════════════════════════
+     FORM BODY
+  ══════════════════════════════════════════════════ */
+  .fb-body {
+    padding: 28px 32px 34px;
+    background: var(--fb-card-bg);
+  }
+
+  /* ══════════════════════════════════════════════════
+     FORM GROUPS + LABELS
+  ══════════════════════════════════════════════════ */
+  .fg {
+    margin-bottom: 20px;
+  }
+
+  .fg > label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--fb-text) !important;
+    margin-bottom: 8px;
+  }
+
+  /* ══════════════════════════════════════════════════
+     INPUTS — override global.css cleanly
+  ══════════════════════════════════════════════════ */
+  .fb-body .form-control {
+    border-radius: 12px !important;
+    border: 1.5px solid var(--fb-border) !important;
+    background: var(--fb-input-bg) !important;
+    color: var(--fb-text) !important;
+    font-size: 0.87rem !important;
+    padding: 11px 14px !important;
+    min-height: 44px;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s !important;
+    box-shadow: none !important;
+  }
+
+  .fb-body .form-control:focus {
+    border-color: var(--fb-orange) !important;
+    background: var(--fb-card-bg) !important;
+    box-shadow: 0 0 0 4px rgba(243,154,31,0.13) !important;
+    outline: none !important;
+  }
+
+  .fb-body .form-control::placeholder {
+    color: #c4ae9a !important;
+  }
+
+  html[data-theme='dark'] .fb-body .form-control::placeholder {
+    color: var(--app-muted) !important;
+  }
+
+  .fb-body textarea.form-control {
+    min-height: 180px !important;
+    resize: vertical;
+    line-height: 1.65;
+  }
+
+  /* ══════════════════════════════════════════════════
+     INPUT + BUTTON ROWS
+  ══════════════════════════════════════════════════ */
+  .fb-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .fb-input-row .form-control {
+    flex: 1;
+  }
+
+  /* ══════════════════════════════════════════════════
+     RETRIEVE BOX BUTTON
+  ══════════════════════════════════════════════════ */
+  .btn-fb-retrieve {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 18px;
+    min-height: 44px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, var(--fb-orange) 0%, var(--fb-coral) 100%);
+    color: #fff !important;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+    box-shadow: 0 3px 12px var(--fb-glow);
+    transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.25s, opacity 0.2s;
+  }
+
+  .btn-fb-retrieve:hover {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 7px 22px var(--fb-glow-hi);
+    background: linear-gradient(135deg, var(--fb-coral) 0%, var(--fb-orange) 100%);
+  }
+
+  .btn-fb-retrieve:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* ══════════════════════════════════════════════════
+     FEEDBACK TYPE PILLS
+  ══════════════════════════════════════════════════ */
+  .type-pill-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .type-pill-label {
+    flex: 1;
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .type-pill-label input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .type-pill-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 11px 14px;
+    border-radius: 12px;
+    border: 1.5px solid var(--fb-border);
+    background: var(--fb-input-bg);
+    color: var(--fb-muted) !important;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: border-color 0.2s, background 0.2s, color 0.2s, box-shadow 0.2s;
+  }
+
+  .type-pill-label input:checked + .type-pill-inner {
+    border-color: var(--fb-orange);
+    background: var(--fb-pill-sel-bg);
+    color: #d97f06 !important;
+    box-shadow: 0 0 0 4px rgba(243,154,31,0.11);
+  }
+
+  .type-pill-label:hover .type-pill-inner {
+    border-color: rgba(243,154,31,0.45);
+    color: var(--fb-orange) !important;
+    background: rgba(243,154,31,0.04);
+  }
+
+  /* ══════════════════════════════════════════════════
+     DIVIDER
+  ══════════════════════════════════════════════════ */
+  .fb-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(243,154,31,0.2), transparent);
+    margin: 22px 0;
+  }
+
+  /* ══════════════════════════════════════════════════
+     ERROR
+  ══════════════════════════════════════════════════ */
+  .auth-error-message {
+    background: rgba(239,68,68,0.07) !important;
+    border: 1px solid rgba(239,68,68,0.22) !important;
+    border-radius: 10px !important;
+    color: #b91c1c !important;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 11px 15px;
+    margin-bottom: 20px;
+  }
+
+  /* ══════════════════════════════════════════════════
+     BUTTONS — override global profile-btn
+  ══════════════════════════════════════════════════ */
+  body.editprofile-page .fb-btn {
+    border-radius: 10px !important;
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+    padding: 10px 22px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    text-decoration: none !important;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.25s, background 0.25s !important;
+  }
+
+  body.editprofile-page .fb-btn-primary {
+    background: linear-gradient(135deg, var(--fb-orange) 0%, var(--fb-coral) 100%) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 16px var(--fb-glow) !important;
+    border: none !important;
+  }
+
+  body.editprofile-page .fb-btn-primary:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 26px var(--fb-glow-hi) !important;
+    background: linear-gradient(135deg, var(--fb-coral) 0%, var(--fb-orange) 100%) !important;
+    color: #fff !important;
+  }
+
+  body.editprofile-page .fb-btn-ghost {
+    background: transparent !important;
+    border: 1.5px solid var(--fb-border) !important;
+    color: var(--fb-muted) !important;
+    box-shadow: none !important;
+  }
+
+  body.editprofile-page .fb-btn-ghost:hover {
+    color: var(--fb-orange) !important;
+    border-color: var(--fb-orange) !important;
+    background: rgba(243,154,31,0.05) !important;
+    transform: translateY(-1px) !important;
+  }
+
+  html[data-theme='dark'] body.editprofile-page .fb-btn-ghost {
+    border-color: var(--fb-border) !important;
+    color: var(--fb-muted) !important;
+  }
+
+  html[data-theme='dark'] body.editprofile-page .fb-btn-ghost:hover {
+    color: var(--fb-orange) !important;
+    border-color: rgba(243,154,31,0.55) !important;
+    background: rgba(243,154,31,0.08) !important;
+  }
+
+  /* ══════════════════════════════════════════════════
+     RESPONSIVE
+  ══════════════════════════════════════════════════ */
+  @media (max-width: 600px) {
+    .fb-hdr, .fb-body { padding: 18px !important; }
+    .fb-hdr::after { display: none; }
+    .fb-input-row { flex-direction: column; }
+    .btn-fb-retrieve { min-height: 44px; width: 100%; }
+    .type-pill-row { flex-direction: column; }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container py-5">
-    <div class="mb-3">
-        <a href="{{ url_for('main.home') }}" class="btn btn-light profile-btn">Back to Home</a>
-    </div>
-    <div class="profile-card feedback-card">
-        <div class="feedback-header">
-            <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
-                <div>
-                    <h1 class="main-title mb-1">{{ 'Edit Feedback' if editing else 'Feedback Form' }}</h1>
-                    <p class="text-muted">{{ 'Update your previously submitted feedback.' if editing else 'Share your thoughts with us. Your feedback helps us improve Genlink.' }}</p>
-                </div>
-                <a href="{{ url_for('auth.feedback_history') }}" class="btn btn-light profile-btn">View Past Feedback</a>
-            </div>
+
+  <!-- Back button -->
+  <div class="mb-3" style="max-width:800px; margin-left:auto; margin-right:auto;">
+    <a href="{{ url_for('main.home') }}" class="fb-btn fb-btn-ghost">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Back to Home
+    </a>
+  </div>
+
+  <!-- profile-card kept for any JS hooks; visually neutralised above -->
+  <div class="profile-card feedback-card">
+    <div class="fb-card">
+
+      <!-- Header -->
+      <div class="fb-hdr">
+        <div>
+          <div class="fb-eyebrow">{{ 'Edit Submission' if editing else 'Community Feedback' }}</div>
+          <h1 class="fb-title">
+            {% if editing %}Edit <em>Feedback</em>{% else %}Feedback <em>Form</em>{% endif %}
+          </h1>
+          <p class="fb-hdr-sub">
+            {{ 'Update your previously submitted feedback.' if editing else 'Share your thoughts with us. Your feedback helps us improve Genlink.' }}
+          </p>
         </div>
+         <a href="{{ url_for('auth.feedback_history') }}" class="fb-btn fb-btn-ghost" style="margin-top:4px; flex-shrink:0; position:relative; z-index:2; background:rgba(255,255,255,0.92);">
+           View Past Feedback
+           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="z-index:2; position:relative;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+         </a>
+      </div>
 
-        <form id="feedbackForm" method="POST" action="{{ action_url if action_url else url_for('auth.feedback') }}" class="profile-form" novalidate>
-            {% if error %}
-                <p class="auth-error-message">{{ error }}</p>
+      <!-- Form body -->
+      <div class="fb-body">
+        <form id="feedbackForm" method="POST" action="{{ action_url if action_url else url_for('auth.feedback') }}" novalidate>
+
+          {% if error %}
+            <p class="auth-error-message">{{ error }}</p>
+          {% endif %}
+
+          <!-- Full Name + Retrieve -->
+          <div class="fg">
+            <label for="full_name">Full Name</label>
+            <div class="fb-input-row">
+              <input
+                type="text"
+                class="form-control"
+                id="full_name"
+                name="full_name"
+                placeholder="e.g. Tan Ah Kow"
+                value="{{ form_data.get('full_name', '') }}"
+                pattern="[\p{L} .'-]+"
+                title="Only letters, spaces, periods, apostrophes, hyphens allowed."
+                required
+              >
+              <button type="button" class="btn-fb-retrieve" id="retrieveNameBtn">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                <span>Retrieve Name</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Email + Retrieve -->
+          <div class="fg">
+            <label for="email">Email Address</label>
+            <div class="fb-input-row">
+              <input
+                type="email"
+                class="form-control"
+                id="email"
+                name="email"
+                placeholder="yourname@gmail.com"
+                value="{{ form_data.get('email', '') }}"
+                pattern="[a-zA-Z0-9._%+-]+@gmail\.com"
+                title="Please enter a valid Gmail address ending with @gmail.com."
+                required
+              >
+              <button type="button" class="btn-fb-retrieve" id="retrieveEmailBtn">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                <span>Retrieve Email</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Feedback Type pills -->
+          <div class="fg">
+            <label>Feedback Type</label>
+            <!-- Real select submits the value -->
+            <select class="d-none" id="feedback_type" name="feedback_type" required>
+              <option value="" {% if not form_data.get('feedback_type') %}selected{% endif %}></option>
+              <option value="Positive" {% if form_data.get('feedback_type') == 'Positive' %}selected{% endif %}>Positive</option>
+              <option value="Negative" {% if form_data.get('feedback_type') == 'Negative' %}selected{% endif %}>Negative</option>
+            </select>
+            <div class="type-pill-row" id="typePillRow">
+              <label class="type-pill-label">
+                <input type="radio" name="feedback_type_visual" value="Positive"
+                  {% if form_data.get('feedback_type') == 'Positive' %}checked{% endif %}>
+                <div class="type-pill-inner">😊 Positive</div>
+              </label>
+              <label class="type-pill-label">
+                <input type="radio" name="feedback_type_visual" value="Negative"
+                  {% if form_data.get('feedback_type') == 'Negative' %}checked{% endif %}>
+                <div class="type-pill-inner">😔 Negative</div>
+              </label>
+            </div>
+          </div>
+
+          <div class="fb-divider"></div>
+
+          <!-- Feedback text -->
+          <div class="fg" style="margin-bottom:24px;">
+            <label for="feedback_text">Your Feedback</label>
+            <textarea
+              class="form-control"
+              id="feedback_text"
+              name="feedback_text"
+              rows="6"
+              placeholder="Tell us what you love, what could be better, or share a suggestion…"
+              required
+            >{{ form_data.get('feedback_text', '') }}</textarea>
+          </div>
+
+          <!-- Actions -->
+          <div class="d-flex gap-2 justify-content-end align-items-center">
+            {% if editing %}
+              <a href="{{ url_for('auth.feedback_history') }}" class="fb-btn fb-btn-ghost">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+                Cancel
+              </a>
+              <button type="submit" class="fb-btn fb-btn-primary">
+                Save Changes
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v14a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              </button>
+            {% else %}
+              <button type="submit" class="fb-btn fb-btn-primary">
+                Submit Feedback
+                <svg class="submit-arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
             {% endif %}
-            <!--full name-->
-            <div class="feedback-group">
-                <label for="full_name" class="form-label">Full Name</label>
-                <input
-                    type="text"
-                    class="form-control"
-                    id="full_name"
-                    name="full_name"
-                    value="{{ form_data.get('full_name', '') }}"
-                    pattern="[\p{L} .'-]+"
-                    title="Only letters (any language), spaces, periods, apostrophes, hyphens allowed."
-                    required
-                >
-            </div>
-            <!--email with retrieve button-->
-            <div class="feedback-group">
-                <label for="email" class="form-label">Email</label>
-                <div class="feedback-email-row">
-                    <input
-                        type="email"
-                        class="form-control"
-                        id="email"
-                        name="email"
-                        value="{{ form_data.get('email', '') }}"
-                        pattern="[a-zA-Z0-9._%+-]+@gmail\.com"
-                        title="Please enter a valid Gmail address ending with @gmail.com."
-                        required
-                    >
-                    <button type="button" class="btn btn-primary retrieve-btn" id="retrieveEmailBtn">Retrieve Email</button>
-                </div>
-            </div>
-            <!--feedback type-->
-            <div class="feedback-group">
-                <label for="feedback_type" class="form-label">Feedback Type</label>
-                <select class="form-select" id="feedback_type" name="feedback_type" required>
-                    <option value="" {% if not form_data.get('feedback_type') %}selected{% endif %}>Select Type</option>
-                    <option value="Positive" {% if form_data.get('feedback_type') == 'Positive' %}selected{% endif %}>Positive</option>
-                    <option value="Negative" {% if form_data.get('feedback_type') == 'Negative' %}selected{% endif %}>Negative</option>
-                </select>
-            </div>
+          </div>
 
-            <div class="feedback-group mb-4">
-                <label for="feedback_text" class="form-label">Feedback</label>
-                <textarea
-                    class="form-control"
-                    id="feedback_text"
-                    name="feedback_text"
-                    rows="6"
-                    placeholder="Type your feedback here..."
-                    required
-                >{{ form_data.get('feedback_text', '') }}</textarea>
-            </div>
-
-            <div class="d-flex gap-2 justify-content-end feedback-actions">
-                {% if editing %}
-                    <a href="{{ url_for('auth.feedback_history') }}" class="btn btn-light profile-btn">Cancel</a>
-                    <button type="submit" class="btn btn-primary profile-btn">Save Changes</button>
-                {% else %}
-                    <button type="submit" class="btn btn-primary profile-btn">Submit</button>
-                {% endif %}
-            </div>
         </form>
-    </div>
+      </div><!-- /fb-body -->
+    </div><!-- /fb-card -->
+  </div><!-- /profile-card feedback-card -->
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    const retrieveBtn = document.getElementById('retrieveEmailBtn');
-    const emailInput = document.getElementById('email');
-    const fullNameInput = document.getElementById('full_name');
-    const feedbackForm = document.getElementById('feedbackForm');
+(function () {
+  'use strict';
 
-    function validateFullName() {
-        if (!fullNameInput) {
-            return;
-        }
-        const value = fullNameInput.value;
-        // Allow all Unicode letters, spaces, periods, apostrophes, hyphens
-        const hasInvalidChars = /[^\p{L} .'-]/u.test(value);
-        if (hasInvalidChars) {
-            fullNameInput.setCustomValidity("Only letters (any language), spaces, periods, apostrophes, hyphens allowed.");
-            fullNameInput.reportValidity();
-            fullNameInput.value = value.replace(/[^\p{L} .'-]/gu, '');
+  /* ── Pill → hidden select sync ── */
+  const hiddenSelect = document.getElementById('feedback_type');
+  document.querySelectorAll('#typePillRow input[type="radio"]').forEach(r => {
+    r.addEventListener('change', () => { hiddenSelect.value = r.value; });
+  });
+
+  /* ── Shared fetch helper ── */
+  async function fetchUserData() {
+    const res = await fetch("{{ url_for('auth.retrieve_feedback_email') }}");
+    if (!res.ok) throw new Error('fetch failed');
+    return res.json();
+  }
+
+  /* ── Retrieve Name ── */
+  const retrieveNameBtn  = document.getElementById('retrieveNameBtn');
+  const fullNameInput    = document.getElementById('full_name');
+
+  if (retrieveNameBtn && fullNameInput) {
+    retrieveNameBtn.addEventListener('click', async () => {
+      const span = retrieveNameBtn.querySelector('span');
+      span.textContent = 'Loading…';
+      retrieveNameBtn.disabled = true;
+      try {
+        const data  = await fetchUserData();
+        /* Combine first_name + last_name from your DB */
+        const first = (data.first_name || '').trim();
+        const last  = (data.last_name  || '').trim();
+        const full  = [first, last].filter(Boolean).join(' ');
+        if (full) {
+          fullNameInput.value = full;
+          validateFullName();
         } else {
-            fullNameInput.setCustomValidity('');
+          alert('No name found on your account. Please enter it manually.');
         }
-    }
+      } catch (_) {
+        alert('Could not retrieve name. Please enter it manually.');
+      } finally {
+        span.textContent = 'Retrieve Name';
+        retrieveNameBtn.disabled = false;
+      }
+    });
+  }
 
-    function validateFeedbackEmail() {
-        if (!emailInput) {
-            return;
-        }
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i;
-        if (emailInput.value && !emailRegex.test(emailInput.value)) {
-            emailInput.setCustomValidity('Please enter a valid Gmail address ending with @gmail.com');
+  /* ── Retrieve Email ── */
+  const retrieveEmailBtn = document.getElementById('retrieveEmailBtn');
+  const emailInput       = document.getElementById('email');
+
+  if (retrieveEmailBtn && emailInput) {
+    retrieveEmailBtn.addEventListener('click', async () => {
+      const span = retrieveEmailBtn.querySelector('span');
+      span.textContent = 'Loading…';
+      retrieveEmailBtn.disabled = true;
+      try {
+        const data = await fetchUserData();
+        if (data.email) {
+          emailInput.value = data.email;
+          validateEmail();
         } else {
-            emailInput.setCustomValidity('');
+          alert('No email found on your account. Please enter it manually.');
         }
-    }
+      } catch (_) {
+        alert('Could not retrieve email. Please enter it manually.');
+      } finally {
+        span.textContent = 'Retrieve Email';
+        retrieveEmailBtn.disabled = false;
+      }
+    });
+  }
 
-    if (retrieveBtn && emailInput) {
-        retrieveBtn.addEventListener('click', async () => {
-            try {
-                const response = await fetch("{{ url_for('auth.retrieve_feedback_email') }}");
-                if (!response.ok) {
-                    throw new Error('Failed to retrieve email');
-                }
-                const data = await response.json();
-                emailInput.value = data.email || '';
-                validateFeedbackEmail();
-            } catch (_) {
-                alert('Could not retrieve email. Please enter it manually.');
-            }
-        });
+  /* ── Validation ── */
+  function validateFullName() {
+    if (!fullNameInput) return;
+    const v = fullNameInput.value;
+    if (/[^\p{L} .'-]/u.test(v)) {
+      fullNameInput.setCustomValidity('Only letters, spaces, periods, apostrophes, hyphens allowed.');
+      fullNameInput.reportValidity();
+      fullNameInput.value = v.replace(/[^\p{L} .'-]/gu, '');
+    } else {
+      fullNameInput.setCustomValidity('');
     }
+  }
 
-    if (emailInput) {
-        emailInput.addEventListener('input', validateFeedbackEmail);
-        emailInput.addEventListener('blur', validateFeedbackEmail);
-    }
+  function validateEmail() {
+    if (!emailInput) return;
+    const re = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i;
+    emailInput.setCustomValidity(
+      emailInput.value && !re.test(emailInput.value)
+        ? 'Please enter a valid Gmail address ending with @gmail.com'
+        : ''
+    );
+  }
 
-    if (fullNameInput) {
-        fullNameInput.addEventListener('input', validateFullName);
-    }
+  if (fullNameInput) fullNameInput.addEventListener('input', validateFullName);
+  if (emailInput)    { emailInput.addEventListener('input', validateEmail); emailInput.addEventListener('blur', validateEmail); }
 
-    if (feedbackForm) {
-        feedbackForm.addEventListener('submit', (event) => {
-            validateFullName();
-            validateFeedbackEmail();
-            if (!feedbackForm.checkValidity()) {
-                event.preventDefault();
-                feedbackForm.reportValidity();
-            }
-        });
-    }
+  /* ── Form submit ── */
+  const feedbackForm = document.getElementById('feedbackForm');
+  if (feedbackForm) {
+    feedbackForm.addEventListener('submit', e => {
+      const checked = document.querySelector('#typePillRow input:checked');
+      if (checked) hiddenSelect.value = checked.value;
+      validateFullName();
+      validateEmail();
+      if (!feedbackForm.checkValidity()) {
+        e.preventDefault();
+        feedbackForm.reportValidity();
+      }
+    });
+  }
+
+  /* ── Arrow nudge ── */
+  const arrow = document.querySelector('.submit-arrow');
+  if (arrow) {
+    arrow.style.transition = 'transform 0.2s';
+    const btn = arrow.closest('button');
+    btn.addEventListener('mouseenter', () => arrow.style.transform = 'translateX(4px)');
+    btn.addEventListener('mouseleave', () => arrow.style.transform = 'translateX(0)');
+  }
+})();
 </script>
 {% endblock %}

@@ -523,7 +523,11 @@ def delete_feedback(feedback_id):
 @auth_bp.route('/feedback/retrieve-email', methods=['GET'])
 @login_required
 def retrieve_feedback_email():
-    return {'email': current_user.email or ''}, 200
+    return {
+        'email': current_user.email or '',
+        'first_name': getattr(current_user, 'first_name', '') or '',
+        'last_name': getattr(current_user, 'last_name', '') or ''
+    }, 200
 
 
 @auth_bp.route('/forgot-password', methods=['GET', 'POST'])
