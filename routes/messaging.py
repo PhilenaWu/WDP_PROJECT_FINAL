@@ -74,15 +74,18 @@ def view_contacts():
 
     existing_ids = [c['contact_user_id'] for c in contacts]
 
+    is_admin_user = current_user.user_type == 'admin'
+    role_clause = "" if is_admin_user else "AND user_type != 'admin'"
+
     if existing_ids:
         ph = ','.join(['%s'] * len(existing_ids))
         available_users = execute_query(
-            f"SELECT id, display_name, username, age_group FROM users WHERE id != %s AND id NOT IN ({ph}) ORDER BY display_name",
+            f"SELECT id, display_name, username, age_group FROM users WHERE id != %s AND id NOT IN ({ph}) {role_clause} ORDER BY display_name",
             (user_id, *existing_ids), fetch_all=True
         ) or []
     else:
         available_users = execute_query(
-            "SELECT id, display_name, username, age_group FROM users WHERE id != %s ORDER BY display_name",
+            f"SELECT id, display_name, username, age_group FROM users WHERE id != %s {role_clause} ORDER BY display_name",
             (user_id,), fetch_all=True
         ) or []
 
@@ -133,6 +136,10 @@ def add_contact():
         flash('You cannot add yourself as a contact', 'error')
         return redirect(url_for('messaging.view_contacts'))
 
+    if current_user.user_type != 'admin' and contact_user.get('user_type') == 'admin':
+        flash('You are not allowed to add admin users as contacts', 'error')
+        return redirect(url_for('messaging.view_contacts'))
+    
     existing = execute_query(
         "SELECT id FROM contacts WHERE user_id = %s AND contact_user_id = %s",
         (user_id, contact_user_id), fetch_one=True
