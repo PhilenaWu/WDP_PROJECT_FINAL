@@ -81,63 +81,51 @@
     <div class="gl-section-header">
       <h2 class="gl-section-title">Latest Announcements</h2>
     </div>
-
     <div class="gl-carousel-wrap">
       <div class="gl-carousel">
         <div class="gl-carousel-track" id="carouselTrack">
-
           <div class="gl-ann-card">
             <div class="gl-ann-icon">📢</div>
             <h4 class="gl-ann-title">New Topic Uploaded!</h4>
             <p class="gl-ann-text">In light of Racial Harmony Day, we have uploaded a new "Culture and Traditions" topic. Find out more in Storyboard and share your experiences today!</p>
             <a href="{{ url_for('main.storyboard') }}" class="gl-ann-link">Learn More →</a>
           </div>
-
           <div class="gl-ann-card">
             <div class="gl-ann-icon">✏️</div>
             <h4 class="gl-ann-title">Profile Settings Updates</h4>
             <p class="gl-ann-text">Check out our latest feature that allows you to edit your profile details. Update your profile now to let others know more about you!</p>
             <a href="{{ url_for('profile.profile') }}" class="gl-ann-link">Explore →</a>
           </div>
-
           <div class="gl-ann-card">
             <div class="gl-ann-icon">🌊</div>
             <h4 class="gl-ann-title">New Event — Clean the Beach</h4>
             <p class="gl-ann-text">Join the latest event to help clean up our beaches and make a positive impact on the environment!</p>
             <a href="{{ url_for('events.signup_event', event_id=6) }}" class="gl-ann-link">Join →</a>
           </div>
-
         </div>
       </div>
-
       <div class="gl-carousel-controls">
-        <button class="gl-carr-btn" id="prevBtn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
         <div class="gl-dots" id="annDots">
           <span class="gl-dot active" data-idx="0"></span>
           <span class="gl-dot" data-idx="1"></span>
           <span class="gl-dot" data-idx="2"></span>
         </div>
-        <button class="gl-carr-btn" id="nextBtn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-      </div>
+        </div>
     </div>
   </div>
 
   <!-- EVENTS + CALENDAR -->
-  <div class="gl-two-col">
+  <div class="gl-two-col reveal">
 
     <!-- Upcoming Events -->
-    <div class="reveal">
+    <div>
       <div class="gl-section-header">
         <h2 class="gl-section-title">Upcoming Events</h2>
         <a href="{{ url_for('events.events_home') }}" class="gl-view-all">View all →</a>
       </div>
       <div class="gl-events-grid">
         {% if upcoming_events and upcoming_events|length > 0 %}
-          {% for e in upcoming_events %}
+          {% for e in upcoming_events[:2] %}
             <div class="gl-event-card">
               {% if e.image_url %}
                 <img src="{{ e.image_url }}" class="gl-event-img" alt="Event image">
@@ -158,16 +146,6 @@
                   {% if e.event_date %}{{ e.event_date.strftime('%d %b %Y') }}{% endif %}{% if e.start_time %} · {{ e.start_time|fmt_time }}{% endif %}
                 </p>
                 <a class="gl-event-link" href="#">View Details</a>
-                {% if e.max_participants %}
-                  {% set joined = e.current_participants or 0 %}
-                  {% set maxp = e.max_participants or 0 %}
-                  {% set pct = (joined * 100 / maxp) if maxp > 0 else 0 %}
-                  <div class="gl-progress-wrap">
-                    <div class="gl-progress">
-                    <div class="gl-progress-bar" style="--pct: {{ pct|round(0)|int }}%;"></div></div>
-                    <small class="gl-progress-label">{{ joined }} / {{ maxp }} joined</small>
-                  </div>
-                {% endif %}
               </div>
             </div>
           {% endfor %}
@@ -180,7 +158,7 @@
     </div>
 
     <!-- Calendar -->
-    <div class="reveal">
+    <div>
       <div class="gl-section-header">
         <h2 class="gl-section-title">Calendar</h2>
       </div>
@@ -213,110 +191,6 @@
     </div>
   </div>
 
-
-    <!-- Connections Section -->
-    <div class="row g-4 mt-3">
-    
-        <!-- Your Connections -->
-         <h3 class="mb-2 fw-bold">Connections</h3>
-        <div class="col-lg-6">
-            <div class="card h-100 shadow-sm d-flex flex-column">
-                <div class="card-header bg-light border-bottom">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-people"></i> Your Connections
-                    </h5>
-                </div>
-
-                <div class="card-body d-flex flex-column">
-
-                    <!-- Dynamic Connections -->
-                    <div class="d-flex flex-column gap-3 flex-grow-1">
-                        {% if current and current|length > 0 %}
-                            {% for u in current %}
-                                <div class="d-flex align-items-center">
-                                        <img 
-                                            src="{{ u.avatar_url }}"
-                                            data-default-avatar="{{ url_for('static', filename='uploads/main_topics_images/default_pfp.png') }}"
-                                            onerror="this.onerror=null;this.src=this.dataset.defaultAvatar;"
-                                        alt="User"
-                                        class="rounded-circle me-3"
-                                        style="width: 50px; height: 50px; object-fit: cover;"
-                                    >
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-1">{{ u.name }}</h6>
-                                        <small class="text-muted">{{ u.age_group|capitalize }}</small>
-                                    </div>
-                                    <button class="btn btn-sm btn-outline-secondary" disabled>Message</button>
-                                </div>
-                            {% endfor %}
-                        {% else %}
-                            <p class="text-muted mb-0">No connections yet. Start connecting with others!</p>
-                        {% endif %}
-                    </div>
-
-                    <!-- View All Button -->
-                    <div class="mt-3">
-                        <a href="{{ url_for('connections.connections') }}" class="btn btn-primary w-100">
-                            <i class="bi bi-arrow-right"></i> View All Connections
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Suggested Connections -->
-        <div class="col-lg-6">
-            <div class="card h-100 shadow-sm d-flex flex-column">
-                <div class="card-header bg-light border-bottom">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-person-plus"></i> Suggested Connections
-                    </h5>
-                </div>
-
-                <div class="card-body d-flex flex-column">
-
-                    {% if suggestions and suggestions|length > 0 %}
-                        {% for u in suggestions %}
-                            <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
-                                    <img 
-                                        src="{{ u.avatar_url }}"
-                                        data-default-avatar="{{ url_for('static', filename='uploads/main_topics_images/default_pfp.png') }}"
-                                        onerror="this.onerror=null;this.src=this.dataset.defaultAvatar;"
-                                    alt="User"
-                                    class="rounded-circle me-3"
-                                    style="width: 50px; height: 50px; object-fit: cover;"
-                                >
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">{{ u.name }}</h6>
-                                    <small class="text-muted">
-                                        {{ u.age_group|capitalize }}
-                                        {% if u.mutual_count is not none %}
-                                            • {{ u.mutual_count }} mutual connections
-                                        {% endif %}
-                                    </small>
-                                </div>
-
-                                <!-- IMPORTANT: safe JS (no Jinja inside function args) -->
-                                <button class="btn btn-sm btn-primary"
-                                        data-id="{{ u.id }}"
-                                        onclick="sendRequest(this)">
-                                    Add
-                                </button>
-                            </div>
-                        {% endfor %}
-                    {% else %}
-                        <p class="text-muted mb-0">No suggestions right now.</p>
-                    {% endif %}
-
-                    <!-- View More Button -->
-                    <div class="mt-3">
-                        <a class="btn btn-outline-primary w-100" href="{{ url_for('connections.connections') }}">
-                            <i class="bi bi-arrow-right"></i> View More Suggestions
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
   <!-- STORYBOARD PREVIEW -->
   <div class="gl-section reveal">
     <div class="gl-section-header">
@@ -609,58 +483,58 @@
 }
 .gl-ann-link:hover { background:var(--gl-orange); color:#fff; border-color:var(--gl-orange); }
 .gl-carousel-controls { display:flex; align-items:center; justify-content:center; gap:14px; margin-top:18px; }
-.gl-carr-btn {
-  width:34px; height:34px; border-radius:50%;
-  background:rgba(243,154,31,0.08); border:1.5px solid rgba(243,154,31,0.25);
-  color:var(--gl-orange); cursor:pointer; display:flex; align-items:center; justify-content:center;
-  transition:all 0.25s;
-}
-.gl-carr-btn:hover { background:var(--gl-orange); color:#fff; border-color:var(--gl-orange); }
-.gl-dots { display:flex; gap:7px; }
+
+.gl-dots { display:flex; gap:7px; align-items:center; }
 .gl-dot {
-  width:8px; height:8px; border-radius:50%;
-  background:rgba(243,154,31,0.22); cursor:pointer; transition:all 0.35s;
+  width:8px; height:8px; border-radius:50%; flex-shrink:0;
+  background:rgba(243,154,31,0.25); cursor:pointer;
+  transition:background 0.3s, transform 0.3s;
+  border:none; display:block; padding:0;
 }
-.gl-dot.active { background:var(--gl-orange); width:24px; border-radius:999px; }
+.gl-dot.active { background:var(--gl-orange); transform:scale(1.25); }
 
-/* TWO-COL LAYOUT */
-.gl-two-col { display:grid; grid-template-columns:1fr 380px; gap:28px; margin-bottom:52px; }
+/* TWO-COL LAYOUT — events get more room, calendar is a fixed sidebar */
+.gl-two-col {
+  display:grid;
+  grid-template-columns:1fr 340px;
+  gap:28px;
+  margin-bottom:52px;
+  align-items:start;
+}
 
-/* EVENT CARDS */
-.gl-events-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+/* EVENT CARDS — single column so cards are wide and clean */
+.gl-events-grid { display:flex; flex-direction:column; gap:16px; }
 .gl-event-card {
   background:#fff; border-radius:18px; overflow:hidden;
   border:1px solid var(--gl-border); box-shadow:0 4px 18px rgba(28,18,9,0.05);
   transition:transform 0.3s cubic-bezier(.34,1.56,.64,1),box-shadow 0.3s;
+  display:flex; flex-direction:row;
 }
-.gl-event-card:hover { transform:translateY(-6px); box-shadow:0 16px 40px rgba(243,154,31,0.12); }
-.gl-event-img { width:100%; height:150px; object-fit:cover; }
-.gl-event-body { padding:16px 18px 20px; }
-.gl-event-tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+.gl-event-card:hover { transform:translateY(-4px); box-shadow:0 16px 40px rgba(243,154,31,0.12); }
+.gl-event-img { width:160px; min-width:160px; align-self:stretch; object-fit:cover; flex-shrink:0; display:block; }
+.gl-event-body { padding:16px 20px; flex:1; display:flex; flex-direction:column; justify-content:center; gap:6px; }
+.gl-event-tags { display:flex; flex-wrap:wrap; gap:6px; }
 .gl-tag {
   display:inline-flex; align-items:center; gap:4px;
   padding:3px 11px; border-radius:999px; font-size:0.67rem; font-weight:700;
 }
 .gl-tag-orange { background:rgba(243,154,31,0.12); color:var(--gl-orange-deep); }
 .gl-tag-muted  { background:rgba(28,18,9,0.06); color:var(--gl-muted); }
-.gl-event-title { font-weight:700; font-size:0.92rem; margin:0 0 7px; color:var(--gl-text); }
-.gl-event-date { display:flex; align-items:center; gap:5px; font-size:0.74rem; color:var(--gl-muted); margin-bottom:12px; }
+.gl-event-title { font-weight:700; font-size:0.95rem; margin:0; color:var(--gl-text); }
+.gl-event-date { display:flex; align-items:center; gap:5px; font-size:0.74rem; color:var(--gl-muted); margin:0; }
 .gl-event-link {
-  display:inline-flex; padding:7px 18px; border-radius:999px;
+  display:inline-flex; align-self:flex-start; padding:7px 18px; border-radius:999px;
   font-size:0.76rem; font-weight:700; text-decoration:none;
   border:1.5px solid rgba(243,154,31,0.35); color:var(--gl-orange);
-  transition:all 0.2s;
+  transition:all 0.2s; margin-top:4px;
 }
 .gl-event-link:hover { background:var(--gl-orange); color:#fff; }
-.gl-progress-wrap { margin-top:13px; }
-.gl-progress { height:6px; background:rgba(243,154,31,0.12); border-radius:999px; overflow:hidden; margin-bottom:5px; }
-.gl-progress-bar { height:100%; background:linear-gradient(90deg,var(--gl-orange),var(--gl-coral)); border-radius:999px; transition:width 0.6s ease; }
-.gl-progress-label { font-size:0.7rem; color:var(--gl-muted); }
 
 /* CALENDAR */
 .gl-cal-card {
   background:#fff; border-radius:20px; padding:18px;
   border:1px solid var(--gl-border); box-shadow:0 4px 18px rgba(28,18,9,0.05);
+  position:sticky; top:24px;
 }
 .gl-cal-select {
   width:100%; padding:10px 16px; border-radius:999px;
@@ -676,23 +550,23 @@
   transition:border-color 0.25s,box-shadow 0.25s;
 }
 .gl-cal-item:hover { border-color:rgba(243,154,31,0.35); box-shadow:0 4px 14px rgba(243,154,31,0.08); }
-.gl-cal-date { min-width:48px; text-align:center; padding-right:12px; border-right:1.5px solid rgba(243,154,31,0.18); }
+.gl-cal-date { min-width:44px; text-align:center; padding-right:12px; border-right:1.5px solid rgba(243,154,31,0.18); }
 .gl-cal-day {
-  font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:900; line-height:1;
+  font-family:'Playfair Display',serif; font-size:1.4rem; font-weight:900; line-height:1;
   background:linear-gradient(135deg,var(--gl-orange),var(--gl-coral));
   -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
 }
-.gl-cal-mon { font-size:0.64rem; font-weight:800; color:var(--gl-muted); letter-spacing:0.06em; margin-top:2px; }
+.gl-cal-mon { font-size:0.62rem; font-weight:800; color:var(--gl-muted); letter-spacing:0.06em; margin-top:2px; }
 .gl-cal-info { flex:1; min-width:0; }
-.gl-cal-title { font-weight:700; font-size:0.84rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.gl-cal-time { font-size:0.71rem; color:var(--gl-muted); margin-top:3px; }
+.gl-cal-title { font-weight:700; font-size:0.82rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.gl-cal-time { font-size:0.7rem; color:var(--gl-muted); margin-top:3px; }
 .gl-cal-pill {
-  padding:4px 11px; border-radius:999px; font-size:0.65rem; font-weight:700;
+  padding:4px 10px; border-radius:999px; font-size:0.63rem; font-weight:700;
   background:rgba(243,154,31,0.1); color:var(--gl-orange-deep); white-space:nowrap; flex-shrink:0;
 }
 .gl-cal-empty { padding:14px; font-size:0.83rem; color:var(--gl-muted); text-align:center; }
 
-/* STORIES */
+/* STORIES GRID */
 .gl-stories-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
 .gl-story-card {
   background:#fff; border-radius:18px; padding:20px;
@@ -709,9 +583,7 @@
 .gl-story-topic { font-size:0.72rem; color:var(--gl-orange-deep); margin-bottom:10px; font-weight:600; }
 .gl-story-audio { width:100%; height:36px; margin-bottom:10px; }
 .gl-story-media { width:100%; height:160px; object-fit:cover; border-radius:10px; margin-bottom:10px; }
-.gl-story-body{ font-size: 0.82rem; color: #555; line-height: 1.65; margin: 0 0 12px; flex: 1; overflow: hidden; display: -webkit-box;
-  -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3;
-}
+.gl-story-body { font-size:0.82rem; color:#555; line-height:1.65; margin:0 0 12px; flex:1; overflow:hidden; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; line-clamp:3; }
 .gl-story-actions { display:flex; gap:8px; margin-top:auto; }
 .gl-story-btn {
   display:inline-flex; align-items:center; gap:5px; padding:6px 14px;
@@ -760,17 +632,19 @@
 /* RESPONSIVE */
 @media (max-width:1100px) {
   .gl-two-col { grid-template-columns:1fr; }
+  .gl-cal-card { position:static; }
 }
 @media (max-width:900px) {
   .gl-container { padding:24px 24px 52px; }
   .gl-welcome-hero { padding:36px 24px; }
   .gl-welcome-inner { flex-direction:column; align-items:flex-start; }
   .gl-stories-grid { grid-template-columns:1fr 1fr; }
-  .gl-events-grid { grid-template-columns:1fr; }
   .gl-connections-grid { grid-template-columns:1fr; }
   .gl-alerts { padding:14px 24px 0; }
 }
-@media (max-width:600px) {
+@media (max-width:680px) {
+  .gl-event-card { flex-direction:column; }
+  .gl-event-img { width:100%; height:160px; min-height:unset; }
   .gl-stories-grid { grid-template-columns:1fr; }
   .gl-story-banner { flex-direction:column; align-items:flex-start; }
 }
@@ -789,8 +663,7 @@
     track.style.transform = `translateX(-${idx * 100}%)`;
     dots.forEach((d,i) => d.classList.toggle('active', i===idx));
   }
-  document.getElementById('prevBtn').addEventListener('click', () => go(idx-1));
-  document.getElementById('nextBtn').addEventListener('click', () => go(idx+1));
+  // dots-only navigation
   dots.forEach(d => d.addEventListener('click', () => go(+d.dataset.idx)));
   setInterval(() => go(idx+1), 5000);
 })();
