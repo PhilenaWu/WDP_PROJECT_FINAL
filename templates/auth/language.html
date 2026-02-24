@@ -7,7 +7,6 @@
 <div class="settings-layout">
 	<aside class="settings-sidebar">
 		<h2 class="sidebar-heading">Settings</h2>
-
 		<nav class="sidebar-menu">
 			<a href="{{ url_for('auth.appearance_settings') }}" class="menu-item">Appearance</a>
 			<button class="menu-item menu-item--active" type="button" aria-current="page">Language</button>
@@ -15,9 +14,7 @@
 		</nav>
 		<div class="sidebar-footer">
 			<a href="{{ url_for('main.home') }}" class="btn btn-light sidebar-home-btn">
-				<span class="sidebar-home-icon" aria-hidden="true">
-					<i class="bi bi-arrow-left"></i>
-				</span>
+				<span class="sidebar-home-icon" aria-hidden="true"><i class="bi bi-arrow-left"></i></span>
 				<span class="sidebar-home-text">Back to Home</span>
 			</a>
 		</div>
@@ -37,7 +34,7 @@
 				<div class="quick-language-panel">
 					<div class="language-grid quick-language-grid">
 						<label class="language-card quick-language-card" data-language="en">
-							<input type="radio" name="quickLanguage" value="en" {% if current_language == 'en' %}checked{% endif %}>
+							<input type="radio" name="quickLanguage" value="en">
 							<div class="card-inner">
 								<img src="{{ url_for('static', filename='uploads/language/united-kingdom.png') }}" alt="UK Flag" class="flag-icon">
 								<span class="language-name">English</span>
@@ -46,7 +43,7 @@
 						</label>
 
 						<label class="language-card quick-language-card" data-language="zh-CN">
-							<input type="radio" name="quickLanguage" value="zh-CN" {% if current_language == 'zh-CN' %}checked{% endif %}>
+							<input type="radio" name="quickLanguage" value="zh-CN">
 							<div class="card-inner">
 								<img src="{{ url_for('static', filename='uploads/language/chinese-flag.png') }}" alt="China Flag" class="flag-icon flag-icon--china">
 								<span class="language-name">Chinese (中文)</span>
@@ -55,7 +52,7 @@
 						</label>
 
 						<label class="language-card quick-language-card" data-language="ta">
-							<input type="radio" name="quickLanguage" value="ta" {% if current_language == 'ta' %}checked{% endif %}>
+							<input type="radio" name="quickLanguage" value="ta">
 							<div class="card-inner">
 								<img src="{{ url_for('static', filename='uploads/language/india.png') }}" alt="India Flag" class="flag-icon">
 								<span class="language-name">Tamil (தமிழ்)</span>
@@ -64,7 +61,7 @@
 						</label>
 
 						<label class="language-card quick-language-card" data-language="ms">
-							<input type="radio" name="quickLanguage" value="ms" {% if current_language == 'ms' %}checked{% endif %}>
+							<input type="radio" name="quickLanguage" value="ms">
 							<div class="card-inner">
 								<img src="{{ url_for('static', filename='uploads/language/malaysia.png') }}" alt="Malaysia Flag" class="flag-icon">
 								<span class="language-name">Malay (Melayu)</span>
@@ -81,7 +78,7 @@
 					<i class="bi bi-translate" aria-hidden="true"></i>
 					<select id="languageSelect" class="language-select" name="language" aria-label="App Language">
 						{% for code, label in language_options %}
-							<option value="{{ code }}" {% if current_language == code %}selected{% endif %}>{{ label }}</option>
+							<option value="{{ code }}">{{ label }}</option>
 						{% endfor %}
 					</select>
 					<span class="language-select-arrow" aria-hidden="true"><i class="bi bi-chevron-down"></i></span>
@@ -95,88 +92,63 @@
 
 {% block extra_js %}
 <script>
-	const languageSelect = document.getElementById('languageSelect');
-	const quickLanguageCards = document.querySelectorAll('.quick-language-card');
-	const quickLanguageRadios = document.querySelectorAll('input[name="quickLanguage"]');
-	const langMap = {
-		'zh': 'zh-CN',
-		'zh-cn': 'zh-CN',
-		'zh-hans': 'zh-CN',
-		'zh-tw': 'zh-TW',
-		'zh-hant': 'zh-TW',
-		'iw': 'he'
-	};
+(function () {
+    // Flask gives us the correct language from DB — this is the only source of truth
+    var SERVER_LANG = "{{ current_language }}";
 
-	const availableCodes = new Set(Array.from(languageSelect.options).map(option => option.value));
+    var languageSelect = document.getElementById('languageSelect');
+    var quickCards = document.querySelectorAll('.quick-language-card');
+    var quickRadios = document.querySelectorAll('input[name="quickLanguage"]');
 
-	function updateLanguagePreference(language) {
-		fetch("{{ url_for('auth.update_language') }}", {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({ language })
-		}).catch(() => {
-			// Optional: ignore background errors.
-		});
-	}
+    // Sync both the dropdown and quick-select cards to a given code
+    function syncUI(code) {
+        languageSelect.value = code;
+        quickCards.forEach(function(card) {
+            card.classList.toggle('language-card--active', card.dataset.language === code);
+        });
+        quickRadios.forEach(function(radio) {
+            radio.checked = (radio.value === code);
+        });
+    }
 
-	function normalizeLanguageCode(value) {
-		const raw = (value || '').toString().trim();
-		if (!raw) return 'en';
+    // Save to DB, update localStorage, update Google Translate
+    function saveLanguage(code) {
+        // Update UI immediately
+        syncUI(code);
 
-		const lowered = raw.toLowerCase();
-		const mapped = langMap[lowered] || raw;
-		return availableCodes.has(mapped) ? mapped : 'en';
-	}
+        // Save to localStorage so other pages reflect it
+        try { localStorage.setItem('siteLanguage', code); } catch(e) {}
 
-	function setActiveQuickLanguage(code) {
-		quickLanguageCards.forEach(card => card.classList.remove('language-card--active'));
+        // Save to DB
+        fetch("{{ url_for('auth.update_language') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ language: code })
+        }).catch(function() {});
 
-		const targetCard = document.querySelector(`.quick-language-card[data-language="${code}"]`);
-		if (!targetCard) {
-			return;
-		}
+        // Apply Google Translate on this page
+        if (typeof setSiteLanguage === 'function') {
+            setSiteLanguage(code);
+        }
+    }
 
-		targetCard.classList.add('language-card--active');
-		const radio = targetCard.querySelector('input[name="quickLanguage"]');
-		if (radio) {
-			radio.checked = true;
-		}
-	}
+    // On page load — just sync UI to server value, NO save, NO fetch
+    syncUI(SERVER_LANG);
+    try { localStorage.setItem('siteLanguage', SERVER_LANG); } catch(e) {}
 
-	function applyLanguage(language, shouldPersist = true, shouldApplyTranslation = true) {
-		const selected = normalizeLanguageCode(language);
-		languageSelect.value = selected;
-		setActiveQuickLanguage(selected);
+    // Dropdown change
+    languageSelect.addEventListener('change', function() {
+        saveLanguage(this.value);
+    });
 
-		if (shouldApplyTranslation && typeof setSiteLanguage === 'function') {
-			setSiteLanguage(selected);
-		}
-
-		localStorage.setItem('siteLanguage', selected);
-
-		if (shouldPersist) {
-			updateLanguagePreference(selected);
-		}
-
-		return selected;
-	}
-
-	languageSelect.addEventListener('change', function() {
-		applyLanguage(this.value, true);
-	});
-
-	quickLanguageRadios.forEach(radio => {
-		radio.addEventListener('change', function() {
-			if (this.checked) {
-				applyLanguage(this.value, true);
-			}
-		});
-	});
-
-	const storedLang = normalizeLanguageCode(localStorage.getItem('siteLanguage'));
-	const initialLang = normalizeLanguageCode(languageSelect.value || storedLang);
-	applyLanguage(initialLang, false, false);
+    // Quick card change
+    quickRadios.forEach(function(radio) {
+        radio.addEventListener('change', function() {
+            if (this.checked) {
+                saveLanguage(this.value);
+            }
+        });
+    });
+})();
 </script>
 {% endblock %}

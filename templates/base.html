@@ -5,29 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Genlink | Home{% endblock %}</title>
 
-    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
     <script>
         (function () {
-            const currentUserId = "{{ current_user.id if current_user.is_authenticated else '' }}";
-            const serverAppearance = JSON.parse('{{ appearance_pref|tojson|safe }}');
-            const defaults = {
-                theme: 'light',
-                textSize: 16,
-                fontWeight: '500',
-                fontStyle: 'poppins'
-            };
-
-            const appearanceStorageKey = currentUserId
-                ? `genlink:appearance:${currentUserId}`
-                : 'genlink:appearance:guest';
-
-            const fontFamilies = {
+            var currentUserId = "{{ current_user.id if current_user.is_authenticated else '' }}";
+            var serverAppearance = JSON.parse('{{ appearance_pref|tojson|safe }}');
+            var defaults = { theme: 'light', textSize: 16, fontWeight: '500', fontStyle: 'poppins' };
+            var appearanceStorageKey = currentUserId ? ('genlink:appearance:' + currentUserId) : 'genlink:appearance:guest';
+            var fontFamilies = {
                 poppins: 'Poppins, Arial, sans-serif',
                 arial: 'Arial, sans-serif',
                 verdana: 'Verdana, Geneva, sans-serif',
@@ -39,129 +27,105 @@
             };
 
             function clampTextSize(value) {
-                const numberValue = Number(value);
-                if (Number.isNaN(numberValue)) return defaults.textSize;
-                return Math.min(48, Math.max(12, numberValue));
+                var n = Number(value);
+                if (isNaN(n)) return defaults.textSize;
+                return Math.min(48, Math.max(12, n));
             }
 
-            function normalize(settings) {
-                const merged = { ...defaults, ...(settings || {}) };
+            function normalizeAppearance(settings) {
+                var merged = Object.assign({}, defaults, settings || {});
                 return {
                     theme: merged.theme === 'dark' ? 'dark' : 'light',
                     textSize: clampTextSize(merged.textSize),
-                    fontWeight: ['300', '500', '700'].includes(String(merged.fontWeight))
-                        ? String(merged.fontWeight)
-                        : defaults.fontWeight,
+                    fontWeight: ['300','500','700'].indexOf(String(merged.fontWeight)) !== -1 ? String(merged.fontWeight) : defaults.fontWeight,
                     fontStyle: fontFamilies[merged.fontStyle] ? merged.fontStyle : defaults.fontStyle
                 };
             }
 
             function getSaved() {
                 try {
-                    const stored = window.localStorage.getItem(appearanceStorageKey);
-                    if (stored) return normalize(JSON.parse(stored));
-                } catch (error) {}
-
-                if (!currentUserId) return { ...defaults };
-                return normalize(serverAppearance);
+                    var stored = localStorage.getItem(appearanceStorageKey);
+                    if (stored) return normalizeAppearance(JSON.parse(stored));
+                } catch(e) {}
+                if (!currentUserId) return Object.assign({}, defaults);
+                return normalizeAppearance(serverAppearance);
             }
 
             function applyAppearance(settings) {
-                const next = normalize(settings);
-                const html = document.documentElement;
+                var next = normalizeAppearance(settings);
+                var html = document.documentElement;
                 html.setAttribute('data-theme', next.theme);
                 html.style.setProperty('--app-font-weight', next.fontWeight);
                 html.style.setProperty('--app-font-family', fontFamilies[next.fontStyle]);
-
-                const scale = next.textSize / 16;
+                var scale = next.textSize / 16;
                 if (document.body) {
-                    const elements = document.body.querySelectorAll('*:not(script):not(style):not(svg):not(path):not(img):not(video):not(canvas):not(iframe)');
-                    elements.forEach((element) => {
-                        const tag = element.tagName.toLowerCase();
-                        if (['script', 'style', 'svg', 'path', 'img', 'video', 'canvas', 'iframe'].includes(tag)) return;
-
-                        const hasText = Array.from(element.childNodes).some(
-                            (node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim().length > 0
-                        );
-
-                        const isTextInput = ['input', 'textarea', 'select', 'button'].includes(tag);
-                        const isActionElement = ['a', 'button'].includes(tag);
-
-                        if (element.classList.contains('bi')) return;
-                        if (!hasText && !isTextInput && !isActionElement) return;
-
-                        if (!element.dataset.baseFontSize) {
-                            const computedSize = parseFloat(window.getComputedStyle(element).fontSize);
-                            if (!Number.isNaN(computedSize)) element.dataset.baseFontSize = String(computedSize);
+                    var elements = document.body.querySelectorAll('*:not(script):not(style):not(svg):not(path):not(img):not(video):not(canvas):not(iframe)');
+                    elements.forEach(function(el) {
+                        var tag = el.tagName.toLowerCase();
+                        if (['script','style','svg','path','img','video','canvas','iframe'].indexOf(tag) !== -1) return;
+                        var hasText = Array.from(el.childNodes).some(function(n) { return n.nodeType === 3 && n.textContent.trim().length > 0; });
+                        var isInput = ['input','textarea','select','button'].indexOf(tag) !== -1;
+                        var isAction = ['a','button'].indexOf(tag) !== -1;
+                        if (el.classList.contains('bi')) return;
+                        if (!hasText && !isInput && !isAction) return;
+                        if (!el.dataset.baseFontSize) {
+                            var cs = parseFloat(window.getComputedStyle(el).fontSize);
+                            if (!isNaN(cs)) el.dataset.baseFontSize = String(cs);
                         }
-
-                        const baseSize = parseFloat(element.dataset.baseFontSize || '');
-                        if (!Number.isNaN(baseSize)) element.style.fontSize = `${(baseSize * scale).toFixed(2)}px`;
-
-                        element.style.fontWeight = next.fontWeight;
-                        element.style.fontFamily = fontFamilies[next.fontStyle];
+                        var base = parseFloat(el.dataset.baseFontSize || '');
+                        if (!isNaN(base)) el.style.fontSize = (base * scale).toFixed(2) + 'px';
+                        el.style.fontWeight = next.fontWeight;
+                        el.style.fontFamily = fontFamilies[next.fontStyle];
                     });
-
                     if (window.genlinkAppearance && typeof window.genlinkAppearance.updateSurfaceTones === 'function') {
                         window.genlinkAppearance.updateSurfaceTones();
                     }
                 }
-
                 return next;
             }
 
             function parseRgb(value) {
-                const match = value && value.match(/^rgba?\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?\)$/i);
-                if (!match) return null;
-                return { r: Number(match[1]), g: Number(match[2]), b: Number(match[3]), a: match[4] === undefined ? 1 : Number(match[4]) };
+                var m = value && value.match(/^rgba?\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?\)$/i);
+                if (!m) return null;
+                return { r: Number(m[1]), g: Number(m[2]), b: Number(m[3]), a: m[4] === undefined ? 1 : Number(m[4]) };
             }
 
-            function classifySurfaceTone(backgroundColor) {
-                const rgb = parseRgb(backgroundColor);
+            function classifySurfaceTone(bg) {
+                var rgb = parseRgb(bg);
                 if (!rgb || rgb.a === 0) return null;
-
-                const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
-                const isNavyLike = rgb.b >= rgb.r + 15 && rgb.b >= rgb.g + 15 && brightness <= 170;
-
+                var brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
+                var isNavy = rgb.b >= rgb.r + 15 && rgb.b >= rgb.g + 15 && brightness <= 170;
                 if (brightness >= 210) return 'light';
-                if (brightness <= 150 || isNavyLike) return 'dark';
+                if (brightness <= 150 || isNavy) return 'dark';
                 return null;
             }
 
             function updateSurfaceTones() {
                 if (!document.body) return;
-                const themedNodes = document.body.querySelectorAll('*');
-                themedNodes.forEach((element) => {
-                    const computed = window.getComputedStyle(element);
-                    const tone = classifySurfaceTone(computed.backgroundColor);
-                    if (tone) element.setAttribute('data-surface-tone', tone);
-                    else element.removeAttribute('data-surface-tone');
+                document.body.querySelectorAll('*').forEach(function(el) {
+                    var tone = classifySurfaceTone(window.getComputedStyle(el).backgroundColor);
+                    if (tone) el.setAttribute('data-surface-tone', tone);
+                    else el.removeAttribute('data-surface-tone');
                 });
             }
 
             function saveAppearance(settings) {
-                const next = normalize(settings);
-                try { window.localStorage.setItem(appearanceStorageKey, JSON.stringify(next)); } catch (error) {}
+                var next = normalizeAppearance(settings);
+                try { localStorage.setItem(appearanceStorageKey, JSON.stringify(next)); } catch(e) {}
                 return next;
             }
 
-            window.genlinkAppearance = { defaults, getSaved, applyAppearance, saveAppearance, updateSurfaceTones };
+            window.genlinkAppearance = { defaults: defaults, getSaved: getSaved, applyAppearance: applyAppearance, saveAppearance: saveAppearance, updateSurfaceTones: updateSurfaceTones };
 
-            const initialAppearance = getSaved();
+            var initialAppearance = getSaved();
             saveAppearance(initialAppearance);
             applyAppearance(initialAppearance);
 
-            document.addEventListener('DOMContentLoaded', () => {
+            document.addEventListener('DOMContentLoaded', function() {
                 applyAppearance(initialAppearance);
                 updateSurfaceTones();
-
-                const observer = new MutationObserver(() => updateSurfaceTones());
-                observer.observe(document.body, {
-                    childList: true,
-                    subtree: true,
-                    attributes: true,
-                    attributeFilter: ['class', 'style']
-                });
+                var observer = new MutationObserver(function() { updateSurfaceTones(); });
+                observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class','style'] });
             });
         })();
     </script>
@@ -171,60 +135,41 @@
 
 <body {% block body_class %}{% endblock %}>
 {% block navbar %}
-
-<!-- Navigation -->
 <nav class="navbar navbar-expand-lg bg-white shadow-sm sticky-top py-2" id="mainNavbarTop">
     <div class="container-fluid px-4">
-
-        <!-- Logo Left -->
         <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.home') }}">
-            <img src="{{ url_for('static', filename='uploads/profile_pics/logo.png') }}"
-                 alt="GenLink Logo" class="navbar-logo">
+            <img src="{{ url_for('static', filename='uploads/profile_pics/logo.png') }}" alt="GenLink Logo" class="navbar-logo">
         </a>
-
-        <!-- Mobile Toggle -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
             <span class="navbar-toggler-icon"></span>
         </button>
-
         <div class="collapse navbar-collapse position-relative" id="mainNavbar">
-
-            <!-- Center Menu -->
             <ul class="navbar-nav align-items-center mx-auto navbar-center">
-
                 <li class="nav-item">
-                    <a class="nav-link nav-modern {% if request.endpoint == 'main.home' %}active{% endif %}"
-                       href="{{ url_for('main.home') }}">
+                    <a class="nav-link nav-modern {% if request.endpoint == 'main.home' %}active{% endif %}" href="{{ url_for('main.home') }}">
                         <i class="bi bi-house-door me-1"></i> Home
                     </a>
                 </li>
-
                 <li class="nav-item">
-                    <a class="nav-link nav-modern {% if request.endpoint in ['main.storyboard', 'main.add_story'] %}active{% endif %}"
-                       href="{{ url_for('main.storyboard') }}">
+                    <a class="nav-link nav-modern {% if request.endpoint in ['main.storyboard', 'main.add_story'] %}active{% endif %}" href="{{ url_for('main.storyboard') }}">
                         <i class="bi bi-book me-1"></i> Storyboard
                     </a>
                 </li>
-
                 <li class="nav-item">
-                    <a class="nav-link nav-modern {% if request.endpoint == 'events.events_home' %}active{% endif %}"
-                       href="{{ url_for('events.events_home') }}">
+                    <a class="nav-link nav-modern {% if request.endpoint == 'events.events_home' %}active{% endif %}" href="{{ url_for('events.events_home') }}">
                         <i class="bi bi-calendar-event me-1"></i> Events
                     </a>
                 </li>
-
                 <li class="nav-item">
                     <a class="nav-link nav-modern {% if request.endpoint and request.endpoint.startswith('games.') %}active{% endif %}" href="{{ url_for('games.index') }}">
                         <i class="bi bi-controller me-1"></i> Games
                     </a>
                 </li>
-
                 <li class="nav-item">
                     <a class="nav-link nav-modern {% if request.endpoint == 'events.submit_event' %}active{% endif %}" href="{{ url_for('events.submit_event') }}">
                         <i class="bi bi-envelope-paper me-1"></i> Proposal
                     </a>
                 </li>
-
                 {% if current_user.is_authenticated and current_user.user_type == 'admin' %}
                 <li class="nav-item">
                     <a class="nav-link nav-modern" href="{{ url_for('events.admin_create_event') }}">
@@ -232,56 +177,38 @@
                     </a>
                 </li>
                 {% endif %}
-
             </ul>
-
-            <!-- Right Side -->
             <ul class="navbar-nav ms-auto align-items-center gap-2">
-
                 <li class="nav-item">
                     <a class="btn btn-icon" href="{{ url_for('messaging.view_contacts') }}">
                         <i class="bi bi-chat-dots"></i>
                     </a>
                 </li>
-
-                <!-- Profile -->
                 <li class="nav-item dropdown">
-                    <a class="btn btn-icon"
-                       href="#"
-                       role="button"
-                       data-bs-toggle="dropdown">
+                    <a class="btn btn-icon" href="#" role="button" data-bs-toggle="dropdown">
                         <i class="bi bi-person-circle"></i>
                     </a>
-
                     <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3">
-
                         <li><a class="dropdown-item" href="{{ url_for('profile.profile') }}">My Profile</a></li>
                         <li><a class="dropdown-item" href="{{ url_for('auth.settings') }}">Settings</a></li>
-
                         {% if current_user.is_authenticated and current_user.user_type == 'admin' %}
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="{{ url_for('events.admin_submissions') }}">
                             <i class="bi bi-shield-check me-1"></i> Admin Panel
                         </a></li>
                         {% endif %}
-
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="{{ url_for('auth.feedback') }}">Send Feedback</a></li>
                         <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout_now') }}">Logout</a></li>
-
                     </ul>
                 </li>
-
             </ul>
-
         </div>
     </div>
 </nav>
-
 {% endblock %}
 
 {% block banner %}
-<!-- Flash messages -->
 {% if request.endpoint != 'main.home' and request.endpoint != 'auth.login' %}
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -305,7 +232,6 @@
 </main>
 
 {% block footer %}
-<!-- Footer -->
 <footer class="bg-dark text-white py-4 mt-5">
     <div class="container">
         <div class="row">
@@ -335,87 +261,98 @@
         <p class="text-center text-white-50 mb-0">© 2025 GenLink. All Rights Reserved.</p>
     </div>
 </footer>
-
 <style>
   html, body { height: 100%; }
   body { min-height: 100vh; display: flex; flex-direction: column; }
-  main { flex: 1; }  /* your content area */
+  main { flex: 1; }
 </style>
 {% endblock %}
 
-<!-- Google Translate Element -->
 <div id="google_translate_element" style="display:none;"></div>
 
-<!-- Bootstrap 5 JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-
 
 <script>
-    const userLang = "{{ current_user.language if current_user.is_authenticated else '' }}";
+(function () {
+    var SERVER_LANG = "{{ current_user.language if current_user.is_authenticated else 'en' }}";
 
-    const languageMap = {
-        'en': 'en',
+    var ALIASES = {
         'zh': 'zh-CN',
         'zh-cn': 'zh-CN',
-        'ta': 'ta',
-        'ms': 'ms'
+        'zh-hans': 'zh-CN',
+        'zh-tw': 'zh-TW',
+        'zh-hant': 'zh-TW',
+        'iw': 'he'
     };
 
-    function normalizeLanguage(lang) {
-        const normalized = (lang || '').trim().toLowerCase();
-        return languageMap[normalized] || 'en';
+    function normalizeLang(raw) {
+        var s = (raw || '').trim();
+        if (!s) return 'en';
+        return ALIASES[s.toLowerCase()] || s;
     }
 
-    function applyLanguageWhenReady(lang, timeoutMs = 5000) {
-        const target = normalizeLanguage(lang);
-        const started = Date.now();
+    var ACTIVE_LANG = normalizeLang(SERVER_LANG);
 
-        const tryApply = () => {
-            const select = document.querySelector('.goog-te-combo');
+    // Sync localStorage to DB value — evicts any stale value
+    try { localStorage.setItem('siteLanguage', ACTIVE_LANG); } catch(e) {}
+
+    function restoreToEnglish() {
+        // Clear the googtrans cookie so Google Translate stops translating
+        document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + location.hostname + ';';
+        document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.' + location.hostname + ';';
+        location.reload();
+    }
+
+    function applyToGoogleTranslate(lang, timeoutMs) {
+        if (lang === 'en') {
+            restoreToEnglish();
+            return;
+        }
+        var started = Date.now();
+        function tryApply() {
+            var select = document.querySelector('.goog-te-combo');
             if (select) {
-                select.value = target;
+                select.value = lang;
                 select.dispatchEvent(new Event('change'));
-                localStorage.setItem('siteLanguage', target);
                 return;
             }
-
-            if (Date.now() - started < timeoutMs) {
-                window.setTimeout(tryApply, 200);
+            if (Date.now() - started < (timeoutMs || 5000)) {
+                setTimeout(tryApply, 200);
             }
-        };
-
+        }
         tryApply();
-    }
-
-    if (userLang) {
-        localStorage.setItem('siteLanguage', normalizeLanguage(userLang));
     }
 
     function googleTranslateElementInit() {
         new google.translate.TranslateElement(
-            {
-                pageLanguage: 'en',
-                includedLanguages: 'en,zh-CN,ta,ms',
-                autoDisplay: false
-            },
+            { pageLanguage: 'en', autoDisplay: false },
             'google_translate_element'
         );
+        // Only apply translation if not English — no reload loop
+        if (ACTIVE_LANG !== 'en') {
+            applyToGoogleTranslate(ACTIVE_LANG, 5000);
+        }
     }
 
     function setSiteLanguage(lang) {
-        applyLanguageWhenReady(lang);
+        var code = normalizeLang(lang);
+        try { localStorage.setItem('siteLanguage', code); } catch(e) {}
+        applyToGoogleTranslate(code, 5000);
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const stored = localStorage.getItem('siteLanguage');
-        if (!stored) return;
-        applyLanguageWhenReady(stored);
+    window.googleTranslateElementInit = googleTranslateElementInit;
+    window.setSiteLanguage = setSiteLanguage;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        if (ACTIVE_LANG !== 'en') {
+            applyToGoogleTranslate(ACTIVE_LANG, 5000);
+        }
     });
+})();
 </script>
 <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
-<!-- Extra block for child templates -->
 {% block extra_js %}{% endblock %}
 </body>
 </html>

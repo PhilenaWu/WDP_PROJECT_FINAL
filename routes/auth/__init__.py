@@ -1100,9 +1100,16 @@ def settings():
 @login_required
 def language_settings():
     raw_language = (getattr(current_user, 'language', None) or 'en').strip()
-    normalized = GOOGLE_TRANSLATE_LANGUAGE_CODES.get(raw_language.lower())
-    if not normalized:
-        normalized = GOOGLE_TRANSLATE_LANGUAGE_ALIASES.get(raw_language.lower(), 'en')
+
+    # Check exact match first, then alias, then fallback
+    valid_codes = {code for code, _ in GOOGLE_TRANSLATE_LANGUAGES}
+    if raw_language in valid_codes:
+        normalized = raw_language
+    else:
+        normalized = GOOGLE_TRANSLATE_LANGUAGE_ALIASES.get(raw_language.lower())
+        if not normalized or normalized not in valid_codes:
+            lc = raw_language.lower()
+            normalized = next((code for code in valid_codes if code.lower() == lc), 'en')
 
     return render_template(
         'auth/language.html',
@@ -1118,9 +1125,19 @@ def update_language():
 
     data = request.get_json(silent=True) or request.form
     raw_language = (data.get('language') or 'en').strip()
-    language = GOOGLE_TRANSLATE_LANGUAGE_CODES.get(raw_language.lower())
-    if not language:
-        language = GOOGLE_TRANSLATE_LANGUAGE_ALIASES.get(raw_language.lower(), 'en')
+
+    valid_codes = {code for code, _ in GOOGLE_TRANSLATE_LANGUAGES}
+
+    # 1. Exact match
+    if raw_language in valid_codes:
+        language = raw_language
+    else:
+        # 2. Alias match
+        language = GOOGLE_TRANSLATE_LANGUAGE_ALIASES.get(raw_language.lower())
+        if not language or language not in valid_codes:
+            # 3. Case-insensitive scan
+            lc = raw_language.lower()
+            language = next((code for code in valid_codes if code.lower() == lc), 'en')
 
     execute_query(
         "UPDATE users SET language = %s WHERE id = %s",
@@ -1129,8 +1146,6 @@ def update_language():
     )
 
     return ('', 204)
-
-
 
 
 @auth_bp.route('/appearance')
