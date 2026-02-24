@@ -297,11 +297,28 @@
     try { localStorage.setItem('siteLanguage', ACTIVE_LANG); } catch(e) {}
 
     function restoreToEnglish() {
-        // Clear the googtrans cookie so Google Translate stops translating
+        // Clear googtrans cookies
         document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + location.hostname + ';';
         document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.' + location.hostname + ';';
-        location.reload();
+
+        // Try Google Translate's own restore API first
+        try {
+            var instance = google && google.translate && typeof google.translate.TranslateElement.getInstance === 'function'
+                ? google.translate.TranslateElement.getInstance()
+                : null;
+            if (instance && typeof instance.restore === 'function') {
+                instance.restore();
+                return;
+            }
+        } catch(e) {}
+
+        // Fallback: set combo select to 'en'
+        var select = document.querySelector('.goog-te-combo');
+        if (select) {
+            select.value = 'en';
+            select.dispatchEvent(new Event('change'));
+        }
     }
 
     function applyToGoogleTranslate(lang, timeoutMs) {
@@ -329,12 +346,14 @@
             { pageLanguage: 'en', autoDisplay: false },
             'google_translate_element'
         );
-        // Only apply translation if not English — no reload loop
+        // Only apply if not English — avoids unnecessary restore calls
         if (ACTIVE_LANG !== 'en') {
             applyToGoogleTranslate(ACTIVE_LANG, 5000);
         }
     }
 
+    // Called by language.html when user picks a language
+    // Does NOT save to DB — language.html handles that via fetch()
     function setSiteLanguage(lang) {
         var code = normalizeLang(lang);
         try { localStorage.setItem('siteLanguage', code); } catch(e) {}
