@@ -251,27 +251,6 @@ html[data-theme='dark'] .event-tag { color: #f5b84a; }
 .map-placeholder small { font-size: 0.75rem; opacity: .7; }
 
 /* ── MY EVENTS ──────────────────────────────────────────── */
-.stats-row { display: flex; gap: 14px; margin-bottom: 28px; flex-wrap: wrap; }
-
-.stat-chip {
-  background: var(--app-surface-1);
-  border: 1.5px solid var(--app-border);
-  border-radius: 999px; padding: 10px 20px;
-  display: flex; align-items: center; gap: 12px;
-  font-size: 0.88rem; font-weight: 500;
-  box-shadow: var(--app-shadow-1);
-  transition: border-color 0.22s, box-shadow 0.22s;
-}
-.stat-chip:hover { border-color: rgba(243,154,31,0.4); box-shadow: 0 4px 18px var(--glow); }
-.stat-chip-icon {
-  width: 32px; height: 32px;
-  background: rgba(243,154,31,0.12);
-  border: 1px solid rgba(243,154,31,0.22);
-  border-radius: 50%; display: grid; place-items: center;
-  color: var(--orange); font-size: 0.85rem; flex-shrink: 0;
-}
-.stat-chip-value { font-weight: 900; font-size: 1rem; color: var(--app-text); }
-.stat-chip-label { color: var(--app-muted); font-size: 0.78rem; }
 
 .my-events-grid {
   display: grid; grid-template-columns: 1.1fr 0.9fr;
@@ -627,33 +606,8 @@ html[data-theme='dark'] .calendar-card {
       <div class="sc-divider"></div>
     </div>
 
-    <!-- Stats row -->
-    <div class="stats-row">
-      <div class="stat-chip">
-        <div class="stat-chip-icon"><i class="bi bi-calendar2-week"></i></div>
-        <div>
-          <div class="stat-chip-value">{{ my_events|length if my_events else 0 }}</div>
-          <div class="stat-chip-label">Upcoming</div>
-        </div>
-      </div>
-      <div class="stat-chip">
-        <div class="stat-chip-icon"><i class="bi bi-check2-circle"></i></div>
-        <div>
-          <div class="stat-chip-value">{{ my_events|length if my_events else 0 }}</div>
-          <div class="stat-chip-label">Registered</div>
-        </div>
-      </div>
-      <div class="stat-chip">
-        <div class="stat-chip-icon"><i class="bi bi-geo-alt"></i></div>
-        <div>
-          <div class="stat-chip-value">—</div>
-          <div class="stat-chip-label">Next Event</div>
-        </div>
-      </div>
-    </div>
 
     <div class="my-events-grid">
-
       <!-- Left: events list or empty state -->
       <div class="events-list-panel">
         {% if my_events and my_events|length > 0 %}
