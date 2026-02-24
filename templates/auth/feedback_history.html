@@ -3,50 +3,439 @@
 {% block title %}Genlink | Past Feedback{% endblock %}
 {% block body_class %}class="editprofile-page feedback-history-page"{% endblock %}
 
+{% block extra_css %}
+<style>
+  /* ══════════════════════════════════════════════════
+     RESET global.css overrides for .feedback-card
+  ══════════════════════════════════════════════════ */
+  body.editprofile-page .profile-card.feedback-card,
+  body.editprofile-page .feedback-card {
+    max-width: 800px !important;
+    margin: 0 auto !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* ══════════════════════════════════════════════════
+     BRAND TOKENS — same as feedback.html
+  ══════════════════════════════════════════════════ */
+  :root {
+    --fb-orange:      #f39a1f;
+    --fb-coral:       #ff8c61;
+    --fb-glow:        rgba(243,154,31,0.26);
+    --fb-glow-hi:     rgba(243,154,31,0.46);
+    --fb-card-bg:     #ffffff;
+    --fb-hdr-from:    #fff9f0;
+    --fb-hdr-to:      #fff4e8;
+    --fb-border:      rgba(139,114,96,0.18);
+    --fb-text:        #1c1209;
+    --fb-muted:       #8a7260;
+    --fb-entry-bg:    #fbf8f5;
+    --fb-quote-bg:    #ffffff;
+    --fb-input-bg:    #fbf8f5;
+  }
+
+  html[data-theme='dark'] {
+    --fb-card-bg:     var(--app-surface-1);
+    --fb-hdr-from:    #1a2438;
+    --fb-hdr-to:      #1e2b40;
+    --fb-border:      #2e4060;
+    --fb-text:        var(--app-text);
+    --fb-muted:       var(--app-muted);
+    --fb-entry-bg:    var(--app-surface-2);
+    --fb-quote-bg:    var(--app-surface-1);
+    --fb-input-bg:    var(--app-surface-2);
+  }
+
+  /* ══════════════════════════════════════════════════
+     REAL CARD SHELL
+  ══════════════════════════════════════════════════ */
+  .fb-card {
+    background: var(--fb-card-bg);
+    border-radius: 22px;
+    border: 1px solid rgba(243,154,31,0.18);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04), 0 14px 44px rgba(243,154,31,0.10);
+    overflow: hidden;
+  }
+
+  html[data-theme='dark'] .fb-card {
+    border-color: rgba(243,154,31,0.22);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25), 0 14px 44px rgba(0,0,0,0.30);
+  }
+
+  /* ══════════════════════════════════════════════════
+     CARD HEADER
+  ══════════════════════════════════════════════════ */
+  .fb-hdr {
+    padding: 28px 32px 22px;
+    background: linear-gradient(135deg, var(--fb-hdr-from) 0%, var(--fb-hdr-to) 100%);
+    border-bottom: 1px solid rgba(243,154,31,0.14);
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  html[data-theme='dark'] .fb-hdr {
+    border-bottom-color: rgba(243,154,31,0.18);
+  }
+
+  .fb-hdr::after {
+    content: '📋';
+    position: absolute;
+    right: 32px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 3rem;
+    opacity: 0.09;
+    pointer-events: none;
+  }
+
+  .fb-eyebrow {
+    font-size: 0.67rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fb-orange) !important;
+    margin-bottom: 5px;
+  }
+
+  .fb-title {
+    font-size: 1.55rem !important;
+    font-weight: 800 !important;
+    color: var(--fb-text) !important;
+    line-height: 1.2 !important;
+    margin: 0 0 6px !important;
+  }
+
+  .fb-title em {
+    font-style: italic;
+    background: linear-gradient(135deg, var(--fb-orange), var(--fb-coral));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .fb-hdr-sub {
+    font-size: 0.83rem !important;
+    color: var(--fb-muted) !important;
+    margin: 0 !important;
+  }
+
+  /* ══════════════════════════════════════════════════
+     CARD BODY
+  ══════════════════════════════════════════════════ */
+  .fb-body {
+    padding: 28px 32px 34px;
+    background: var(--fb-card-bg);
+  }
+
+  /* ══════════════════════════════════════════════════
+     ENTRY CARDS
+  ══════════════════════════════════════════════════ */
+  .feedback-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .feedback-entry-card {
+    border-radius: 16px !important;
+    border: 1.5px solid var(--fb-border) !important;
+    background: var(--fb-entry-bg) !important;
+    padding: 20px 22px !important;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    box-shadow: none !important;
+  }
+
+  .feedback-entry-card:hover {
+    border-color: rgba(243,154,31,0.40) !important;
+    background: var(--fb-card-bg) !important;
+    box-shadow: 0 4px 20px rgba(243,154,31,0.10) !important;
+  }
+
+  .feedback-entry-top {
+    display: flex !important;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px !important;
+  }
+
+  .feedback-entry-name {
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    color: var(--fb-text) !important;
+    margin: 0 0 3px !important;
+  }
+
+  .feedback-entry-email {
+    font-size: 0.78rem !important;
+    color: var(--fb-muted) !important;
+    margin: 0 !important;
+  }
+
+  /* Badges */
+  .feedback-entry-card .badge {
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    padding: 5px 13px !important;
+    border-radius: 999px !important;
+    flex-shrink: 0;
+  }
+
+  .feedback-entry-card .badge-positive {
+    background: rgba(22,163,74,0.12) !important;
+    color: #15803d !important;
+  }
+
+  .feedback-entry-card .badge-negative {
+    background: rgba(239,68,68,0.10) !important;
+    color: #b91c1c !important;
+  }
+
+  html[data-theme='dark'] .feedback-entry-card .badge-positive {
+    background: rgba(22,163,74,0.20) !important;
+    color: #4ade80 !important;
+  }
+
+  html[data-theme='dark'] .feedback-entry-card .badge-negative {
+    background: rgba(239,68,68,0.18) !important;
+    color: #fca5a5 !important;
+  }
+
+  /* Quote block */
+  .feedback-entry-text {
+    font-size: 0.85rem !important;
+    color: var(--fb-text) !important;
+    line-height: 1.65 !important;
+    margin-bottom: 16px !important;
+    padding: 12px 14px !important;
+    background: var(--fb-quote-bg) !important;
+    border-radius: 10px !important;
+    border-left: 3px solid rgba(243,154,31,0.38) !important;
+    white-space: pre-wrap;
+  }
+
+  /* Entry action buttons row */
+  .feedback-entry-actions {
+    display: flex !important;
+    gap: 8px !important;
+    align-items: center;
+    justify-content: flex-end !important;
+    flex-wrap: wrap;
+  }
+
+  .feedback-entry-actions form { margin: 0 !important; }
+
+  /* ══════════════════════════════════════════════════
+     EMPTY STATE
+  ══════════════════════════════════════════════════ */
+  .feedback-empty-state {
+    text-align: center;
+    padding: 52px 20px;
+    border: 1.5px dashed var(--fb-border) !important;
+    border-radius: 16px !important;
+    background: var(--fb-entry-bg) !important;
+  }
+
+  .feedback-empty-state .empty-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 14px;
+    opacity: 0.45;
+  }
+
+  .feedback-empty-state h2 {
+    font-size: 1.05rem !important;
+    font-weight: 700 !important;
+    color: var(--fb-text) !important;
+    margin-bottom: 6px !important;
+  }
+
+  .feedback-empty-state p {
+    font-size: 0.83rem !important;
+    color: var(--fb-muted) !important;
+    margin-bottom: 22px !important;
+  }
+
+  /* ══════════════════════════════════════════════════
+     BUTTONS
+  ══════════════════════════════════════════════════ */
+  body.editprofile-page .fb-btn {
+    border-radius: 10px !important;
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+    padding: 9px 20px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    text-decoration: none !important;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.25s, background 0.25s !important;
+  }
+
+  body.editprofile-page .fb-btn-primary {
+    background: linear-gradient(135deg, var(--fb-orange) 0%, var(--fb-coral) 100%) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 14px var(--fb-glow) !important;
+    border: none !important;
+  }
+
+  body.editprofile-page .fb-btn-primary:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 24px var(--fb-glow-hi) !important;
+    background: linear-gradient(135deg, var(--fb-coral) 0%, var(--fb-orange) 100%) !important;
+    color: #fff !important;
+  }
+
+  body.editprofile-page .fb-btn-ghost {
+    background: transparent !important;
+    border: 1.5px solid var(--fb-border) !important;
+    color: var(--fb-muted) !important;
+    box-shadow: none !important;
+  }
+
+  body.editprofile-page .fb-btn-ghost:hover {
+    color: var(--fb-orange) !important;
+    border-color: var(--fb-orange) !important;
+    background: rgba(243,154,31,0.05) !important;
+    transform: translateY(-1px) !important;
+  }
+
+  html[data-theme='dark'] body.editprofile-page .fb-btn-ghost {
+    border-color: var(--fb-border) !important;
+    color: var(--fb-muted) !important;
+  }
+
+  html[data-theme='dark'] body.editprofile-page .fb-btn-ghost:hover {
+    color: var(--fb-orange) !important;
+    border-color: rgba(243,154,31,0.55) !important;
+    background: rgba(243,154,31,0.08) !important;
+  }
+
+  /* Delete — red ghost */
+  body.editprofile-page .fb-btn-delete {
+    background: transparent !important;
+    border: 1.5px solid rgba(239,68,68,0.28) !important;
+    color: #b91c1c !important;
+    box-shadow: none !important;
+  }
+
+  body.editprofile-page .fb-btn-delete:hover {
+    border-color: rgba(239,68,68,0.60) !important;
+    background: rgba(239,68,68,0.06) !important;
+    color: #991b1b !important;
+    transform: translateY(-1px) !important;
+  }
+
+  html[data-theme='dark'] body.editprofile-page .fb-btn-delete {
+    border-color: rgba(239,68,68,0.35) !important;
+    color: #fca5a5 !important;
+  }
+
+  html[data-theme='dark'] body.editprofile-page .fb-btn-delete:hover {
+    border-color: rgba(239,68,68,0.65) !important;
+    background: rgba(239,68,68,0.12) !important;
+    color: #fca5a5 !important;
+  }
+
+  /* ══════════════════════════════════════════════════
+     RESPONSIVE
+  ══════════════════════════════════════════════════ */
+  @media (max-width: 600px) {
+    .fb-hdr, .fb-body { padding: 18px !important; }
+    .fb-hdr::after { display: none; }
+    .feedback-entry-actions { justify-content: flex-start !important; }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container py-5">
-    <div class="profile-card feedback-card">
-        {% if feedback_entries %}
-            <div class="mb-4">
-                <h1 class="main-title mb-1">Past Feedback Forms</h1>
-                <p class="text-muted mb-0">Review all your submitted feedback entries.</p>
-            </div>
-        {% endif %}
-        <!--feedback history list-->
-        {% if feedback_entries %}
-            <div class="feedback-history-list">
-                {% for item in feedback_entries %}
-                    <article class="feedback-entry-card">
-                        <div class="feedback-entry-top">
-                            <div>
-                                <h2 class="feedback-entry-name mb-1">{{ item.full_name }}</h2>
-                                <p class="feedback-entry-email mb-0">{{ item.email }}</p>
-                            </div>
-                            <span class="badge rounded-pill {{ 'text-bg-success' if item.feedback_type == 'Positive' else 'text-bg-danger' }}">{{ item.feedback_type }}</span>
-                        </div>
 
-                        <p class="feedback-entry-text">{{ item.feedback_text }}</p>
+  <!-- Back button -->
+  <div class="mb-3" style="max-width:800px; margin-left:auto; margin-right:auto;">
+    <a href="{{ url_for('main.home') }}" class="fb-btn fb-btn-ghost">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Back to Home
+    </a>
+  </div>
 
-                        <div class="feedback-entry-actions">
-                            <a href="{{ url_for('auth.edit_feedback', feedback_id=item.id) }}" class="btn btn-primary profile-btn">Edit</a>
-                            <form method="POST" action="{{ url_for('auth.delete_feedback', feedback_id=item.id) }}" onsubmit="return confirm('Delete this feedback entry? This cannot be undone.');">
-                                <button type="submit" class="btn btn-light profile-btn">Delete</button>
-                            </form>
-                        </div>
-                    </article>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="feedback-empty-state">
-                <h2 class="h5 mb-2">No feedback submitted yet</h2>
-                <p class="text-muted mb-3">Once you submit feedback, it will appear here.</p>
-                <a href="{{ url_for('auth.feedback') }}" class="btn btn-primary profile-btn">Go to Feedback Form</a>
-            </div>
-        {% endif %}
+  <div class="profile-card feedback-card">
+    <div class="fb-card">
 
-        <div class="d-flex justify-content-end feedback-actions mt-3">
-            <a href="{{ url_for('main.home') }}" class="btn btn-light profile-btn">Back to Home</a>
+      <!-- Header -->
+      <div class="fb-hdr">
+        <div>
+          <div class="fb-eyebrow">Your Submissions</div>
+          <h1 class="fb-title">Past <em>Feedback</em></h1>
+          <p class="fb-hdr-sub">Review and manage all your submitted feedback entries.</p>
         </div>
-    </div>
+        <a href="{{ url_for('auth.feedback') }}" class="fb-btn fb-btn-primary" style="margin-top:4px; flex-shrink:0;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          New Feedback
+        </a>
+      </div>
+
+      <!-- Body -->
+      <div class="fb-body">
+
+        {% if feedback_entries %}
+          <div class="feedback-history-list">
+            {% for item in feedback_entries %}
+              <article class="feedback-entry-card">
+                <div class="feedback-entry-top">
+                  <div>
+                    <h2 class="feedback-entry-name">{{ item.full_name }}</h2>
+                    <p class="feedback-entry-email">{{ item.email }}</p>
+                  </div>
+                  <span class="badge {{ 'badge-positive' if item.feedback_type == 'Positive' else 'badge-negative' }}">
+                    {{ '😊' if item.feedback_type == 'Positive' else '😔' }} {{ item.feedback_type }}
+                  </span>
+                </div>
+
+                <p class="feedback-entry-text">{{ item.feedback_text }}</p>
+
+                <div class="feedback-entry-actions">
+                  <a href="{{ url_for('auth.edit_feedback', feedback_id=item.id) }}" class="fb-btn fb-btn-primary">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    Edit
+                  </a>
+                  <form method="POST" action="{{ url_for('auth.delete_feedback', feedback_id=item.id) }}"
+                        onsubmit="return confirm('Delete this feedback entry? This cannot be undone.');"
+                        style="margin:0;">
+                    <button type="submit" class="fb-btn fb-btn-delete">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+                      Delete
+                    </button>
+                  </form>
+                </div>
+              </article>
+            {% endfor %}
+          </div>
+
+        {% else %}
+          <div class="feedback-empty-state">
+            <span class="empty-icon">📭</span>
+            <h2>No feedback submitted yet</h2>
+            <p>Once you submit feedback, it will appear here.</p>
+            <a href="{{ url_for('auth.feedback') }}" class="fb-btn fb-btn-primary">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+              Go to Feedback Form
+            </a>
+          </div>
+        {% endif %}
+
+      </div><!-- /fb-body -->
+    </div><!-- /fb-card -->
+  </div><!-- /profile-card feedback-card -->
+
 </div>
 {% endblock %}
