@@ -1,7 +1,8 @@
-from flask import Blueprint, render_template, g, request, url_for, jsonify
+from flask import Blueprint, render_template, g, request, url_for, jsonify, redirect, flash
 from flask_login import login_required, current_user
 import mysql.connector
 from config import Config
+from database import execute_query
 
 from topics import get_featured_topics, get_all_topics
 
@@ -181,7 +182,7 @@ def home():
     uid = current_user.id
 
     current = select_all("""
-        SELECT u.id, u.username, u.display_name, u.age_group, u.profile_picture
+        SELECT u.id, u.username, u.display_name, u.age_group, u.profile_picture, u.user_type
         FROM connections c
         JOIN users u
           ON u.id = CASE
@@ -195,16 +196,28 @@ def home():
     """, (uid, uid, uid))
 
     suggestions = select_all("""
-        SELECT
-          u.id,
-          u.username,
-          u.display_name,
-          u.age_group,
-          u.profile_picture
-        FROM users u
-        WHERE u.id <> %s
-        LIMIT 3
-    """, (uid,))
+    SELECT
+      u.id,
+      u.username,
+      u.display_name,
+      u.age_group,
+      u.profile_picture,
+      u.user_type
+    FROM users u
+    WHERE u.id <> %s
+      AND (u.user_type IS NULL OR u.user_type <> 'admin')
+      AND u.id NOT IN (
+        SELECT CASE
+          WHEN c.requester_id = %s THEN c.receiver_id
+          ELSE c.requester_id
+        END
+        FROM connections c
+        WHERE (c.requester_id = %s OR c.receiver_id = %s)
+          AND c.status IN ('pending', 'accepted')
+      )
+    ORDER BY COALESCE(u.display_name, u.username)
+    LIMIT 3
+""", (uid, uid, uid, uid))
 
     current = normalize_users(current)
     suggestions = normalize_users(suggestions)
@@ -311,7 +324,7 @@ def home():
     ORDER BY s.created_at DESC
     LIMIT 3
 """, (uid, uid, uid, uid))
-
+    
     return render_template(
         "main/home.html",
         user=current_user,
@@ -403,6 +416,7 @@ def api_calendar():
 def api_notifications_summary():
     uid = current_user.id
 
+    # A) Pending requests you RECEIVED
     pending = select_all("""
         SELECT
           u.id AS from_id,
@@ -416,43 +430,55 @@ def api_notifications_summary():
         LIMIT 10
     """, (uid,))
 
-    nearing = select_all("""
+    pending_items = [{
+        "from_id": r.get("from_id"),
+        "from_name": r.get("from_name") or "User",
+        "from_pic": r.get("from_pic") or ""
+    } for r in (pending or [])]
+
+    # B) NEW: Accepted notifications for requests you SENT
+    accepted = select_all("""
         SELECT
-          e.id,
-          e.title,
-          e.event_date,
-          e.start_time
-        FROM event_registrations r
-        JOIN events e ON e.id = r.event_id
-        WHERE r.user_id = %s
-          AND e.event_date >= CURDATE()
-          AND e.event_date <= DATE_ADD(CURDATE(), INTERVAL 3 DAY)
-          AND (e.status IS NULL OR e.status <> 'cancelled')
-        ORDER BY e.event_date ASC, e.start_time ASC
+          c.id AS conn_id,
+          u.id AS other_id,
+          COALESCE(u.display_name, u.username) AS other_name,
+          u.profile_picture AS other_pic
+        FROM connections c
+        JOIN users u ON u.id = c.receiver_id
+        WHERE c.requester_id = %s
+          AND c.status = 'accepted'
+        ORDER BY c.created_at DESC
         LIMIT 10
     """, (uid,))
 
-    pending_items = []
-    for r in pending:
-        pending_items.append({
-            "from_id": r.get("from_id"),
-            "from_name": r.get("from_name") or "User",
-            "from_pic": r.get("from_pic") or ""
-        })
-
-    nearing_items = []
-    for e in nearing:
-        d = e.get("event_date")
-        nearing_items.append({
-            "id": e.get("id"),
-            "title": e.get("title") or "Event",
-            "date": d.strftime("%d %b") if d else "",
-            "time": fmt_time(e.get("start_time")) if e.get("start_time") else ""
-        })
+    accepted_items = [{
+        "conn_id": r.get("conn_id"),
+        "other_id": r.get("other_id"),
+        "other_name": r.get("other_name") or "User",
+        "other_pic": r.get("other_pic") or ""
+    } for r in (accepted or [])]
 
     return jsonify({
         "ok": True,
         "pending": pending_items,
-        "nearing": nearing_items,
-        "count": len(pending_items) + len(nearing_items)
+        "accepted": accepted_items,
+        "count": len(pending_items) + len(accepted_items)
     })
+
+@main_bp.route("/chat/<int:user_id>")
+@login_required
+def chat(user_id):
+    if user_id == current_user.id:
+        flash("You cannot message yourself", "error")
+        return redirect(url_for("home"))
+
+    user = execute_query(
+        "SELECT id, display_name, username, profile_picture FROM users WHERE id = %s",
+        (user_id,), fetch_one=True
+    )
+
+    if not user:
+        flash("User not found", "error")
+        return redirect(url_for("home"))
+
+    return render_template("messaging/chat.html", user=user)

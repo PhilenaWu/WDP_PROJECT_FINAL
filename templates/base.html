@@ -244,29 +244,6 @@
                     </a>
                 </li>
 
-                <!-- Notifications -->
-                <li class="nav-item dropdown" data-bs-auto-close="outside">
-                    <a class="btn btn-icon position-relative"
-                       href="#"
-                       role="button"
-                       data-bs-toggle="dropdown"
-                       aria-expanded="false"
-                       id="notifBellBtn">
-                        <i class="bi bi-bell"></i>
-
-                        {% if nav_notification_count and nav_notification_count > 0 %}
-                        <span class="notif-badge" id="notifBadge">{{ nav_notification_count }}</span>
-                        {% endif %}
-                    </a>
-
-                    <div class="dropdown-menu dropdown-menu-end notif-dropdown p-0" id="notifDropdown">
-                        <!-- JS will render inside here so it always matches API -->
-                        <div class="notif-panel" id="notifPanel">
-                            <div class="notif-empty">No new notifications</div>
-                        </div>
-                    </div>
-                </li>
-
                 <!-- Profile -->
                 <li class="nav-item dropdown">
                     <a class="btn btn-icon"
@@ -301,18 +278,6 @@
     </div>
 </nav>
 
-<!-- Top Notification Popup (below navbar) -->
-<div id="topNotifBar" class="top-notif-bar" aria-live="polite" aria-atomic="true" hidden>
-    <div class="top-notif-inner">
-        <i class="bi bi-bell-fill"></i>
-        <div class="top-notif-text" id="topNotifText">You have new notifications.</div>
-
-        <button type="button" class="top-notif-close" id="topNotifClose" aria-label="Dismiss">
-            <i class="bi bi-x-lg"></i>
-        </button>
-    </div>
-</div>
-
 {% endblock %}
 
 {% block banner %}
@@ -335,7 +300,9 @@
 {% endif %}
 {% endblock %}
 
-{% block content %}{% endblock %}
+<main>
+  {% block content %}{% endblock %}
+</main>
 
 {% block footer %}
 <!-- Footer -->
@@ -368,6 +335,12 @@
         <p class="text-center text-white-50 mb-0">© 2025 GenLink. All Rights Reserved.</p>
     </div>
 </footer>
+
+<style>
+  html, body { height: 100%; }
+  body { min-height: 100vh; display: flex; flex-direction: column; }
+  main { flex: 1; }  /* your content area */
+</style>
 {% endblock %}
 
 <!-- Google Translate Element -->
@@ -376,240 +349,7 @@
 <!-- Bootstrap 5 JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-<!-- ===== Notifications JS (API-driven dropdown + top bar) ===== -->
-<script>
-(function(){
-  const userId = "{{ current_user.id if current_user.is_authenticated else '' }}";
-  if (!userId) return;
 
-  const STATIC_PREFIX = "{{ url_for('static', filename='') }}"; // ends with /
-  const navEl = document.getElementById("mainNavbarTop");
-  const bellBtn = document.getElementById("notifBellBtn");
-  const dropdownMenu = document.getElementById("notifDropdown");
-  const panel = document.getElementById("notifPanel");
-
-  let blockNotifHide = false;
-
-const notifDropdownRoot = bellBtn?.closest(".dropdown");
-if (notifDropdownRoot){
-  notifDropdownRoot.addEventListener("hide.bs.dropdown", (ev) => {
-    if (blockNotifHide) ev.preventDefault();
-  });
-}
-
-// prevent the <a href="#"> from jumping
-bellBtn?.addEventListener("click", (e) => e.preventDefault());
-
-  const bar = document.getElementById("topNotifBar");
-  const barText = document.getElementById("topNotifText");
-  const barClose = document.getElementById("topNotifClose");
-
-  const seenKey = `genlink:notif:last_seen:${userId}`;
-  const dismissedKey = `genlink:notif:dismissed_count:${userId}`;
-
-  // make top bar sit right below navbar height (doesn't push page)
-  function positionTopBar(){
-    if (!bar || !navEl) return;
-    const h = navEl.getBoundingClientRect().height;
-    bar.style.top = `${Math.round(h + 6)}px`;
-  }
-  window.addEventListener("resize", positionTopBar);
-  document.addEventListener("DOMContentLoaded", positionTopBar);
-  positionTopBar();
-
-  function escapeHtml(str){
-    return String(str ?? "")
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
-  }
-
-  function setBadge(count){
-    if (!bellBtn) return;
-    let badge = document.getElementById("notifBadge");
-    if (count > 0){
-      if (!badge){
-        badge = document.createElement("span");
-        badge.className = "notif-badge";
-        badge.id = "notifBadge";
-        bellBtn.appendChild(badge);
-      }
-      badge.textContent = count;
-    } else {
-      if (badge) badge.remove();
-    }
-  }
-
-  let topBarTimer = null;
-  
-function showTopBar(count){
-  if (!bar || !barText) return;
-
-  const dismissedCount = Number(localStorage.getItem(dismissedKey) || "0");
-  if (dismissedCount === count) return;
-
-  barText.textContent = `You have ${count} new notification${count === 1 ? "" : "s"}.`;
-  bar.hidden = false;
-  bar.classList.add("is-showing");
-
-  // clear previous timer (important)
-  if (topBarTimer) clearTimeout(topBarTimer);
-
-  // auto-hide after 3 seconds
-  topBarTimer = setTimeout(() => {
-    hideTopBar();
-  }, 3000);
-}
-
-function hideTopBar(){
-  if (!bar) return;
-
-  if (topBarTimer){
-    clearTimeout(topBarTimer);
-    topBarTimer = null;
-  }
-
-  bar.classList.remove("is-showing");
-  setTimeout(() => { bar.hidden = true; }, 220);
-}
-
-  if (barClose){
-    barClose.addEventListener("click", () => {
-      const currentCount = Number(document.getElementById("notifBadge")?.textContent || "0");
-      localStorage.setItem(dismissedKey, String(currentCount));
-      hideTopBar();
-    });
-  }
-
-  function markSeen(){
-    localStorage.setItem(seenKey, String(Date.now()));
-    setBadge(0);
-    localStorage.setItem(dismissedKey, "0");
-  }
-
-  async function postJSON(url, data){
-    const res = await fetch(url, {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify(data)
-    });
-    const json = await res.json().catch(()=>({}));
-    return { ok: res.ok, ...json };
-  }
-
-  async function fetchSummary(){
-    const res = await fetch("/api/notifications/summary", { headers:{ "Accept":"application/json" }});
-    const data = await res.json();
-    if (!data || !data.ok) return null;
-    return data;
-  }
-
-  function renderDropdown(data){
-    if (!panel) return;
-
-    const pending = Array.isArray(data.pending) ? data.pending : [];
-    const nearing = Array.isArray(data.nearing) ? data.nearing : [];
-
-    if (pending.length === 0 && nearing.length === 0){
-      panel.innerHTML = `<div class="notif-empty">No new notifications</div>`;
-      return;
-    }
-
-    let html = "";
-
-    // pending requests
-    for (const r of pending){
-      const fromId = Number(r.from_id);
-      const name = escapeHtml(r.from_name || "User");
-      const picPath = (r.from_pic && r.from_pic !== "None" && r.from_pic !== "") ? r.from_pic : "uploads/main_topics_images/default_pfp.png";
-      const picUrl = STATIC_PREFIX + picPath;
-
-      html += `
-        <div class="notif-card notif-item notif-item-actions" data-from-id="${fromId}">
-          <div class="notif-left">
-            <img src="${picUrl}" class="notif-avatar" alt="User">
-          </div>
-
-          <div class="notif-mid">
-            <div class="notif-title">${name}</div>
-            <div class="notif-sub">sent you a connection request</div>
-
-            <div class="notif-actions">
-              <button type="button"
-                      class="notif-btn accept js-notif-accept"
-                      data-target-id="${fromId}"
-                      data-from-name="${name}">
-                Accept
-              </button>
-
-              <button type="button"
-                      class="notif-btn reject js-notif-reject"
-                      data-target-id="${fromId}"
-                      data-from-name="${name}">
-                Reject
-              </button>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    // nearing events
-    for (const e of nearing){
-      const title = escapeHtml(e.title || "Event");
-      const when = escapeHtml(`${e.date || ""}${e.time ? " • " + e.time : ""}`.trim());
-
-      html += `
-        <a class="notif-card notif-item notif-card-link" href="{{ url_for('events.events_home') }}">
-          <div class="notif-left">
-            <div class="notif-icon-wrap"><i class="bi bi-calendar-event"></i></div>
-          </div>
-          <div class="notif-mid">
-            <div class="notif-title">${title}</div>
-            <div class="notif-sub">Happening ${when}</div>
-          </div>
-        </a>
-      `;
-    }
-
-    panel.innerHTML = html;
-  }
-
-  function showConnectedMessage(fromId, fromName){
-  const item = document.querySelector(`.notif-item[data-from-id="${fromId}"]`);
-  if (!item) return;
-
-    item.classList.add("notif-success", "notif-fade-in");
-    item.innerHTML = `
-      <div class="notif-left">
-        <div class="notif-icon-wrap" style="background: rgba(25,135,84,.12);">
-          <i class="bi bi-check-lg"></i>
-        </div>
-      </div>
-
-      <div class="notif-mid">
-        <div class="notif-title">Connected!</div>
-        <div class="notif-sub">You and ${escapeHtml(fromName)} are now connected!</div>
-      </div>
-    `;
-
-    setTimeout(() => {
-      item.classList.remove("notif-fade-in");
-      item.classList.add("notif-fade-out");
-
-      setTimeout(() => {
-
-      lastCount = count;
-
-    }catch(err){}
-  }
-
-  poll();
-  setInterval(poll, 12000);
-})();
-</script>
 
 <script>
     const userLang = "{{ current_user.language if current_user.is_authenticated else '' }}";

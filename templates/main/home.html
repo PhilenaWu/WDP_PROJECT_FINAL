@@ -235,72 +235,106 @@
 
   <!-- CONNECTIONS -->
   <div class="gl-section reveal">
-    <div class="gl-section-header">
-      <h2 class="gl-section-title">Connections</h2>
-    </div>
-    <div class="gl-connections-grid">
+  <div class="gl-section-header gl-section-header--with-bell">
+    <h2 class="gl-section-title">Connections</h2>
 
-      <div class="gl-conn-card">
-        <div class="gl-conn-header">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          Your Connections
-        </div>
-        <div class="gl-conn-body">
-          {% if current and current|length > 0 %}
-            {% for u in current %}
-              <div class="gl-user-row">
-                <img src="{% if u.profile_picture and u.profile_picture != 'None' and u.profile_picture != '' %}{{ url_for('static', filename=u.profile_picture) }}{% else %}{{ url_for('static', filename='uploads/main_topics_images/default_pfp.png') }}{% endif %}" alt="User" class="gl-user-avatar">
-                <div class="gl-user-info">
-                  <div class="gl-user-name">{{ u.name }}</div>
-                  <div class="gl-user-meta">{{ u.age_group|capitalize }}</div>
-                </div>
-                <button class="gl-btn-sm" disabled>Message</button>
-              </div>
-            {% endfor %}
-          {% else %}
-            <p class="gl-empty-text">No connections yet. Start connecting with others!</p>
-          {% endif %}
-        </div>
-        <div class="gl-conn-footer">
-          <a href="{{ url_for('connections.connections') }}" class="gl-btn-primary gl-btn-full">
-            View All Connections
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </a>
-        </div>
-      </div>
+<div class="conn-notif-wrap">
+  <span class="notif-hint" id="connNotifHint" hidden>
+    You have a new notification
+    <span class="notif-arrow">←</span>
+  </span>
 
-      <div class="gl-conn-card">
-        <div class="gl-conn-header">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-          Suggested Connections
-        </div>
-        <div class="gl-conn-body">
-          {% if suggestions and suggestions|length > 0 %}
-            {% for u in suggestions %}
-              <div class="gl-user-row">
-                <img src="{% if u.profile_picture and u.profile_picture != 'None' and u.profile_picture != '' %}{{ url_for('static', filename=u.profile_picture) }}{% else %}{{ url_for('static', filename='uploads/main_topics_images/default_pfp.png') }}{% endif %}" alt="User" class="gl-user-avatar">
-                <div class="gl-user-info">
-                  <div class="gl-user-name">{{ u.name }}</div>
-                  <div class="gl-user-meta">{{ u.age_group|capitalize }}{% if u.mutual_count is not none %} · {{ u.mutual_count }} mutual{% endif %}</div>
-                </div>
-                <button class="gl-btn-add" data-id="{{ u.id }}" onclick="sendRequest(this)">Add</button>
-              </div>
-            {% endfor %}
-          {% else %}
-            <p class="gl-empty-text">No suggestions right now.</p>
-          {% endif %}
-        </div>
-        <div class="gl-conn-footer">
-          <a href="{{ url_for('connections.connections') }}" class="gl-btn-ghost gl-btn-full">
-            View More Suggestions
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </a>
-        </div>
-      </div>
+  <div class="dropdown" data-bs-auto-close="outside">
+    <button class="btn btn-icon position-relative"
+            type="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+            id="connNotifBellBtn">
+      <i class="bi bi-bell"></i>
+      <span class="notif-badge" id="connNotifBadge" style="display:none;"></span>
+    </button>
 
+    <div class="dropdown-menu dropdown-menu-end notif-dropdown p-0" id="connNotifDropdown">
+      <div class="notif-panel" id="connNotifPanel"></div>
     </div>
   </div>
+</div>
 
+  </div>
+
+  <div class="gl-connections-grid">
+
+    <!-- LEFT CARD -->
+    <div class="gl-conn-card">
+      <div class="gl-conn-header">
+        <!-- icon -->
+        Your Connections
+      </div>
+
+      <div class="gl-conn-body" id="homeConnectionsBody">
+        {% if current and current|length > 0 %}
+          {% for u in current %}
+            <div class="gl-user-row" data-user-id="{{ u.id }}">
+              <img src="{{ u.avatar_url }}" alt="User" class="gl-user-avatar" data-fallback="{{ url_for('static', filename='uploads/main_topics_images/default_pfp.png') }}" onerror="this.onerror=null; this.src=this.dataset.fallback;">
+
+              <div class="gl-user-info">
+                <div class="gl-user-name">{{ u.name }}</div>
+                <div class="gl-user-meta">{{ u.age_group|capitalize }}</div>
+              </div>
+
+              <a class="gl-btn-sm" href="{{ url_for('main.chat', user_id=u.id) }}">Message</a>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p class="gl-empty-text" id="homeConnectionsEmpty">No connections yet. Start connecting with others!</p>
+        {% endif %}
+      </div>
+
+      <div class="gl-conn-footer">
+        <a href="{{ url_for('connections.connections') }}" class="gl-btn-primary gl-btn-full">
+          View All Connections →
+        </a>
+      </div>
+    </div>
+
+<!-- RIGHT CARD -->
+<div class="gl-conn-card">
+  <div class="gl-conn-header">
+    Suggested Connections
+  </div>
+
+  <div class="gl-conn-body" id="homeSuggestedBody">
+    {% if suggestions and suggestions|length > 0 %}
+      {% for u in suggestions %}
+        <div class="gl-user-row" data-user-id="{{ u.id }}">
+          <img src="{{ u.avatar_url }}"alt="User" class="gl-user-avatar" data-fallback="{{ url_for('static', filename='uploads/main_topics_images/default_pfp.png') }}" onerror="this.onerror=null; this.src=this.dataset.fallback;">
+          <div class="gl-user-info">
+            <div class="gl-user-name">{{ u.name }}</div>
+            <div class="gl-user-meta">
+              {{ u.age_group|capitalize }}{% if u.mutual_count is not none %} · {{ u.mutual_count }} mutual{% endif %}
+            </div>
+          </div>
+
+          <button class="gl-btn-add" data-id="{{ u.id }}" onclick="sendRequest(this)">Add</button>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="gl-empty-text" id="homeSuggestedEmpty">No suggestions right now.</p>
+    {% endif %}
+  </div>
+
+  <div class="gl-conn-footer">
+    <a href="{{ url_for('connections.connections') }}" class="gl-btn-ghost gl-btn-full">
+      View More Suggestions
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </a>
+  </div>
+</div>
+
+  </div>
 </div>
 
 <!-- ===================== STYLES ===================== -->
@@ -648,6 +682,130 @@
   .gl-stories-grid { grid-template-columns:1fr; }
   .gl-story-banner { flex-direction:column; align-items:flex-start; }
 }
+
+.conn-notif-wrap {
+    font-family: 'Poppins', sans-serif;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .notif-hint {
+    position: absolute;
+    right: calc(100% + 12px);
+    top: 50%;
+    transform: translateY(-50%);
+    white-space: nowrap;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 18px;
+    border-radius: 999px;
+    background: rgba(243, 154, 31, 0.1);
+    border: 1.5px solid rgba(243, 154, 31, 0.3);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #1c1209;
+    animation: glSlideIn 0.4s cubic-bezier(.16,1,.3,1) both;
+    z-index: 10;
+  }
+
+  .notif-hint::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #f39a1f;
+    flex-shrink: 0;
+    animation: glBlink 2s ease-in-out infinite;
+  }
+
+  .notif-arrow {
+    color: #d97f06;
+    font-size: 1rem;
+    animation: glNudge 1s ease-in-out infinite;
+  }
+
+  /* Bell button */
+  .btn-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(243, 154, 31, 0.25);
+    background: rgba(243, 154, 31, 0.07);
+    color: #d97f06;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.22s, border-color 0.22s, transform 0.22s;
+  }
+  .btn-icon:hover {
+    background: rgba(243, 154, 31, 0.15);
+    border-color: #f39a1f;
+    transform: scale(1.08);
+    color: #d97f06;
+  }
+
+  /* Badge */
+  .notif-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    min-width: 17px;
+    height: 17px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #f39a1f, #ff8c61);
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border: 2px solid #fbf8f5;
+    box-shadow: 0 2px 6px rgba(243, 154, 31, 0.45);
+  }
+
+  /* Dropdown panel */
+  .notif-dropdown {
+    border: 1.5px solid rgba(243, 154, 31, 0.2);
+    border-radius: 18px;
+    box-shadow: 0 12px 40px rgba(243, 154, 31, 0.13), 0 4px 16px rgba(0,0,0,0.07);
+    overflow: hidden;
+    min-width: 320px;
+    margin-top: 8px;
+  }
+
+  .notif-panel {
+    max-height: 380px;
+    overflow-y: auto;
+    padding: 8px 0;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.84rem;
+    color: #1c1209;
+  }
+
+  /* Scrollbar */
+  .notif-panel::-webkit-scrollbar       { width: 4px; }
+  .notif-panel::-webkit-scrollbar-track { background: transparent; }
+  .notif-panel::-webkit-scrollbar-thumb { background: rgba(243,154,31,0.25); border-radius: 999px; }
+
+  @keyframes glBlink {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.5; transform: scale(1.4); }
+  }
+
+  @keyframes glNudge {
+    0%, 100% { transform: translateX(0); }
+    50%       { transform: translateX(-4px); }
+  }
+
+  @keyframes glSlideIn {
+    from { opacity: 0; transform: translateY(-50%) translateX(8px); }
+    to   { opacity: 1; transform: translateY(-50%) translateX(0); }
+  }
 </style>
 
 <!-- SCRIPTS -->
@@ -681,11 +839,16 @@ function postJSON(url, data){
   return fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) }).then(r=>r.json());
 }
 function sendRequest(btn){
-  const id = Number(btn.dataset.id); btn.disabled = true;
-  postJSON('/connections/api/send', {target_id:id})
+  const id = Number(btn.dataset.id);
+  btn.disabled = true;
+
+  postJSON('/connections/api/send', { user_id: id })  // ✅ fixed
     .then(res => {
       if (!res.ok){ btn.disabled=false; alert(res.msg||'Failed'); return; }
-      btn.textContent='Pending'; btn.style.background='rgba(28,18,9,0.08)'; btn.style.color='var(--gl-muted)'; btn.style.boxShadow='none';
+      btn.textContent='Pending';
+      btn.style.background='rgba(28,18,9,0.08)';
+      btn.style.color='var(--gl-muted)';
+      btn.style.boxShadow='none';
     })
     .catch(() => { btn.disabled=false; alert('Network error'); });
 }
@@ -719,4 +882,360 @@ function sendRequest(btn){
 })();
 </script>
 
+<script>
+(function(){
+  const userId = "{{ current_user.id if current_user.is_authenticated else '' }}";
+  if (!userId) return;
+
+  const STATIC_PREFIX = "{{ url_for('static', filename='') }}";
+  const bellBtn = document.getElementById("connNotifBellBtn");
+  const panel  = document.getElementById("connNotifPanel");
+  const badge  = document.getElementById("connNotifBadge");
+  const hint = document.getElementById("connNotifHint");
+  const hintLink = document.getElementById("connNotifHintLink");
+  const dropdownRoot = bellBtn?.closest(".dropdown");
+
+  if (!bellBtn || !panel || !badge) return;
+
+  function escapeHtml(str){
+    return String(str ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function normalizePicPath(p){
+    if (!p || p === "None" || p === "") return "uploads/profile_pics/defaultProfile.webp";
+    if (p.startsWith("uploads/")) return p;
+    if (p.startsWith("static/")) return p.replace(/^static\//, "");
+    if (p.startsWith("/static/")) return p.replace(/^\/static\//, "");
+    return `uploads/profile_pics/${p}`; // filename only
+  }
+
+  // ===== Accepted-dismiss (NO DB change) =====
+  const dismissedKey = `genlink:dismissedAccepted:${userId}`;
+  function getDismissedAccepted(){
+    try { return JSON.parse(localStorage.getItem(dismissedKey) || "[]"); }
+    catch { return []; }
+  }
+  function setDismissedAccepted(arr){
+    localStorage.setItem(dismissedKey, JSON.stringify(arr));
+  }
+  function dismissAccepted(connId){
+    const set = new Set(getDismissedAccepted());
+    set.add(Number(connId));
+    setDismissedAccepted([...set]);
+  }
+
+  function setBadge(count){
+    if (count > 0){
+      badge.style.display = "inline-flex";
+      badge.textContent = count;
+      if (hint) hint.hidden = false;
+    } else {
+      badge.style.display = "none";
+      badge.textContent = "";
+      if (hint) hint.hidden = true;
+    }
+  }
+
+  hintLink?.addEventListener("click", (e) => {
+    e.preventDefault();
+    bellBtn.click(); // opens dropdown
+  });
+
+  // ===== HOME PAGE DOM UPDATES (connections/suggestions) =====
+  const connectionsBody = document.getElementById("homeConnectionsBody");
+  const suggestedBody   = document.getElementById("homeSuggestedBody");
+
+  function removeFromSuggested(userId){
+    if (!suggestedBody) return;
+    const row = suggestedBody.querySelector(`.gl-user-row[data-user-id="${userId}"]`);
+    if (row) row.remove();
+
+    // if nothing left, show empty text
+    const anyLeft = suggestedBody.querySelector(".gl-user-row");
+    if (!anyLeft){
+      suggestedBody.innerHTML = `<p class="gl-empty-text" id="homeSuggestedEmpty">No suggestions right now.</p>`;
+    }
+  }
+
+  function ensureConnectionsEmptyRemoved(){
+    const empty = document.getElementById("homeConnectionsEmpty");
+    if (empty) empty.remove();
+  }
+
+  function addToConnections(user){
+    if (!connectionsBody) return;
+
+    // prevent duplicates
+    const existing = connectionsBody.querySelector(`.gl-user-row[data-user-id="${user.id}"]`);
+    if (existing) return;
+
+    ensureConnectionsEmptyRemoved();
+
+    const safeName = escapeHtml(user.name || "User");
+    const safeMeta = escapeHtml(user.meta || ""); // age_group if you have it
+    const safePic  = user.picUrl || (STATIC_PREFIX + "uploads/main_topics_images/default_pfp.png");
+
+    const row = document.createElement("div");
+    row.className = "gl-user-row";
+    row.setAttribute("data-user-id", String(user.id));
+
+    // NOTE: link below matches your existing route usage
+    row.innerHTML = `
+      <img src="${safePic}" alt="User" class="gl-user-avatar"
+           onerror="this.onerror=null; this.src='${STATIC_PREFIX}uploads/main_topics_images/default_pfp.png';">
+
+      <div class="gl-user-info">
+        <div class="gl-user-name">${safeName}</div>
+        ${safeMeta ? `<div class="gl-user-meta">${safeMeta}</div>` : ``}
+      </div>
+
+      <a class="gl-btn-sm" href="/chat/${encodeURIComponent(user.id)}">Message</a>
+    `;
+
+    // put them at the top
+    connectionsBody.prepend(row);
+  }
+
+  // Auto-update homepage when requester receives "accepted" notif
+  function handleAcceptedAutoUpdates(accepted){
+    if (!Array.isArray(accepted) || accepted.length === 0) return;
+
+    for (const a of accepted){
+      const otherId = Number(a.other_id);
+      if (!otherId) continue;
+
+      const picUrl = STATIC_PREFIX + normalizePicPath(a.other_pic || "");
+      addToConnections({
+        id: otherId,
+        name: a.other_name || "User",
+        meta: "",
+        picUrl
+      });
+
+      removeFromSuggested(otherId);
+    }
+  }
+
+  async function fetchSummary(){
+    const res = await fetch("/api/notifications/summary", {
+      headers: { "Accept":"application/json" },
+      credentials: "same-origin"
+    });
+    if (!res.ok) throw new Error(`summary HTTP ${res.status}`);
+    const data = await res.json();
+    if (!data || !data.ok) throw new Error("bad json");
+    return data;
+  }
+
+  function renderDropdown(data){
+    const pendingAll  = Array.isArray(data.pending)  ? data.pending  : [];
+    const acceptedAll = Array.isArray(data.accepted) ? data.accepted : [];
+
+    // filter out accepted notifications dismissed locally
+    const dismissed = new Set(getDismissedAccepted());
+    const accepted = acceptedAll.filter(a => !dismissed.has(Number(a.conn_id)));
+    const pending  = pendingAll; // keep pending as-is
+
+    if (pending.length === 0 && accepted.length === 0){
+      panel.innerHTML = `<div class="notif-empty">No new notifications</div>`;
+      return;
+    }
+
+    let html = "";
+
+    for (const r of pending){
+      const fromId = Number(r.from_id);
+      const name = escapeHtml(r.from_name || "User");
+      const picUrl = STATIC_PREFIX + normalizePicPath(r.from_pic);
+
+      html += `
+        <div class="notif-card notif-item notif-item-actions"
+             data-from-id="${fromId}"
+             data-from-pic="${escapeHtml(normalizePicPath(r.from_pic))}"
+             data-from-age="${escapeHtml(r.from_age_group || "")}">
+          <div class="notif-left">
+            <img src="${picUrl}" class="notif-avatar" alt="User"
+                 onerror="this.onerror=null;this.src='${STATIC_PREFIX}uploads/main_topics_images/default_pfp.png';">
+          </div>
+          <div class="notif-mid">
+            <div class="notif-title">${name}</div>
+            <div class="notif-sub">sent you a connection request</div>
+            <div class="notif-actions">
+              <button type="button" class="notif-btn accept js-notif-accept"
+                      data-target-id="${fromId}" data-from-name="${name}">Accept</button>
+              <button type="button" class="notif-btn reject js-notif-reject"
+                      data-target-id="${fromId}" data-from-name="${name}">Reject</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    for (const a of accepted){
+      const connId = Number(a.conn_id);
+      const otherName = escapeHtml(a.other_name || "User");
+      const picUrl = STATIC_PREFIX + normalizePicPath(a.other_pic);
+
+      html += `
+        <div class="notif-card notif-item notif-accepted" data-conn-id="${connId}">
+          <div class="notif-left">
+            <img src="${picUrl}" class="notif-avatar" alt="User"
+                 onerror="this.onerror=null;this.src='${STATIC_PREFIX}uploads/main_topics_images/default_pfp.png';">
+          </div>
+          <div class="notif-mid">
+            <div class="notif-title">${otherName}</div>
+            <div class="notif-sub">accepted your request — you are now connected!</div>
+            <div class="notif-actions">
+              <button type="button" class="notif-btn accept js-ack-accepted"
+                      data-conn-id="${connId}">OK</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    panel.innerHTML = html;
+  }
+
+  async function postJSON(url, data){
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type":"application/json" },
+      body: JSON.stringify(data || {}),
+      credentials: "same-origin"
+    });
+
+    const json = await res.json().catch(()=>({}));
+    return { http_ok: res.ok, status: res.status, ...json };
+  }
+
+  function showConnectedMessage(fromId, fromName){
+    const item = document.querySelector(`.notif-item[data-from-id="${fromId}"]`);
+    if (!item) return;
+
+    item.innerHTML = `
+      <div class="notif-left">
+        <div class="notif-icon-wrap" style="background: rgba(25,135,84,.12);">
+          <i class="bi bi-check-lg"></i>
+        </div>
+      </div>
+      <div class="notif-mid">
+        <div class="notif-title">Connected!</div>
+        <div class="notif-sub">You and ${escapeHtml(fromName)} are now connected!</div>
+      </div>
+    `;
+
+    // keep message longer (5s)
+    setTimeout(() => item.remove(), 5000);
+  }
+
+  panel.addEventListener("click", async (e) => {
+
+    // =========================
+    // ACCEPTED → OK (dismiss locally, no DB call)
+    // =========================
+    const ackBtn = e.target.closest(".js-ack-accepted");
+    if (ackBtn){
+      e.preventDefault();
+      e.stopPropagation();
+
+      const connId = Number(ackBtn.dataset.connId);
+
+      // remember dismissal
+      dismissAccepted(connId);
+
+      // remove card immediately
+      ackBtn.closest(".notif-item")?.remove();
+
+      await poll(true);
+      return;
+    }
+
+    // =========================
+    // PENDING → Accept / Reject
+    // =========================
+    const btn = e.target.closest(".js-notif-accept, .js-notif-reject");
+    if (!btn) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const targetId = Number(btn.dataset.targetId);
+    const fromName = btn.dataset.fromName || "User";
+    btn.disabled = true;
+
+    const url = btn.classList.contains("js-notif-accept")
+      ? "/connections/api/accept"
+      : "/connections/api/reject";
+
+    const result = await postJSON(url, { target_id: targetId });
+
+    if (!result.ok){
+      alert(result.msg || "Failed");
+      btn.disabled = false;
+      return;
+    }
+
+    if (url.includes("accept")) {
+      const notifItem = document.querySelector(`.notif-item[data-from-id="${targetId}"]`);
+      const storedPic = notifItem?.dataset.fromPic;
+      const storedAge = notifItem?.dataset.fromAge || "";
+
+      const picUrl = storedPic
+        ? (STATIC_PREFIX + storedPic)
+        : (STATIC_PREFIX + "uploads/main_topics_images/default_pfp.png");
+
+      // homepage updates
+      removeFromSuggested(targetId);
+      addToConnections({
+        id: targetId,
+        name: fromName,
+        meta: storedAge ? storedAge.charAt(0).toUpperCase() + storedAge.slice(1) : "",
+        picUrl
+      });
+
+      // dropdown success message
+      showConnectedMessage(targetId, fromName);
+    } else {
+      document.querySelector(`.notif-item[data-from-id="${targetId}"]`)?.remove();
+    }
+
+    await poll(true);
+  });
+
+  async function poll(forceRender=false){
+    try{
+      const data = await fetchSummary();
+
+      const pendingAll  = Array.isArray(data.pending)  ? data.pending  : [];
+      const acceptedAll = Array.isArray(data.accepted) ? data.accepted : [];
+
+      // filter dismissed accepted for accurate badge
+      const dismissed = new Set(getDismissedAccepted());
+      const acceptedShown = acceptedAll.filter(a => !dismissed.has(Number(a.conn_id)));
+
+      setBadge(pendingAll.length + acceptedShown.length);
+
+      // auto-update homepage for requester when accepted arrives
+      handleAcceptedAutoUpdates(acceptedAll);
+
+      if (forceRender) renderDropdown(data);
+    } catch(err){
+      console.error("notif poll failed:", err);
+    }
+  }
+
+  dropdownRoot?.addEventListener("shown.bs.dropdown", async () => {
+    await poll(true);
+  });
+
+  poll(true);
+  setInterval(poll, 12000);
+})();
+</script>
 {% endblock %}

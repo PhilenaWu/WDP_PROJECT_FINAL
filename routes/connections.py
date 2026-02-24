@@ -54,6 +54,8 @@ def select_one(query, params=()):
     cur.close()
     return row
 
+def filter_out_admins(rows):
+    return [r for r in (rows or []) if (r.get("user_type") or "").lower() != "admin"]
 
 # =========================================================
 # JSON HELPERS
@@ -125,7 +127,7 @@ def connections():
 
     # Incoming requests: people who sent requests TO me
     incoming = select_all("""
-        SELECT u.id, u.username, u.display_name, u.age_group, u.profile_picture
+        SELECT u.id, u.username, u.display_name, u.age_group, u.profile_picture, u.user_type
         FROM connections c
         JOIN users u ON u.id = c.requester_id
         WHERE c.receiver_id = %s
@@ -137,7 +139,7 @@ def connections():
 
     # Outgoing requests: people I requested
     outgoing = select_all("""
-        SELECT u.id, u.username, u.display_name, u.age_group, u.profile_picture
+        SELECT u.id, u.username, u.display_name, u.age_group, u.profile_picture, u.user_type
         FROM connections c
         JOIN users u ON u.id = c.receiver_id
         WHERE c.requester_id = %s
@@ -149,7 +151,7 @@ def connections():
 
     # Current connections (accepted)
     current = select_all("""
-        SELECT u.id, u.username, u.display_name, u.age_group, u.profile_picture
+        SELECT u.id, u.username, u.display_name, u.age_group, u.profile_picture, u.user_type
         FROM connections c
         JOIN users u
           ON u.id = CASE
@@ -172,6 +174,7 @@ def connections():
           u.display_name,
           u.age_group,
           u.profile_picture,
+          u.user_type,
           COALESCE(mutuals.mutual_count, 0) AS mutual_count
         FROM users u
         LEFT JOIN (
@@ -234,6 +237,7 @@ def connections():
           u.display_name,
           u.age_group,
           u.profile_picture,
+          u.user_type,
           CASE
             WHEN c.status = 'accepted' THEN 'connected'
             WHEN c.status = 'pending' AND c.requester_id = %s THEN 'outgoing'
@@ -256,6 +260,11 @@ def connections():
           COALESCE(u.display_name, u.username)
     """, (uid, uid, uid, uid, uid, q, like, like, role, role))
 
+    incoming = filter_out_admins(incoming)
+    outgoing = filter_out_admins(outgoing)
+    current = filter_out_admins(current)
+    suggestions = filter_out_admins(suggestions)
+    search_results = filter_out_admins(search_results)
 
     incoming = normalize_users(incoming)
     outgoing = normalize_users(outgoing)
@@ -288,7 +297,7 @@ def connections():
 def send_request():
     uid = current_user.id
     data = request.get_json(silent=True) or {}
-    target_id = data.get("user_id")
+    target_id = data.get("target_id") or data.get("user_id")
     try:
         target_id = int(target_id)
     except Exception:
@@ -432,3 +441,22 @@ def remove_connection():
     """, (uid, target_id, target_id, uid), commit=True)
 
     return ok("Connection removed")
+
+@connections_bp.route("/api/ack_accept", methods=["POST"])
+@login_required
+def ack_accept():
+    uid = current_user.id
+    conn_id = (request.get_json(silent=True) or {}).get("conn_id")
+
+    try:
+        conn_id = int(conn_id)
+    except Exception:
+        return fail("Invalid notification")
+
+    execute_query("""
+        UPDATE connections
+        SET status='connected'
+        WHERE id=%s AND requester_id=%s AND status='accepted'
+    """, (conn_id, uid), commit=True)
+
+    return ok("Dismissed")
