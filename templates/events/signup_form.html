@@ -223,6 +223,18 @@
         height: 1px;
         background: rgba(243,154,31,0.18);
     }
+    .event-tag {
+        display: inline-flex; align-items: center;
+        font-size: 0.65rem; font-weight: 700;
+        letter-spacing: .08em; text-transform: uppercase;
+        padding: 4px 12px; border-radius: 999px;
+        background: rgba(243,154,31,0.12);
+        border: 1px solid rgba(243,154,31,0.28);
+        color: #c97a00;
+        margin-bottom: 12px; align-self: flex-start;
+    }
+    html[data-theme='dark'] .event-tag { color: #f5b84a; }
+
 
     /* ── Form fields ── */
     .field-group {
@@ -445,7 +457,7 @@
 
             <!-- Header -->
             <div class="signup-header">
-                <div class="pill"><span class="pill-dot"></span> Community Event</div>
+                <span class="event-tag">{{ event.event_type if event.event_type else 'Community' }}</span>
                 <h2>{{ event.title }}</h2>
                 <p>Fill in your details below to secure your spot!</p>
             </div>
