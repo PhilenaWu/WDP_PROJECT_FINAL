@@ -1062,12 +1062,12 @@ def login():
             session['failed_attempts'] = failed_attempts
             
             if failed_attempts >= 3:
-                # Lock out for 10 seconds after 3 failed attempts
-                lockout_time = datetime.now() + timedelta(seconds=10)
+                # Lock out for 5 seconds after 3 failed attempts
+                lockout_time = datetime.now() + timedelta(seconds=5)
                 session['lockout_time'] = lockout_time.isoformat()  # datetime to string
                 return render_template('auth/login.html', 
                     error="Too many failed attempts.", 
-                    lockout_seconds=10)
+                    lockout_seconds=5)
             else:
                 remaining_attempts = 3 - failed_attempts
                 return render_template('auth/login.html', 
