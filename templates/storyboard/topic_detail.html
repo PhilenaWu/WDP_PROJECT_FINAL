@@ -537,15 +537,15 @@ body::after {
       <!-- Author Row -->
       <div class="author-row">
         <div class="author-info">
-          <img src="{{ s.avatar_url }}"
-               onerror="this.onerror=null;this.src='{{ url_for('static', filename='uploads/main_topics_images/defaultProfile.webp') }}';"
-               class="author-avatar commentor-profile-pic"
-               alt="avatar"
-               data-username="{{ s.username }}"
-               data-age-group="{{ s.age_group if s.age_group is defined else '' }}"
-               data-profile-pic="{{ s.avatar_url }}"
-               data-user-id="{{ s.user_id if s.user_id is defined else '' }}"
-               data-rel-status="{{ s.rel_status if s.rel_status is defined else 'none' }}">
+          <img src="{{ s.avatar_url if s.avatar_url and 'defaultProfile' not in s.avatar_url and s.avatar_url|length > 8 else url_for('static', filename='uploads/main_topics_images/defaultProfile.webp') }}"
+            onerror="this.onerror=null;this.src='{{ url_for('static', filename='uploads/main_topics_images/default_pfp.png') }}';"
+            class="author-avatar commentor-profile-pic"
+            alt="avatar"
+            data-username="{{ s.username }}"
+            data-age-group="{{ s.age_group if s.age_group is defined else '' }}"
+            data-profile-pic="{{ s.avatar_url if s.avatar_url and 'defaultProfile' not in s.avatar_url and s.avatar_url|length > 8 else url_for('static', filename='uploads/main_topics_images/defaultProfile.webp') }}"
+            data-user-id="{{ s.user_id if s.user_id is defined else '' }}"
+            data-rel-status="{{ s.rel_status if s.rel_status is defined else 'none' }}">
           <div>
             <div class="author-name">{{ s.username }}</div>
             <div class="author-date">
