@@ -4,7 +4,7 @@
 
 Built for the **NYP Web Development Project (WDP)** module. Flask + MySQL + Socket.IO.
 
-> ### ▶ Live demo: **_add your Render URL here after deploying_**
+> ### ▶ Live demo: **https://genlink-283z.onrender.com**
 >
 > | Role | Username | Password |
 > | --- | --- | --- |
