@@ -36,10 +36,17 @@ load_dotenv()
 # Demo credentials — these are what you publish
 # --------------------------------------------------------------------------
 
+# NOTE: the login form authenticates on USERNAME, not email
+# (see User.get_by_username in the login route). The usernames below are
+# what you publish; the emails are only used for password reset and the
+# event signup forms.
+
 DEMO_USER_EMAIL = "demo@gmail.com"
+DEMO_USER_USERNAME = "demo"
 DEMO_USER_PASSWORD = "Demo@1234"
 
 DEMO_ADMIN_EMAIL = "admin.demo@gmail.com"
+DEMO_ADMIN_USERNAME = "admindemo"
 DEMO_ADMIN_PASSWORD = "Admin@1234"
 
 # Every other seeded account shares this password so you can log in as any
@@ -272,13 +279,13 @@ def seed(cur, today):
         return uid
 
     demo_id = add_user(
-        DEMO_USER_EMAIL, "demo", "Demo User", "Demo", "User",
+        DEMO_USER_EMAIL, DEMO_USER_USERNAME, "Demo User", "Demo", "User",
         date(1996, 5, 12), "81234500",
         "food-and-culinary-heritage,history,technology-and-innovation",
         DEMO_USER_PASSWORD,
     )
     admin_id = add_user(
-        DEMO_ADMIN_EMAIL, "admindemo", "Genlink Admin", "Genlink", "Admin",
+        DEMO_ADMIN_EMAIL, DEMO_ADMIN_USERNAME, "Genlink Admin", "Genlink", "Admin",
         date(1990, 2, 2), "81234599",
         "community,education-and-school-life",
         DEMO_ADMIN_PASSWORD, user_type="admin",
@@ -524,11 +531,12 @@ def main():
         cn.close()
 
     print(f"""
-Done. Demo credentials:
+Done. Demo credentials — log in with the USERNAME, not the email:
 
-    Regular user   {DEMO_USER_EMAIL} / {DEMO_USER_PASSWORD}
-    Admin          {DEMO_ADMIN_EMAIL} / {DEMO_ADMIN_PASSWORD}
-    Any community  <see scripts/seed_demo.py> / {COMMUNITY_PASSWORD}
+    Regular user   {DEMO_USER_USERNAME} / {DEMO_USER_PASSWORD}
+    Admin          {DEMO_ADMIN_USERNAME} / {DEMO_ADMIN_PASSWORD}
+    Any community  meitan | rajkumar | aisharahman | kaiwong | sitinur |
+                   davidlim  ...  all with {COMMUNITY_PASSWORD}
 
 Log in as the admin to review the pending event submission at
 /events/admin/submissions.

@@ -6,10 +6,12 @@ Built for the **NYP Web Development Project (WDP)** module. Flask + MySQL + Sock
 
 > ### ▶ Live demo: **_add your Render URL here after deploying_**
 >
-> | Role | Email | Password |
+> | Role | Username | Password |
 > | --- | --- | --- |
-> | Regular user | `demo@gmail.com` | `Demo@1234` |
-> | Admin | `admin.demo@gmail.com` | `Admin@1234` |
+> | Regular user | `demo` | `Demo@1234` |
+> | Admin | `admindemo` | `Admin@1234` |
+>
+> The login form takes a **username**, not an email address.
 >
 > Sign in as the admin to see the event approval queue at `/events/admin/submissions`.
 >
@@ -330,7 +332,7 @@ python app.py
 
 The app serves on `http://localhost:5000`, or on `$PORT` when one is set.
 
-Log in as `demo@gmail.com` / `Demo@1234`, or as `admin.demo@gmail.com` / `Admin@1234` for the admin surfaces. To promote any other account:
+Log in as `demo` / `Demo@1234`, or as `admindemo` / `Admin@1234` for the admin surfaces. The form takes a username, not an email. To promote any other account:
 
 ```sql
 UPDATE users SET user_type = 'admin' WHERE email = 'you@gmail.com';

@@ -121,6 +121,7 @@ CREATE TABLE IF NOT EXISTS contacts (
     user_id         INT NOT NULL,
     contact_user_id INT NOT NULL,
     nickname        VARCHAR(50) DEFAULT NULL,
+    is_favorite     BOOLEAN NOT NULL DEFAULT FALSE,
     created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     UNIQUE KEY uq_contact_pair (user_id, contact_user_id),
@@ -298,6 +299,9 @@ CREATE TABLE IF NOT EXISTS `groups` (
     name        VARCHAR(120) NOT NULL,
     description TEXT         DEFAULT NULL,
     created_by  INT          NOT NULL,
+    -- Groups are soft-deleted: routes set is_active = FALSE and every
+    -- read filters on it.
+    is_active   BOOLEAN      NOT NULL DEFAULT TRUE,
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     KEY idx_groups_creator (created_by),
