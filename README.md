@@ -360,18 +360,17 @@ MySQL, 21 tables, no ORM:
 
 ## Team
 
-Six contributors. Primary ownership, by the files each person actually authored:
+Five members. Primary ownership, by the files each person actually authored:
 
-| Contributor | Primary area |
+| Member | Primary area |
 | --- | --- |
-| `hasini` | Authentication — 3-step signup, login, Google OAuth, password reset, appearance and language settings, feedback; plus the base template |
-| `projectedjz` | Events and the events admin queue; chess and the games hub |
-| `mahdiyaa` | Storyboard — topics, stories, media, comments and likes |
-| `1wanny` | Messaging — contacts, groups, chat, uploads and message CRUD |
-| `zzzzz` | Connections and the home page |
-| `philena` | Events and event submissions; home and topic browsing |
+| **Hasini** | Authentication — 3-step signup, login, Google OAuth, password reset, appearance and language settings, feedback; plus the base template |
+| **Philena** | Events and the events admin queue, including AI poster generation; chess and the games hub; home and topic browsing |
+| **Mahdiya** | Storyboard — topics, stories, media, comments and likes |
+| **Ridzwan** | Messaging — contacts, groups, chat, uploads and message CRUD |
+| **Zoe** | Connections and the home page |
 
-Work is shared across the codebase; the table reflects where each contributor did most of it.
+Work is shared across the codebase; the table reflects where each member did most of it.
 
 ---
 
