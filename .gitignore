@@ -4,3 +4,7 @@ WDP_PROJECT_FINAL/__pycache__/
 *.pyc
 /config.py
 *.env
+
+# Local env backups - never commit
+.env.backup
+.env.*
