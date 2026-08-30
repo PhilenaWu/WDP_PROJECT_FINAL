@@ -1,0 +1,62 @@
+# Render blueprint for Genlink.
+#
+# Deploy: Render dashboard -> New -> Blueprint -> pick this repo.
+# Render reads this file and creates the service.
+#
+# Everything marked `sync: false` must be filled in by hand in the Render
+# dashboard under Environment. Never commit real values here.
+
+services:
+  - type: web
+    name: genlink
+    runtime: python
+    plan: free
+    region: singapore
+    branch: main
+
+    buildCommand: "./build.sh"
+
+    # One eventlet worker. Socket.IO needs sticky connections, and the free
+    # plan is single-instance anyway, so scaling out is not a concern here.
+    startCommand: "gunicorn --worker-class eventlet -w 1 'app:create_app()' --bind 0.0.0.0:$PORT --timeout 120"
+
+    healthCheckPath: /
+
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+
+      # Stockfish is downloaded into the build by build.sh.
+      - key: STOCKFISH_PATH
+        value: bin/stockfish
+
+      # --- fill these in via the Render dashboard ---------------------
+      - key: SECRET_KEY
+        generateValue: true          # Render generates a strong random value
+
+      - key: MYSQL_HOST
+        sync: false
+      - key: MYSQL_USER
+        sync: false
+      - key: MYSQL_PASSWORD
+        sync: false
+      - key: MYSQL_DATABASE
+        sync: false
+      - key: MYSQL_PORT
+        sync: false
+
+      # Optional. Leave unset and the matching feature degrades on its own.
+      - key: GOOGLE_MAPS_API_KEY
+        sync: false
+      - key: GOOGLE_GENAI_API_KEY
+        sync: false
+      - key: GOOGLE_OAUTH_CLIENT_ID
+        sync: false
+      - key: GOOGLE_OAUTH_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_OAUTH_REDIRECT_URI
+        sync: false
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_APP_PASSWORD
+        sync: false

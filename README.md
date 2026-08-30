@@ -2,7 +2,20 @@
 
 **An intergenerational social platform — where youth, adults and seniors meet through shared stories, shared interests, and things worth doing together.**
 
-Built for the **NYP Web Development Project (WDP)** module. Flask + MySQL + Socket.IO, deployed against a Railway-hosted database.
+Built for the **NYP Web Development Project (WDP)** module. Flask + MySQL + Socket.IO.
+
+> ### ▶ Live demo: **_add your Render URL here after deploying_**
+>
+> | Role | Email | Password |
+> | --- | --- | --- |
+> | Regular user | `demo@gmail.com` | `Demo@1234` |
+> | Admin | `admin.demo@gmail.com` | `Admin@1234` |
+>
+> Sign in as the admin to see the event approval queue at `/events/admin/submissions`.
+>
+> The demo runs on Render's free tier, so the **first request after an idle period takes 30–60 seconds** while the service wakes up. Give it a minute before assuming anything is broken.
+>
+> Running it yourself instead? See **[Getting started](#getting-started)**.
 
 ---
 
@@ -130,7 +143,7 @@ Full feature-by-feature walkthrough, including the admin flows: [`EVENTS_SETUP.m
      ▼                 ▼                     ▼
 ┌──────────┐   ┌────────────────┐   ┌──────────────────┐
 │  MySQL   │   │ static/uploads │   │ External services│
-│ (Railway)│   │ images · video │   ├──────────────────┤
+│ (Aiven)  │   │ images · video │   ├──────────────────┤
 │          │   │ audio · posters│   │ Gemini 2.5 Flash │
 │ mysql-   │   └────────────────┘   │ Google Maps      │
 │ connector│                        │ Google OAuth     │
@@ -158,14 +171,14 @@ Full feature-by-feature walkthrough, including the admin flows: [`EVENTS_SETUP.m
 | Real-time | Flask-SocketIO 5.6 / python-socketio — eventlet (Linux) or threading (Windows) |
 | Auth | Flask-Login, Google OAuth 2.0, `itsdangerous` reset tokens |
 | Sessions | Flask-Session, filesystem backend |
-| Database | MySQL 8 via `mysql-connector-python`, hosted on **Railway** |
+| Database | MySQL 8 via `mysql-connector-python` — hosted on **Aiven** |
 | Images | Pillow (profile thumbnails) |
 | AI images | `google-genai` → `models/gemini-2.5-flash-image` |
 | Maps | Google Maps JavaScript / Places / Directions / Geocoding APIs |
 | Translation | `deep-translator` (Google Translate) |
 | Chess | `python-chess` + Stockfish UCI engine |
 | Email | Gmail SMTP via `smtplib` |
-| Deployment | Vercel config present ([vercel.json](vercel.json)); Railway `PORT` honoured in [app.py](app.py) |
+| Deployment | **Render** web service via [render.yaml](render.yaml) — see [Deployment](#deployment) |
 
 ---
 
@@ -203,8 +216,14 @@ Full feature-by-feature walkthrough, including the admin flows: [`EVENTS_SETUP.m
 │   ├── js/                    ← chess.js · chess_lobby.js
 │   └── uploads/               ← profile_pics · events · story_media · story_audio
 │
-├── migrations/                ← incremental SQL, run in order
-├── stockfish/                 ← chess engine binary (Git LFS)
+├── schema.sql                 ← ⭐ all 21 tables; run this on an empty database
+├── scripts/seed_demo.py       ← ⭐ demo users, topics, stories, events, chat
+├── migrations/                ← historical only; schema.sql supersedes these
+│
+├── render.yaml                ← Render blueprint (service, env vars, start command)
+├── build.sh                   ← Render build: deps + Linux Stockfish
+│
+├── stockfish/                 ← Windows engine binaries (Git LFS, unused on Linux)
 ├── EVENTS_SETUP.md            ← events subsystem: setup, flows, troubleshooting
 └── requirements.txt
 ```
@@ -216,7 +235,7 @@ Full feature-by-feature walkthrough, including the admin flows: [`EVENTS_SETUP.m
 ### Prerequisites
 
 - **Python 3.11+** (developed on 3.13)
-- **MySQL 8** — local, or a hosted instance such as Railway
+- **MySQL 8** — local, or a free hosted instance (see [Deployment](#deployment))
 - **Git LFS** — the Stockfish binary is stored via LFS (see [.gitattributes](.gitattributes))
 - Optional, each gating one feature: a Google Maps key, a Gemini key, Google OAuth credentials, and Gmail SMTP credentials. Leave any unset and only that feature degrades; the app still boots.
 
@@ -271,33 +290,88 @@ GOOGLE_OAUTH_REDIRECT_URI=http://localhost:5000/auth/signup/google/callback
 STOCKFISH_PATH=stockfish/stockfish.exe
 ```
 
-### 3. Set up the database
+### 3. Create the schema
 
-Create the schema, then apply the migrations in order:
+[`schema.sql`](schema.sql) defines all 21 tables and **already includes migrations 001–003**:
 
 ```bash
-mysql -u root -p genlink < migrations/001_add_image_url_event_submissions.sql
-mysql -u root -p genlink < migrations/002_create_chess_tables.sql
-mysql -u root -p genlink < migrations/003_add_chess_bot_level.sql
+mysql -u root -p genlink < schema.sql
 ```
 
-Seed the `topics` table before first use — signup Step 3 and the whole Storyboard read from it. Sample event inserts are in [`EVENTS_SETUP.md`](EVENTS_SETUP.md#sample-data).
+Do **not** also run the files in [`migrations/`](migrations/) — their `ALTER` statements will fail on columns `schema.sql` has already created. They are kept for history.
 
-### 4. Run
+### 4. Seed the demo data
+
+The database is unusable empty: signup Step 3 and the entire Storyboard read from `topics`.
+
+```bash
+python scripts/seed_demo.py
+```
+
+This creates topics, eight users across all three age groups, connections and pending requests, stories with likes and comments, five events, a pending event submission for the admin queue, and chat history — including a group chat. **All event dates are relative to today**, so the demo never goes stale.
+
+It refuses to run against a database that already has users. Add `--reset` to wipe and reseed:
+
+```bash
+python scripts/seed_demo.py --reset
+```
+
+Credentials it creates are listed at the top of [`scripts/seed_demo.py`](scripts/seed_demo.py) and in the [Live demo](#genlink) box above.
+
+### 5. Run
 
 ```bash
 python app.py
 ```
 
-The app serves on `http://localhost:5000` (or `$PORT`, which is how Railway starts it).
+The app serves on `http://localhost:5000`, or on `$PORT` when one is set.
 
-### 5. Create an admin
-
-Admin-only surfaces — the submission review queue, event creation and AI poster generation — are gated on `user_type`:
+Log in as `demo@gmail.com` / `Demo@1234`, or as `admin.demo@gmail.com` / `Admin@1234` for the admin surfaces. To promote any other account:
 
 ```sql
 UPDATE users SET user_type = 'admin' WHERE email = 'you@gmail.com';
 ```
+
+---
+
+## Deployment
+
+Genlink needs a host that keeps a process alive and speaks WebSockets. **Vercel cannot run it** — `vercel.json` is a leftover; serverless functions cannot hold the eventlet worker or the Socket.IO connections this app depends on.
+
+The free stack that does work:
+
+| Piece | Service | Free tier |
+| --- | --- | --- |
+| App | **Render** web service | 512MB, sleeps after 15 min idle |
+| Database | **Aiven for MySQL** | 5GB, real MySQL 8, no card required |
+| Chess engine | Downloaded at build time by [`build.sh`](build.sh) | — |
+
+### 1. Database
+
+Create a free MySQL service on Aiven, then load the schema and demo data from your machine using the connection details Aiven gives you:
+
+```bash
+mysql -h <aiven-host> -P <port> -u avnadmin -p defaultdb < schema.sql
+```
+
+Point your local `.env` at the same database and run `python scripts/seed_demo.py`.
+
+### 2. App
+
+Push to GitHub, then in Render: **New → Blueprint → select this repo**. [`render.yaml`](render.yaml) defines the service, so the only manual step is filling in the `sync: false` variables under **Environment** — the five `MYSQL_*` values at minimum. `SECRET_KEY` is generated for you.
+
+Set `GOOGLE_OAUTH_REDIRECT_URI` to `https://<your-service>.onrender.com/auth/signup/google/callback` and add that exact URL to your Google Cloud OAuth client, or Google sign-in will fail on the deployed site.
+
+### Free-tier limitations worth knowing
+
+| Behaviour | Cause | Impact on a demo |
+| --- | --- | --- |
+| 30–60s first load | Render free spins down after 15 min idle | Note it next to your demo link |
+| Uploads disappear on redeploy | Render's filesystem is ephemeral | Seeded images are committed to the repo and survive; anything uploaded during a demo does not |
+| Everyone logged out on restart | Sessions are stored on that same ephemeral filesystem | Harmless — log back in |
+| Bot plays weak chess | Stockfish download failed during build | The app falls back to random legal moves rather than erroring. Check the build log |
+
+> The repo carries `stockfish.exe` (114MB) and `stockfish.zip` (77MB) in Git LFS. They are Windows binaries, useless on Linux, and they slow every clone and deploy. Removing them from history would make this repo dramatically lighter.
 
 ---
 
