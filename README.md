@@ -217,7 +217,9 @@ Full feature-by-feature walkthrough, including the admin flows: [`EVENTS_SETUP.m
 │   └── uploads/               ← profile_pics · events · story_media · story_audio
 │
 ├── schema.sql                 ← ⭐ all 21 tables; run this on an empty database
-├── scripts/seed_demo.py       ← ⭐ demo users, topics, stories, events, chat
+├── scripts/
+│   ├── init_db.py          ← ⭐ applies schema.sql without the mysql CLI
+│   └── seed_demo.py        ← ⭐ demo users, topics, stories, events, chat
 ├── migrations/                ← historical only; schema.sql supersedes these
 │
 ├── render.yaml                ← Render blueprint (service, env vars, start command)
@@ -292,11 +294,13 @@ STOCKFISH_PATH=stockfish/stockfish.exe
 
 ### 3. Create the schema
 
-[`schema.sql`](schema.sql) defines all 21 tables and **already includes migrations 001–003**:
+[`schema.sql`](schema.sql) defines all 21 tables and **already includes migrations 001–003**. Apply it with:
 
 ```bash
-mysql -u root -p genlink < schema.sql
+python scripts/init_db.py
 ```
+
+That runs `schema.sql` through `mysql-connector`, so no MySQL command-line client is needed and it works against hosted providers that require TLS. Add `--drop` to tear down existing tables first. If you do have the `mysql` client, `mysql -u root -p genlink < schema.sql` is equivalent.
 
 Do **not** also run the files in [`migrations/`](migrations/) — their `ALTER` statements will fail on columns `schema.sql` has already created. They are kept for history.
 
@@ -350,11 +354,12 @@ The free stack that does work:
 
 Create a free MySQL service on Aiven, then load the schema and demo data from your machine using the connection details Aiven gives you:
 
-```bash
-mysql -h <aiven-host> -P <port> -u avnadmin -p defaultdb < schema.sql
-```
+Point your local `.env` at the Aiven connection details, then:
 
-Point your local `.env` at the same database and run `python scripts/seed_demo.py`.
+```bash
+python scripts/init_db.py
+python scripts/seed_demo.py
+```
 
 ### 2. App
 
